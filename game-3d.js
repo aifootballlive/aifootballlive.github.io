@@ -3,10 +3,11 @@
 let THREE=null,GLTFLoader=null,scene=null,camera=null,renderer=null,clock=null;
 let ball=null,keeper=null,playerA=null,playerB=null;
 let animation=null,installed=false,hooked=false,realMode=false;
+let playerALoad=null,pendingPlayerA=null;
 const mixers=[];
 
 const ASSETS={
-  player:'./assets/models/female-player.glb',
+  playerA:'./assets/models/player-a.glb',
   keeper:'./assets/models/goalkeeper.glb'
 };
 
@@ -83,9 +84,43 @@ function setupScene(){
 function normalizeModel(root,targetHeight=2.15){root.updateMatrixWorld(true);let box=new THREE.Box3().setFromObject(root);const size=new THREE.Vector3();box.getSize(size);if(size.y>0){const s=targetHeight/size.y;root.scale.multiplyScalar(s)}root.updateMatrixWorld(true);box=new THREE.Box3().setFromObject(root);root.position.y-=box.min.y;root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){if(Array.isArray(o.material))o.material=o.material.map(m=>m.clone());else o.material=o.material.clone()}}});}
 function tintTeamModel(root,team){const main=team==='A'?0x173f9b:0xc91f2c;const yellow=0xffd21f;const skirt=team==='A'?0x152b59:0x6d1821;root.traverse(o=>{if(!o.isMesh||!o.material)return;const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){const n=((o.name||'')+' '+(m.name||'')).toLowerCase();if(/skin|face|head|hair|eye|teeth|mouth/.test(n))continue;if(/skirt|short|bottom|pants/.test(n)){if(m.color)m.color.setHex(skirt);continue}if(/shirt|jersey|top|cloth|uniform|body|torso/.test(n)){if(m.color)m.color.setHex(main);continue}if(/stripe|trim|line|accent/.test(n)){if(m.color)m.color.setHex(yellow)}}});}
 function clipsFor(gltf){const clips=gltf.animations||[];const pick=(...re)=>clips.find(c=>re.some(r=>r.test(c.name.toLowerCase())))||null;return{idle:pick(/idle/,/stand/,/breath/),run:pick(/run/,/jog/,/sprint/),kick:pick(/kick/,/shoot/,/soccer/),celebrate:pick(/celebr/,/victory/,/cheer/),saveLeft:pick(/save.*left/,/dive.*left/,/left.*dive/),saveRight:pick(/save.*right/,/dive.*right/,/right.*dive/),miss:pick(/miss/,/defeat/,/fall/)}};
-function prepareActor(gltf,type,team){const root=gltf.scene;normalizeModel(root,type==='keeper'?2.12:2.18);if(type==='player')tintTeamModel(root,team);const mixer=new THREE.AnimationMixer(root);mixers.push(mixer);const clips=clipsFor(gltf),actions={};for(const [k,c] of Object.entries(clips))if(c)actions[k]=mixer.clipAction(c);root.userData={...root.userData,real:true,type,team,actions,mixer,homeX:type==='keeper'?3.75:-3.25,homeZ:type==='keeper'?0:(team==='A'?.78:-.78),baseRotationY:type==='keeper'?-Math.PI/2:Math.PI/2};root.position.set(root.userData.homeX,0,root.userData.homeZ);root.rotation.y=root.userData.baseRotationY;playAction(root,'idle');return root;}
-function playAction(actor,name){if(!actor?.userData?.real)return;const actions=actor.userData.actions||{};const next=actions[name]||actions.idle;if(!next)return;for(const a of Object.values(actions)){if(a!==next)a.fadeOut(.12)}next.reset();next.enabled=true;next.setEffectiveWeight(1);next.fadeIn(.12);if(name==='idle'||name==='run'){next.setLoop(THREE.LoopRepeat,Infinity);next.clampWhenFinished=false}else{next.setLoop(THREE.LoopOnce,1);next.clampWhenFinished=true}next.play();}
-async function tryLoadRealModels(){if(!GLTFLoader){setLabel('3D MAÇ SAHNESİ • MODEL BEKLENİYOR');return}const loader=new GLTFLoader();try{setLabel('GERÇEKÇİ 3D MODELLER YÜKLENİYOR…');const [ga,gb,gk]=await Promise.all([loader.loadAsync(ASSETS.player),loader.loadAsync(ASSETS.player),loader.loadAsync(ASSETS.keeper)]);const a=prepareActor(ga,'player','A'),b=prepareActor(gb,'player','B'),k=prepareActor(gk,'keeper',null);scene.remove(playerA,playerB,keeper);playerA=a;playerB=b;keeper=k;scene.add(playerA,playerB,keeper);realMode=true;resetPose();setLabel('GERÇEKÇİ 3D MAÇ SAHNESİ');}catch(e){console.warn('Gerçekçi model dosyaları bulunamadı, basit 3D devam ediyor',e);setLabel('3D MAÇ SAHNESİ • GERÇEK MODEL BEKLENİYOR');}}
+function prepareActor(gltf,type,team){
+  // Keep normalization on the visual child; match movement belongs to the wrapper.
+  const model=gltf.scene;normalizeModel(model,2.18);
+  const root=new THREE.Group();root.add(model);
+  const mixer=new THREE.AnimationMixer(model),clips=clipsFor(gltf),actions={};
+  for(const name of ['idle','run','kick']){
+    if(!clips[name])throw new Error('Player A animation missing: '+name);
+    actions[name]=mixer.clipAction(clips[name]);
+  }
+  root.userData={real:true,type,team,actions,mixer,homeX:-3.25,homeZ:.78,baseRotationY:Math.PI/2,kickContactTime:model.userData.kickContactTime??7/30};
+  root.position.set(-3.25,0,.78);root.rotation.y=Math.PI/2;playAction(root,'idle');return root;
+}
+function playAction(actor,name){if(!actor?.userData?.real)return;const actions=actor.userData.actions||{};const next=actions[name]||actions.idle;if(!next)return;for(const a of Object.values(actions)){if(a!==next)a.fadeOut(.12)}next.reset();next.enabled=true;next.setEffectiveWeight(1);next.setEffectiveTimeScale(name==='kick'?actor.userData.kickContactTime/.18:1);next.fadeIn(.12);if(name==='idle'||name==='run'){next.setLoop(THREE.LoopRepeat,Infinity);next.clampWhenFinished=false}else{next.setLoop(THREE.LoopOnce,1);next.clampWhenFinished=true}next.play();}
+function installPlayerA(){
+  if(!pendingPlayerA||animation)return;
+  scene.remove(playerA);playerA=pendingPlayerA;pendingPlayerA=null;
+  scene.add(playerA);mixers.push(playerA.userData.mixer);realMode=true;
+  setLabel('3D MAÇ SAHNESİ • PLAYER A HAZIR');
+}
+async function tryLoadRealModels(){
+  if(realMode||pendingPlayerA)return;
+  if(playerALoad)return playerALoad;
+  if(!GLTFLoader){setLabel('3D MAÇ SAHNESİ • MODEL BEKLENİYOR');return}
+  playerALoad=(async()=>{
+    try{
+      setLabel('PLAYER A MODELİ YÜKLENİYOR…');
+      const gltf=await new GLTFLoader().loadAsync(ASSETS.playerA);
+      pendingPlayerA=prepareActor(gltf,'player','A');
+      // A shot already in progress must finish with its original actor.
+      installPlayerA();
+    }catch(e){
+      console.warn('Player A yüklenemedi; prosedürel model devam ediyor',e);
+      setLabel('3D MAÇ SAHNESİ • BASİT MODEL');
+    }finally{playerALoad=null}
+  })();
+  return playerALoad;
+}
 function resize(){if(!renderer||!camera)return;const box=document.getElementById('game3dCanvas')?.getBoundingClientRect();if(!box||!box.width)return;renderer.setSize(box.width,box.height,false);camera.aspect=box.width/box.height;camera.updateProjectionMatrix()}
 function resetPose(){if(!playerA||!playerB||!keeper||!ball)return;for(const p of [playerA,playerB]){p.position.set(p.userData.homeX,0,p.userData.homeZ);p.rotation.set(0,p.userData.baseRotationY??Math.PI/2,0);if(p.userData.real)playAction(p,'idle');else{p.userData.ll.rotation.set(0,0,0);p.userData.rl.rotation.set(0,0,0);p.userData.la.rotation.set(0,0,-.18);p.userData.ra.rotation.set(0,0,.18)}}keeper.position.set(keeper.userData.homeX??3.75,0,keeper.userData.homeZ??0);keeper.rotation.set(0,keeper.userData.baseRotationY??-Math.PI/2,0);if(keeper.userData.real)playAction(keeper,'idle');else{keeper.userData.la.rotation.set(0,0,-.4);keeper.userData.ra.rotation.set(0,0,.4)}ball.position.set(-1,.14,0);}
 function idleActor(actor,t,phase=0){
@@ -123,6 +158,7 @@ function animate(){
   if(!renderer||!scene||!camera)return;
   const dt=Math.min(clock?.getDelta?.()||.016,.05),t=performance.now();
   for(const m of mixers)m.update(dt);
+  installPlayerA();
   if(animation)runAnimation(t);
   else{
     idleActor(playerA,t,0);
