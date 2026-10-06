@@ -136,6 +136,7 @@ async function tryLoadRealModels(){
       // A shot already in progress must finish with its original actor.
       installPlayerA();
     }catch(e){
+      pendingPlayerA=null;pendingPlayerB=null;
       console.warn('Player A yüklenemedi; prosedürel model devam ediyor',e);
       setLabel('3D MAÇ SAHNESİ • BASİT MODEL');
     }finally{playerALoad=null}
@@ -248,9 +249,14 @@ function runAnimation(t){
     if(a.result==='save'){const right=targetZ>0;keeper.position.z=lerp(0,targetZ*.82,u);if(keeper.userData.real&&u<.08)playAction(keeper,right?'saveRight':'saveLeft');else if(!keeper.userData.real)keeper.rotation.x=lerp(0,.85*(right?1:-1),u);}else keeper.position.z=lerp(0,-targetZ*.25,u);
     if(u>=1){a.phase=a.result?'result':'awaitResult';a.start=t;}
   }else if(a.phase==='awaitResult'){
-    if(a.result){a.phase='result';a.start=t;}
+    if(a.result){a.lateResult=true;a.phase='result';a.start=t;}
   }else if(a.phase==='result'){
     u=clamp((t-a.start)/850,0,1);
+    if(a.lateResult&&a.result==='save'){
+      const targetZ=a.team==='A'?-.55:.55,dive=clamp((t-a.start)/350,0,1);
+      keeper.position.z=lerp(0,targetZ*.82,dive);if(!keeper.userData.real)keeper.rotation.x=lerp(0,.85*(targetZ>0?1:-1),dive);
+      ball.position.z=targetZ;
+    }
     if(a.result==='goal'){p.rotation.y=angleLerp(Math.PI/2,p.userData.baseRotationY,smooth(u));if(!p.userData.real)p.position.y=Math.sin(u*Math.PI)*.18;}
     if(u>=1){resetPose();animation=null;}
   }
