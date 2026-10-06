@@ -13,8 +13,37 @@ function playMotif(team){if(!enabled||!ctx)return;const notes=team==='A'?[220,27
 function startTeamMusic(team){if(!enabled||!team||currentTeam===team)return;currentTeam=team;if(teamTimer)clearInterval(teamTimer);playMotif(team);teamTimer=setInterval(()=>playMotif(team),1900)}
 function stopTeamMusic(){currentTeam=null;if(teamTimer){clearInterval(teamTimer);teamTimer=null}}
 function speakGoal(){if(!enabled)return;const now=Date.now();if(now-lastGoalAt<1200)return;lastGoalAt=now;try{if('speechSynthesis'in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance('Gooooooooooooool!');u.lang='tr-TR';u.rate=.62;u.pitch=.9;u.volume=1;const voices=speechSynthesis.getVoices();const tr=voices.find(v=>/^tr/i.test(v.lang));if(tr)u.voice=tr;speechSynthesis.speak(u)}}catch(e){}[523,659,784,1047].forEach((f,i)=>tone(f,i*.1,.32,.065,'sawtooth'))}
-function bind(){const ev=$('event'),qa=$('queueA'),qb=$('queueB');if(ev){let last='';new MutationObserver(()=>{const t=(ev.textContent||'').trim();if(!t||t===last)return;last=t;if(/^GOL!/i.test(t))speakGoal();if(/Maç sıfırlandı/i.test(t))stopTeamMusic()}).observe(ev,{childList:true,characterData:true,subtree:true})}if(qa&&qb){let a=Number(qa.textContent)||0,b=Number(qb.textContent)||0;new MutationObserver(()=>{const n=Number(qa.textContent)||0;if(n<a)startTeamMusic('A');a=n}).observe(qa,{childList:true,characterData:true,subtree:true});new MutationObserver(()=>{const n=Number(qb.textContent)||0;if(n<b)startTeamMusic('B');b=n}).observe(qb,{childList:true,characterData:true,subtree:true})}}
-function boot(){window.__aiFootballSoundEnabled=false;patchNativeGoalSound();ensureButton();bind();}
+function saveSound(){
+  if(!enabled||!ctx)return;
+  [220,180,140].forEach((freq,i)=>tone(freq,i*.07,.13,.055,'triangle'));
+}
+function bind(){
+  const ev=$('event'),qa=$('queueA'),qb=$('queueB');
+  if(ev){
+    let last='';
+    new MutationObserver(()=>{
+      const t=(ev.textContent||'').trim();
+      if(!t||t===last)return;
+      last=t;
+      if(/şut çekiyor!/i.test(t))kick(0);
+      if(/kalecisi kurtardı!/i.test(t))saveSound();
+      if(/^GOL!/i.test(t))speakGoal();
+      if(/Maç sıfırlandı/i.test(t))stopTeamMusic();
+    }).observe(ev,{childList:true,characterData:true,subtree:true});
+  }
+  if(qa&&qb){
+    let a=Number(qa.textContent)||0,b=Number(qb.textContent)||0;
+    new MutationObserver(()=>{const n=Number(qa.textContent)||0;if(n<a)startTeamMusic('A');a=n}).observe(qa,{childList:true,characterData:true,subtree:true});
+    new MutationObserver(()=>{const n=Number(qb.textContent)||0;if(n<b)startTeamMusic('B');b=n}).observe(qb,{childList:true,characterData:true,subtree:true});
+  }
+}
+function boot(){
+  window.__aiFootballSoundEnabled=false;
+  patchNativeGoalSound();
+  ensureButton();
+  bind();
+  document.addEventListener('pointerdown',()=>{if(!enabled)enableSound();},{once:true,capture:true});
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.AIFootballAudio={enableSound,disableSound,toggleSound,startTeamMusic,stopTeamMusic,speakGoal,get enabled(){return enabled}};
 })();
