@@ -85,5 +85,6 @@ async function refreshAndResume(){if(document.hidden)return;await loadRemote(tru
 async function boot(){await getAuth();await loadRemote(true);setupRealtime();db.auth.onAuthStateChange((_event,session)=>{adminAuthed=!!(session&&session.user&&session.user.id===ADMIN_UID);render();setConn();if(adminAuthed)processQueue();});if(adminAuthed)processQueue();setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
 render();boot();
 </script>
-<script id="game3dScript" src="./game-3d.js?v=22"></script>\n</body>
+<script id="game3dScript" src="./game-3d.js?v=22"></script>
+</body>
 </html>
