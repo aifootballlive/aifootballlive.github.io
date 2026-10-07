@@ -232,7 +232,7 @@ function groundKick(player,weight){
 }
 function beginShot(team){
   if(!playerA||!playerB||!keeper||!ball)return;
-  if(animation&&animation.team===team&&['turn','run','kick','ball','awaitResult'].includes(animation.phase))return;
+  if(animation&&animation.team===team&&['turn','run','kick','ball','awaitResult','outcome'].includes(animation.phase))return;
   resetPose();const p=team==='A'?playerA:playerB;
   animation={phase:'turn',team,start:performance.now(),player:p,result:null,timing:team==='A'?PLAYER_A_TIMING:{turn:TURN_MS,run:RUN_MS,contact:KICK_CONTACT_MS},runYaw:Math.atan2(-1.9-p.userData.homeX,-p.userData.homeZ)};
 }
@@ -262,19 +262,36 @@ function runAnimation(t){
     groundKick(p,smooth(u));if(u>=1){a.phase='ball';a.start=t;}
   }else if(a.phase==='ball'){
     if(t-a.start<170)groundKick(p,1-smooth(clamp((t-a.start)/170,0,1)));
-    u=clamp((t-a.start)/650,0,1);const targetZ=a.result==='goal'?(a.team==='A'?.78:-.78):(a.team==='A'?-.55:.55);
-    ball.position.x=lerp(-1,4.15,u);ball.position.z=lerp(0,targetZ,u);ball.position.y=.14+Math.sin(u*Math.PI)*(a.result==='goal'?1.05:.62);ball.rotation.x+=.25;ball.rotation.z+=.18;
-    if(a.result==='save'){const right=targetZ>0;keeper.position.z=lerp(0,targetZ*.82,u);if(keeper.userData.real&&u<.08)playAction(keeper,right?'saveRight':'saveLeft');else if(!keeper.userData.real)keeper.rotation.x=lerp(0,.85*(right?1:-1),u);}else keeper.position.z=lerp(0,-targetZ*.25,u);
-    if(u>=1){a.phase=a.result?'result':'awaitResult';a.start=t;}
+    u=clamp((t-a.start)/650,0,1);
+    const targetZ=a.team==='A'?.78:-.78;
+    // Both outcomes share the approach. Never cross the goal before its result arrives.
+    ball.position.set(lerp(-1,3.45,u),.14+Math.sin(u*Math.PI)*.8,lerp(0,targetZ,u));
+    ball.rotation.x+=.25;ball.rotation.z+=.18;
+    if(a.result==='save'){
+      keeper.position.z=lerp(0,targetZ*.82,smooth(u));
+      if(!keeper.userData.real)keeper.rotation.x=lerp(0,.85*(targetZ>0?1:-1),smooth(u));
+    }
+    if(u>=1){a.phase=a.result?'outcome':'awaitResult';a.start=t;}
   }else if(a.phase==='awaitResult'){
-    if(a.result){a.lateResult=true;a.phase='result';a.start=t;}
+    if(a.result){a.phase='outcome';a.start=t;}
+  }else if(a.phase==='outcome'){
+    u=clamp((t-a.start)/350,0,1);
+    const targetZ=a.team==='A'?.78:-.78;
+    if(a.result==='goal'){
+      // The goal plane is x=4.42; only a confirmed goal may travel beyond it.
+      ball.position.set(lerp(3.45,4.90,u),.14+Math.sin(u*Math.PI)*.20,targetZ);
+      keeper.position.z=lerp(0,-targetZ*.25,smooth(u));
+    }else{
+      // A save rebounds away from the net and outside the central shooting lane.
+      ball.position.set(lerp(3.45,2.65,u),.14+Math.sin(u*Math.PI)*.35,lerp(targetZ,Math.sign(targetZ)*2.1,u));
+      keeper.position.z=targetZ*.82;
+      if(!keeper.userData.real)keeper.rotation.x=.85*(targetZ>0?1:-1);
+      else if(!a.savePlayed){playAction(keeper,targetZ>0?'saveRight':'saveLeft');a.savePlayed=true;}
+    }
+    ball.rotation.x+=.25;ball.rotation.z+=.18;
+    if(u>=1){a.phase='result';a.start=t;}
   }else if(a.phase==='result'){
     u=clamp((t-a.start)/850,0,1);
-    if(a.lateResult&&a.result==='save'){
-      const targetZ=a.team==='A'?-.55:.55,dive=clamp((t-a.start)/350,0,1);
-      keeper.position.z=lerp(0,targetZ*.82,dive);if(!keeper.userData.real)keeper.rotation.x=lerp(0,.85*(targetZ>0?1:-1),dive);
-      ball.position.z=targetZ;
-    }
     if(a.result==='goal'){p.rotation.y=angleLerp(Math.PI/2,p.userData.baseRotationY,smooth(u));if(!p.userData.real)p.position.y=Math.sin(u*Math.PI)*.18;}
     if(u>=1){resetPose();animation=null;}
   }
@@ -297,7 +314,7 @@ function bindStatusAnimation(){
   new MutationObserver(read).observe(ev,{childList:true,characterData:true,subtree:true});
   read();
 }
-function hookGame(){if(hooked)return;if(typeof window.resolveShot!=='function'){setTimeout(hookGame,150);return}hooked=true;const old=window.resolveShot;window.resolveShot=async function(team,shot){try{beginShot(team)}catch(e){}await sleep(360);const r=await old.apply(this,arguments);let result='save';const txt=(document.getElementById('event')?.textContent||'').trim();if(/^GOL!/i.test(txt))result='goal';try{finishShot(team,result)}catch(e){}return r};}
+function hookGame(){if(hooked)return;if(typeof window.resolveShot!=='function'){setTimeout(hookGame,150);return}hooked=true;const old=window.resolveShot;window.resolveShot=async function(team,shot){try{beginShot(team)}catch(e){}await sleep(360);const r=await old.apply(this,arguments);const txt=(document.getElementById('event')?.textContent||'').trim();const goal=txt.match(/^GOL!\s*(Sarı-Lacivert|Sarı-Kırmızı)/i);const save=txt.match(/^(Sarı-Lacivert|Sarı-Kırmızı)\s+kalecisi kurtardı!/i);const attacking=goal?(/^Sarı-Lacivert/i.test(goal[1])?'A':'B'):save?(/^Sarı-Lacivert/i.test(save[1])?'B':'A'):null;if(attacking===team){try{finishShot(team,goal?'goal':'save')}catch(e){}}return r};}
 async function boot(){if(installed)return;const shell=addStageShell();if(!shell){setTimeout(boot,120);return}installed=true;try{await loadThree();setupScene();bindStatusAnimation();hookGame()}catch(e){console.error('3D sahne yüklenemedi',e);setLabel('3D SAHNE YÜKLENEMEDİ')}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.AIFootball3D={beginShot,finishShot,reset:resetPose,reloadModels:tryLoadRealModels};
