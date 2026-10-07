@@ -15,7 +15,7 @@ function patchLog(){
   if(typeof log!=='function')return false;
   const oldLog=log;
   log=function(message){
-    const text=String(message??'');const ev=$('event');
+    const text=String(message??'');const ev=$('event');if(ev)ev.dataset.matchMessage=text;
     if(ev){let team=null,rest=text;if(/^Sarı-Lacivert\s+/i.test(text)){team='A';rest=text.replace(/^Sarı-Lacivert\s+/i,'');}else if(/^Sarı-Kırmızı\s+/i.test(text)){team='B';rest=text.replace(/^Sarı-Kırmızı\s+/i,'');}if(team){ev.innerHTML=jerseyHtml(team)+`<span>${rest}</span>`;return;}}
     return oldLog.call(this,message);
   };
