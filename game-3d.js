@@ -13,7 +13,7 @@ const ASSETS={
 };
 
 const HOME={A:{x:-3.25,z:1.75},B:{x:-1.55,z:2.0}};
-const VIEW={idle:{position:[-3.7,2.05,5.3],target:[-.7,1.2,.6]},shot:{position:[-3,2.05,5.0],target:[.45,1.05,0]}};
+const VIEW={idle:{position:[-6,2.25,4.4],target:[-.65,1.1,.2]},shot:{position:[-6.5,2.3,4.3],target:[.4,1.05,0]}};
 const RUN_MS=1100,TURN_MS=190,KICK_CONTACT_MS=180;
 const PLAYER_A_TIMING={turn:300,run:1350,contact:300};
 const cameraTarget={x:VIEW.idle.target[0],y:VIEW.idle.target[1],z:VIEW.idle.target[2]};
@@ -73,9 +73,12 @@ function createKeeper(){
 function createGoal(){
   const g=new THREE.Group(),white=mat(0xf5f7fb,.45,.05),post=.055;const add=(geo,x,y,z)=>{const m=mesh(geo,white);m.position.set(x,y,z);g.add(m)};
   add(new THREE.BoxGeometry(post,2.25,post),4.42,1.125,-1.55);add(new THREE.BoxGeometry(post,2.25,post),4.42,1.125,1.55);add(new THREE.BoxGeometry(post,post,3.15),4.42,2.23,0);
-  const netMat=new THREE.LineBasicMaterial({color:0xcdd5df,transparent:true,opacity:.55});
-  for(let y=.2;y<=2.2;y+=.25){g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(4.43,y,-1.55),new THREE.Vector3(4.43,y,1.55)]),netMat))}
-  for(let z=-1.5;z<=1.5;z+=.25){g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(4.43,.15,z),new THREE.Vector3(4.43,2.2,z)]),netMat))}
+  const netMat=new THREE.LineBasicMaterial({color:0xcdd5df,transparent:true,opacity:.62});
+  const line=(a,b)=>g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...a),new THREE.Vector3(...b)]),netMat));
+  // The mouth is open. Mesh panels belong behind, beside and above the goal.
+  for(let y=.15;y<=2.23;y+=.20){line([5.15,y,-1.55],[5.15,y,1.55]);for(const z of [-1.55,1.55])line([4.42,y,z],[5.15,y,z]);}
+  for(let z=-1.55;z<=1.55;z+=.20){line([5.15,.15,z],[5.15,2.23,z]);line([4.42,2.23,z],[5.15,2.23,z]);}
+  for(let x=4.42;x<=5.15;x+=.18){for(const z of [-1.55,1.55])line([x,.15,z],[x,2.23,z]);line([x,2.23,-1.55],[x,2.23,1.55]);}
   return g;
 }
 function addStadium(){
@@ -258,7 +261,7 @@ function groundKick(player,weight){
 }
 function beginShot(team){
   if(!playerA||!playerB||!keeper||!ball)return;
-  if(animation&&animation.team===team&&['turn','run','kick','ball','awaitResult','outcome'].includes(animation.phase))return;
+  if(animation&&animation.team===team&&['turn','run','kick','ball','awaitResult','outcome','net'].includes(animation.phase))return;
   resetPose();const p=team==='A'?playerA:playerB;
   animation={phase:'turn',team,start:performance.now(),player:p,result:null,timing:team==='A'?PLAYER_A_TIMING:{turn:TURN_MS,run:RUN_MS,contact:KICK_CONTACT_MS},runYaw:Math.atan2(-1.9-p.userData.homeX,-p.userData.homeZ)};
 }
@@ -291,10 +294,10 @@ function runAnimation(t){
     u=clamp((t-a.start)/650,0,1);
     const targetZ=a.team==='A'?.78:-.78;
     // Both outcomes share the approach. Never cross the goal before its result arrives.
-    ball.position.set(lerp(-1,3.45,u),.14+Math.sin(u*Math.PI)*.8,lerp(0,targetZ,u));
+    ball.position.set(lerp(-1,3.45,u),lerp(.14,.90,u)+Math.sin(u*Math.PI)*.55,lerp(0,targetZ,u));
     ball.rotation.x+=.25;ball.rotation.z+=.18;
     if(a.result==='save'){
-      keeper.position.z=lerp(0,targetZ*.82,smooth(u));
+      keeper.position.z=lerp(0,targetZ-Math.sign(targetZ)*Math.sin(.85)*1.3,smooth(u));
       if(!keeper.userData.real)keeper.rotation.x=lerp(0,.85*(targetZ>0?1:-1),smooth(u));
     }
     if(u>=1){a.phase=a.result?'outcome':'awaitResult';a.start=t;}
@@ -305,16 +308,22 @@ function runAnimation(t){
     const targetZ=a.team==='A'?.78:-.78;
     if(a.result==='goal'){
       // The goal plane is x=4.42; only a confirmed goal may travel beyond it.
-      ball.position.set(lerp(3.45,4.90,u),.14+Math.sin(u*Math.PI)*.20,targetZ);
+      ball.position.set(lerp(3.45,5.01,u),lerp(.90,.70,u)+Math.sin(u*Math.PI)*.12,targetZ);
       keeper.position.z=lerp(0,-targetZ*.25,smooth(u));
     }else{
       // A save rebounds away from the net and outside the central shooting lane.
-      ball.position.set(lerp(3.45,2.65,u),.14+Math.sin(u*Math.PI)*.35,lerp(targetZ,Math.sign(targetZ)*2.1,u));
-      keeper.position.z=targetZ*.82;
+      ball.position.set(lerp(3.45,2.35,u),lerp(.90,.14,u)+Math.sin(u*Math.PI)*.30,lerp(targetZ,Math.sign(targetZ)*1.85,u));
+      keeper.position.z=targetZ-Math.sign(targetZ)*Math.sin(.85)*1.3;
       if(!keeper.userData.real)keeper.rotation.x=.85*(targetZ>0?1:-1);
       else if(!a.savePlayed){playAction(keeper,targetZ>0?'saveRight':'saveLeft');a.savePlayed=true;}
     }
     ball.rotation.x+=.25;ball.rotation.z+=.18;
+    if(u>=1){a.phase=a.result==='goal'?'net':'result';a.start=t;}
+  }else if(a.phase==='net'){
+    u=clamp((t-a.start)/420,0,1);
+    // Contact with the rear net reverses the ball and drops it inside the goal.
+    ball.position.set(lerp(5.01,4.68,smooth(u)),lerp(.70,.14,u)+Math.sin(u*Math.PI)*.08,a.team==='A'?.78:-.78);
+    ball.rotation.x+=.08;
     if(u>=1){a.phase='result';a.start=t;}
   }else if(a.phase==='result'){
     u=clamp((t-a.start)/850,0,1);
@@ -345,4 +354,5 @@ async function boot(){if(installed)return;const shell=addStageShell();if(!shell)
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.AIFootball3D={beginShot,finishShot,reset:resetPose,reloadModels:tryLoadRealModels};
 })();
+
 
