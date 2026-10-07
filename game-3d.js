@@ -7,7 +7,7 @@ let playerALoad=null,pendingPlayerA=null,pendingPlayerB=null;
 const mixers=[];
 
 const ASSETS={
-  playerA:'./assets/models/player-a.glb?v=3',
+  playerA:'./assets/models/player-a.glb?v=4',
   playerB:'./assets/models/player-b-existing.glb?v=1',
   keeper:'./assets/models/goalkeeper.glb'
 };
@@ -15,6 +15,7 @@ const ASSETS={
 const HOME={A:{x:-3.25,z:1.75},B:{x:-1.55,z:2.0}};
 const VIEW={idle:{position:[-3.7,2.05,5.3],target:[-.7,1.2,.6]},shot:{position:[-3,2.05,5.0],target:[.45,1.05,0]}};
 const RUN_MS=1100,TURN_MS=190,KICK_CONTACT_MS=180;
+const PLAYER_A_TIMING={turn:300,run:1350,contact:300};
 const cameraTarget={x:VIEW.idle.target[0],y:VIEW.idle.target[1],z:VIEW.idle.target[2]};
 const facingCamera=home=>Math.atan2(VIEW.idle.position[0]-home.x,VIEW.idle.position[2]-home.z);
 const angleLerp=(a,b,t)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*t;
@@ -118,7 +119,23 @@ function prepareActor(gltf,type,team){
   root.userData.kickRig={hips:model.getObjectByName('mixamorigHips'),right:[model.getObjectByName('mixamorigRightUpLeg'),model.getObjectByName('mixamorigRightLeg'),model.getObjectByName('mixamorigRightFoot')],left:[model.getObjectByName('mixamorigLeftUpLeg'),model.getObjectByName('mixamorigLeftLeg'),model.getObjectByName('mixamorigLeftFoot')]};
   root.position.set(HOME[team].x,0,HOME[team].z);root.rotation.y=root.userData.baseRotationY;playAction(root,'idle');return root;
 }
-function playAction(actor,name){if(!actor?.userData?.real)return;const actions=actor.userData.actions||{};const next=actions[name]||actions.idle;if(!next)return;for(const a of Object.values(actions)){if(a!==next)a.fadeOut(.12)}next.reset();next.enabled=true;next.setEffectiveWeight(1);next.setEffectiveTimeScale(name==='kick'?actor.userData.kickContactTime/.18:1);next.fadeIn(.12);if(name==='idle'||name==='run'){next.setLoop(THREE.LoopRepeat,Infinity);next.clampWhenFinished=false}else{next.setLoop(THREE.LoopOnce,1);next.clampWhenFinished=true}next.play();}
+function playAction(actor,name){
+  if(!actor?.userData?.real)return;
+  const data=actor.userData,actions=data.actions||{},next=actions[name]||actions.idle;
+  if(!next)return;
+  if(data.activeAction===next&&next.isRunning())return;
+  const previous=data.activeAction;
+  const contact=data.team==='A'?PLAYER_A_TIMING.contact:KICK_CONTACT_MS;
+  next.reset().setEffectiveWeight(1).setEffectiveTimeScale(name==='kick'?data.kickContactTime/(contact/1000):1);
+  next.enabled=true;
+  next.setLoop(name==='idle'||name==='run'?THREE.LoopRepeat:THREE.LoopOnce,name==='idle'||name==='run'?Infinity:1);
+  next.clampWhenFinished=name!=='idle'&&name!=='run';
+  next.play();
+  const blend=data.team==='A'?(name==='kick'?.20:.24):.12;
+  if(previous&&previous!==next){next.crossFadeFrom(previous,blend,false)}else{next.fadeIn(blend)}
+  for(const action of Object.values(actions)){if(action!==next&&action!==previous)action.stop()}
+  data.activeAction=next;
+}
 function installPlayerA(){
   if(!pendingPlayerA||!pendingPlayerB||animation)return;
   scene.remove(playerA,playerB);playerA=pendingPlayerA;playerB=pendingPlayerB;pendingPlayerA=null;pendingPlayerB=null;
@@ -217,7 +234,7 @@ function beginShot(team){
   if(!playerA||!playerB||!keeper||!ball)return;
   if(animation&&animation.team===team&&['turn','run','kick','ball','awaitResult'].includes(animation.phase))return;
   resetPose();const p=team==='A'?playerA:playerB;
-  animation={phase:'turn',team,start:performance.now(),player:p,result:null,runYaw:Math.atan2(-1.9-p.userData.homeX,-p.userData.homeZ)};
+  animation={phase:'turn',team,start:performance.now(),player:p,result:null,timing:team==='A'?PLAYER_A_TIMING:{turn:TURN_MS,run:RUN_MS,contact:KICK_CONTACT_MS},runYaw:Math.atan2(-1.9-p.userData.homeX,-p.userData.homeZ)};
 }
 function finishShot(team,result){
   if(!animation||animation.team!==team)beginShot(team);
@@ -229,10 +246,10 @@ function enterKick(a,t){a.phase='kick';a.start=t;if(a.player.userData.real)playA
 function runAnimation(t){
   const a=animation,p=a.player;if(!p)return;let u;
   if(a.phase==='turn'){
-    u=clamp((t-a.start)/TURN_MS,0,1);p.rotation.y=angleLerp(p.userData.baseRotationY,a.runYaw,smooth(u));
+    u=clamp((t-a.start)/a.timing.turn,0,1);p.rotation.y=angleLerp(p.userData.baseRotationY,a.runYaw,smooth(u));
     if(u>=1){a.phase='run';a.start=t;(a.team==='A'?playerB:playerA).visible=false;if(p.userData.real)playAction(p,'run');}
   }else if(a.phase==='run'){
-    u=clamp((t-a.start)/RUN_MS,0,1);
+    u=clamp((t-a.start)/a.timing.run,0,1);
     // A curved approach brings the player into the shot without an idle pause.
     const v=1-u;p.position.x=v*v*p.userData.homeX+2*v*u*(-2.45)+u*u*(-1.9);p.position.z=v*v*p.userData.homeZ+2*v*u*.12;
     const dx=2*v*(-2.45-p.userData.homeX)+2*u*.55,dz=2*v*(.12-p.userData.homeZ)-2*u*.12;
@@ -240,7 +257,7 @@ function runAnimation(t){
     if(!p.userData.real){p.userData.ll.rotation.x=Math.sin(u*Math.PI*8)*.55;p.userData.rl.rotation.x=-p.userData.ll.rotation.x;p.userData.la.rotation.x=-p.userData.ll.rotation.x*.7;p.userData.ra.rotation.x=p.userData.ll.rotation.x*.7;}
     if(u>=1)enterKick(a,t);
   }else if(a.phase==='kick'){
-    u=clamp((t-a.start)/KICK_CONTACT_MS,0,1);p.position.x=lerp(-1.9,-1.65,u);p.position.z=0;p.rotation.y=Math.PI/2;
+    u=clamp((t-a.start)/a.timing.contact,0,1);p.position.x=lerp(-1.9,-1.65,u);p.position.z=0;p.rotation.y=Math.PI/2;
     if(!p.userData.real){p.userData.rl.rotation.x=-1.0*Math.sin(u*Math.PI*.5);p.userData.la.rotation.z=-.18-.45*Math.sin(u*Math.PI*.5);}
     groundKick(p,smooth(u));if(u>=1){a.phase='ball';a.start=t;}
   }else if(a.phase==='ball'){
