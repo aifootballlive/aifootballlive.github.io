@@ -212,6 +212,7 @@ function animate(){
     idleActor(playerB,t,1.7);
     idleKeeper(t);
   }
+  stabilizeHead(playerA,dt);
   renderer.render(scene,camera);
 }
 function stabilizeHead(actor,dt){
@@ -344,3 +345,4 @@ async function boot(){if(installed)return;const shell=addStageShell();if(!shell)
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.AIFootball3D={beginShot,finishShot,reset:resetPose,reloadModels:tryLoadRealModels};
 })();
+
