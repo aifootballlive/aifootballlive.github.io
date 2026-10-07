@@ -117,6 +117,13 @@ function prepareActor(gltf,type,team){
   }
   root.userData={real:true,type,team,actions,mixer,homeX:HOME[team].x,homeZ:HOME[team].z,baseRotationY:facingCamera(HOME[team]),kickContactTime:model.userData.kickContactTime??7/30};
   root.userData.kickRig={hips:model.getObjectByName('mixamorigHips'),right:[model.getObjectByName('mixamorigRightUpLeg'),model.getObjectByName('mixamorigRightLeg'),model.getObjectByName('mixamorigRightFoot')],left:[model.getObjectByName('mixamorigLeftUpLeg'),model.getObjectByName('mixamorigLeftLeg'),model.getObjectByName('mixamorigLeftFoot')]};
+  if(team==='A'){
+    model.updateMatrixWorld(true);
+    root.userData.headControl=['mixamorigNeck','mixamorigHead'].map(name=>{
+      const bone=model.getObjectByName(name);
+      return bone?{bone,restWorld:bone.getWorldQuaternion(new THREE.Quaternion()),smoothed:null,limit:name.endsWith('Head')?.20:.30}:null;
+    }).filter(Boolean);
+  }
   root.position.set(HOME[team].x,0,HOME[team].z);root.rotation.y=root.userData.baseRotationY;playAction(root,'idle');return root;
 }
 function playAction(actor,name){
@@ -167,7 +174,7 @@ function idleActor(actor,t,phase=0){
   if(!actor||animation)return;
   const s=Math.sin(t*.0024+phase),s2=Math.sin(t*.00125+phase*.7);
   actor.position.y=.018+s*.018;
-  actor.rotation.z=s2*.022;
+  actor.rotation.z=actor.userData.real&&actor.userData.team==='A'?0:s2*.022;
   if(actor.userData.real){
     const hasIdle=!!actor.userData.actions?.idle;
     if(!hasIdle)actor.rotation.x=Math.sin(t*.0017+phase)*.012;
@@ -206,6 +213,24 @@ function animate(){
     idleKeeper(t);
   }
   renderer.render(scene,camera);
+}
+function stabilizeHead(actor,dt){
+  const controls=actor?.userData?.headControl;if(!controls?.length)return;
+  actor.updateMatrixWorld(true);
+  const facing=actor.getWorldQuaternion(new THREE.Quaternion()),k=1-Math.exp(-dt*12);
+  for(const control of controls){
+    const {bone,restWorld,limit}=control;
+    const upright=facing.clone().multiply(restWorld);
+    const animated=bone.getWorldQuaternion(new THREE.Quaternion());
+    const angle=upright.angleTo(animated);
+    const target=upright.clone().slerp(animated,angle>0?Math.min(.25,limit/angle):0);
+    if(!control.smoothed)control.smoothed=target.clone();else control.smoothed.slerp(target,k);
+    const offset=upright.angleTo(control.smoothed);
+    if(offset>limit)control.smoothed.copy(upright.clone().slerp(control.smoothed,limit/offset));
+    const parent=bone.parent.getWorldQuaternion(new THREE.Quaternion()).invert();
+    bone.quaternion.copy(parent.multiply(control.smoothed));
+    bone.updateWorldMatrix(false,true);
+  }
 }
 function updateCamera(dt){
   const view=animation?VIEW.shot:VIEW.idle,k=1-Math.exp(-dt*4.5);
