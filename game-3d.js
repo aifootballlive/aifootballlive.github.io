@@ -7,7 +7,8 @@ let playerALoad=null,pendingPlayerA=null,pendingPlayerB=null;
 const mixers=[];
 
 const ASSETS={
-  playerA:'./assets/models/player-a.glb?v=2',
+  playerA:'./assets/models/player-a.glb?v=3',
+  playerB:'./assets/models/player-b-existing.glb?v=1',
   keeper:'./assets/models/goalkeeper.glb'
 };
 
@@ -131,7 +132,7 @@ async function tryLoadRealModels(){
   playerALoad=(async()=>{
     try{
       setLabel('OYUNCULAR YÜKLENİYOR…');
-      const loader=new GLTFLoader();const [ga,gb]=await Promise.all([loader.loadAsync(ASSETS.playerA),loader.loadAsync(ASSETS.playerA)]);
+      const loader=new GLTFLoader();const [ga,gb]=await Promise.all([loader.loadAsync(ASSETS.playerA),loader.loadAsync(ASSETS.playerB)]);
       pendingPlayerA=prepareActor(ga,'player','A');pendingPlayerB=prepareActor(gb,'player','B');
       // A shot already in progress must finish with its original actor.
       installPlayerA();
