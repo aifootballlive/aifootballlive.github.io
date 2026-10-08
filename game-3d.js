@@ -7,8 +7,8 @@ let playerALoad=null,pendingPlayerA=null,pendingPlayerB=null;
 const mixers=[];
 
 const ASSETS={
-  playerA:'./assets/models/player-a.glb?v=4',
-  playerB:'./assets/models/player-b-existing.glb?v=1',
+  playerA:'./assets/models/player-a.glb?v=5',
+  playerB:'./assets/models/player-b-existing.glb?v=2',
   keeper:'./assets/models/goalkeeper.glb'
 };
 
@@ -147,27 +147,38 @@ function playAction(actor,name){
   data.activeAction=next;
 }
 function installPlayerA(){
-  if(!pendingPlayerA||!pendingPlayerB||animation)return;
-  scene.remove(playerA,playerB);playerA=pendingPlayerA;playerB=pendingPlayerB;pendingPlayerA=null;pendingPlayerB=null;
-  scene.add(playerA,playerB);mixers.push(playerA.userData.mixer,playerB.userData.mixer);realMode=true;
-  setLabel('3D MAÇ SAHNESİ');
+  if(animation)return;
+  for(const team of ['A','B']){
+    const next=team==='A'?pendingPlayerA:pendingPlayerB;if(!next)continue;
+    const old=team==='A'?playerA:playerB;scene.remove(old);
+    if(old?.userData?.mixer){const i=mixers.indexOf(old.userData.mixer);if(i>=0)mixers.splice(i,1);}
+    if(team==='A'){playerA=next;pendingPlayerA=null}else{playerB=next;pendingPlayerB=null}
+    scene.add(next);mixers.push(next.userData.mixer);
+  }
+  realMode=!!(playerA?.userData?.real||playerB?.userData?.real);
+  if(realMode)setLabel('3D MAÇ SAHNESİ');
 }
 async function tryLoadRealModels(){
-  if(realMode||pendingPlayerA)return;
+  if(playerA?.userData?.real&&playerB?.userData?.real)return;
   if(playerALoad)return playerALoad;
   if(!GLTFLoader){setLabel('3D MAÇ SAHNESİ • MODEL BEKLENİYOR');return}
   playerALoad=(async()=>{
-    try{
-      setLabel('OYUNCULAR YÜKLENİYOR…');
-      const loader=new GLTFLoader();const [ga,gb]=await Promise.all([loader.loadAsync(ASSETS.playerA),loader.loadAsync(ASSETS.playerB)]);
-      pendingPlayerA=prepareActor(ga,'player','A');pendingPlayerB=prepareActor(gb,'player','B');
-      // A shot already in progress must finish with its original actor.
-      installPlayerA();
-    }catch(e){
-      pendingPlayerA=null;pendingPlayerB=null;
-      console.warn('Player A yüklenemedi; prosedürel model devam ediyor',e);
-      setLabel('3D MAÇ SAHNESİ • BASİT MODEL');
-    }finally{playerALoad=null}
+    setLabel('OYUNCULAR YÜKLENİYOR…');
+    let loader;
+    try{loader=new GLTFLoader();const {MeshoptDecoder}=await import('./assets/vendor/meshopt-decoder.mjs');await MeshoptDecoder.ready;loader.setMeshoptDecoder(MeshoptDecoder)}
+    catch(e){console.warn('Model çözücü yüklenemedi; prosedürel model devam ediyor',e);setLabel('3D MAÇ SAHNESİ • BASİT MODEL');playerALoad=null;return}
+    const load=async team=>{
+      if((team==='A'?playerA:playerB)?.userData?.real)return;
+      try{
+        const gltf=await loader.loadAsync(team==='A'?ASSETS.playerA:ASSETS.playerB);
+        const actor=prepareActor(gltf,'player',team);
+        if(team==='A')pendingPlayerA=actor;else pendingPlayerB=actor;
+        // Show each completed model immediately, or after the active shot finishes.
+        installPlayerA();
+      }catch(e){console.warn('Oyuncu '+team+' yüklenemedi; prosedürel model devam ediyor',e)}
+    };
+    try{await Promise.all([load('A'),load('B')]);if(!realMode&&!pendingPlayerA&&!pendingPlayerB)setLabel('3D MAÇ SAHNESİ • BASİT MODEL')}
+    finally{playerALoad=null}
   })();
   return playerALoad;
 }
@@ -354,5 +365,7 @@ async function boot(){if(installed)return;const shell=addStageShell();if(!shell)
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.AIFootball3D={beginShot,finishShot,reset:resetPose,reloadModels:tryLoadRealModels};
 })();
+
+
 
 
