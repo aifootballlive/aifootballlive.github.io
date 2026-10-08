@@ -1,9 +1,9 @@
 export const STORAGE_KEY = 'aifootball.live-demo.v1';
 export const DEFAULT_CONFIG = {
   teams: [
-    {id:'A', name:'Sarı-Lacivert', shortName:'SL', color:'#f5cc32', secondaryColor:'#152b59', model:'./assets/models/player-a.glb?v=5'},
-    {id:'B', name:'Sarı-Kırmızı', shortName:'SK', color:'#e63240', secondaryColor:'#ffcc32', model:'./assets/models/player-a.glb?v=5'},
-    {id:'C', name:'Yeşil-Beyaz', shortName:'YB', color:'#27845f', secondaryColor:'#f1f4ef', model:'./assets/models/player-a.glb?v=5'},
+    {id:'A', name:'Sarı-Lacivert', shortName:'SL', color:'#f5cc32', secondaryColor:'#152b59', model:'./assets/models/player-a.glb?v=6'},
+    {id:'B', name:'Sarı-Kırmızı', shortName:'SK', color:'#e63240', secondaryColor:'#ffcc32', model:'./assets/models/player-a.glb?v=6'},
+    {id:'C', name:'Yeşil-Beyaz', shortName:'YB', color:'#27845f', secondaryColor:'#f1f4ef', model:'./assets/models/player-a.glb?v=6'},
   ],
   giftMappings: [
     {giftId:'rose', name:'Rose', teamId:'A', shots:1, points:1},

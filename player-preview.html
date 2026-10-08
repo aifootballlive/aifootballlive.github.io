@@ -1,0 +1,18 @@
+<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Oyuncu • Gerçek 3D önizleme</title>
+<style>body{margin:0;background:#202630;color:#fff;font:15px system-ui}canvas{display:block}nav{position:fixed;top:16px;left:16px;z-index:2;display:flex;gap:8px}button,a{border:1px solid #6c788d;background:#18202d;color:#fff;padding:12px;border-radius:8px;text-decoration:none}#status{position:fixed;bottom:16px;left:16px;right:16px;background:#18202dcc;padding:12px;border-radius:8px}</style>
+<nav><button id="face">Yüz</button><button id="body">Tam boy</button><a href="live/">Oyuna dön</a></nav><div id="status">3D model yükleniyor…</div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js';
+import {GLTFLoader} from 'https://esm.sh/three@0.169.0/examples/jsm/loaders/GLTFLoader.js';
+import {MeshoptDecoder} from './assets/vendor/meshopt-decoder.mjs';
+const scene=new THREE.Scene();scene.background=new THREE.Color('#28313b');
+const camera=new THREE.PerspectiveCamera(32,1,.01,50),renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;document.body.append(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xe6edf8,0x77716b,1.6));
+for(const [color,power,position] of [[0xffefe4,1.7,[-2,3,3]],[0xc7dbff,1,[2,2,2]],[0xffffff,1,[1,3,-2]]]){const light=new THREE.DirectionalLight(color,power);light.position.set(...position);scene.add(light);}
+let model,mixer,portrait=true;
+function frame(){camera.position.set(0,portrait?1.98:1.15,portrait?1.7:5.1);camera.lookAt(0,portrait?1.98:1.15,0);}
+function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();frame();}addEventListener('resize',resize);resize();
+document.querySelector('#face').onclick=()=>{portrait=true;frame()};document.querySelector('#body').onclick=()=>{portrait=false;frame()};
+try{const loader=new GLTFLoader();loader.setMeshoptDecoder(MeshoptDecoder);const gltf=await loader.loadAsync('./assets/models/player-a.glb?v=6');model=gltf.scene;model.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(model),height=bounds.max.y-bounds.min.y;model.scale.multiplyScalar(2.3/height);model.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(model);model.position.y-=b.min.y;scene.add(model);document.querySelector('#status').textContent='Oyunda kullanılan GLB modelinin gerçek zamanlı görüntüsü. Fotoğraf gerçekçiliği henüz sağlanmadı.';}catch(e){document.querySelector('#status').textContent='Model yüklenemedi: '+e.message;}
+renderer.setAnimationLoop(()=>renderer.render(scene,camera));
+</script></html>

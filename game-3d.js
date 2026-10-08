@@ -11,7 +11,7 @@ let demoTeams=[],teamGeneration=0,demoKeeperReady=false,SkeletonClone=null;
 const phaseEvent=phase=>{if(DEMO)window.dispatchEvent(new CustomEvent('football-scene-phase',{detail:{phase}}))};
 
 const ASSETS={
-  playerA:'./assets/models/player-a.glb?v=5',
+  playerA:'./assets/models/player-a.glb?v=6',
   playerB:'./assets/models/player-b-existing.glb?v=2',
   keeper:'./assets/models/goalkeeper.glb'
 };
@@ -118,7 +118,7 @@ function grassMaterial(){
 function setupScene(){
   const holder=document.getElementById('game3dCanvas');if(!holder)return;
   scene=new THREE.Scene();scene.background=new THREE.Color(0x0a1424);camera=new THREE.PerspectiveCamera(40,1,.1,100);camera.position.set(...VIEW.idle.position);camera.lookAt(...VIEW.idle.target);scene.fog=new THREE.Fog(0x0a1424,13,35);
-  renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;if('outputColorSpace' in renderer)renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;if('outputColorSpace' in renderer)renderer.outputColorSpace=THREE.SRGBColorSpace;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
   holder.appendChild(renderer.domElement);renderer.domElement.style.cssText='display:block;width:100%;height:100%';holder.style.cssText='width:100%;height:100%';
   scene.add(new THREE.HemisphereLight(0xdcecff,0x18331d,1.1));const sun=new THREE.DirectionalLight(0xffffff,2.8);sun.position.set(-3,8,4);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-10;sun.shadow.camera.right=10;sun.shadow.camera.top=10;sun.shadow.camera.bottom=-10;sun.shadow.bias=-.0003;sun.shadow.normalBias=.015;scene.add(sun);const fill=new THREE.DirectionalLight(0x86a7ff,1.1);fill.position.set(4,4,5);scene.add(fill);
@@ -376,7 +376,7 @@ function runAnimation(t){
 function removeActor(actor){if(!actor)return;scene.remove(actor);const i=mixers.indexOf(actor.userData.mixer);if(i>=0)mixers.splice(i,1);actor.userData.mixer?.stopAllAction();actor.traverse(o=>{if(o.isMesh){for(const material of Array.isArray(o.material)?o.material:[o.material]){if(material?.map?.userData.demoOwned)material.map.dispose();material?.dispose();}}});}
 function placeDemoActor(actor,index){
   const count=demoTeams.length;
-  const home={x:-3.1+(index%3)*.65,z:1.15+Math.floor(index/3)*.8};
+  const home={x:-3.85+(index%3)*.85,z:2.6+Math.floor(index/3)*.9};
   actor.userData.homeX=home.x;actor.userData.homeZ=home.z;actor.userData.baseRotationY=facingCamera(home);actor.userData.idlePhase=index*1.7;
   actor.position.set(home.x,0,home.z);actor.rotation.set(0,actor.userData.baseRotationY,0);
   if(actor.userData.real)playAction(actor,'idle');
@@ -415,7 +415,8 @@ async function configureTeams(teams){
   const load=async(team,i)=>{
     if(!team.model)return;
     try{
-      const source=await demoModel(team.model);if(generation!==teamGeneration)return;
+      const modelUrl=team.model.replace(/player-a\.glb(?:\?[^#]*)?$/, 'player-a.glb?v=6');
+      const source=await demoModel(modelUrl);if(generation!==teamGeneration)return;
       const actor=prepareActor({scene:SkeletonClone(source.scene),animations:source.animations},'player',team.id);
       recolorKit(actor,team.id==='A'?team.secondaryColor:team.color,team.id==='A'?team.color:team.secondaryColor);
       if(animation?.player===demoActors.get(team.id)){await waitForDemoIdle(generation);if(generation!==teamGeneration){actor.userData.mixer.stopAllAction();return;}}
