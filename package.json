@@ -1,0 +1,10 @@
+{
+  "name": "ai-football-live",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node football/server.mjs",
+    "test": "node --test football/tests/*.test.mjs"
+  },
+  "dependencies": {"ws": "^8.18.3"}
+}
