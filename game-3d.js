@@ -12,8 +12,8 @@ const ASSETS={
   keeper:'./assets/models/goalkeeper.glb'
 };
 
-const HOME={A:{x:-3.25,z:1.75},B:{x:-1.55,z:2.0}};
-const VIEW={idle:{position:[-6,2.25,4.4],target:[-.65,1.1,.2]},shot:{position:[-6.5,2.3,4.3],target:[.4,1.05,0]}};
+const HOME={A:{x:-3.25,z:1.75},B:{x:-2.9,z:2.65}};
+const VIEW={idle:{position:[-4.5,2.05,6.0],target:[.8,1.10,0]},shot:{position:[-4.3,2.05,5.8],target:[1.0,1.05,0]}};
 const RUN_MS=1100,TURN_MS=190,KICK_CONTACT_MS=180;
 const PLAYER_A_TIMING={turn:300,run:1350,contact:300};
 const cameraTarget={x:VIEW.idle.target[0],y:VIEW.idle.target[1],z:VIEW.idle.target[2]};
@@ -72,38 +72,58 @@ function createKeeper(){
 }
 function createGoal(){
   const g=new THREE.Group(),white=mat(0xf5f7fb,.45,.05),post=.055;const add=(geo,x,y,z)=>{const m=mesh(geo,white);m.position.set(x,y,z);g.add(m)};
-  add(new THREE.BoxGeometry(post,2.25,post),4.42,1.125,-1.55);add(new THREE.BoxGeometry(post,2.25,post),4.42,1.125,1.55);add(new THREE.BoxGeometry(post,post,3.15),4.42,2.23,0);
+  add(new THREE.BoxGeometry(post,2.45,post),4.42,1.225,-2.4);add(new THREE.BoxGeometry(post,2.45,post),4.42,1.225,2.4);add(new THREE.BoxGeometry(post,post,4.85),4.42,2.43,0);
   const netMat=new THREE.LineBasicMaterial({color:0xcdd5df,transparent:true,opacity:.62});
   const line=(a,b)=>g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...a),new THREE.Vector3(...b)]),netMat));
   // The mouth is open. Mesh panels belong behind, beside and above the goal.
-  for(let y=.15;y<=2.23;y+=.20){line([5.15,y,-1.55],[5.15,y,1.55]);for(const z of [-1.55,1.55])line([4.42,y,z],[5.15,y,z]);}
-  for(let z=-1.55;z<=1.55;z+=.20){line([5.15,.15,z],[5.15,2.23,z]);line([4.42,2.23,z],[5.15,2.23,z]);}
-  for(let x=4.42;x<=5.15;x+=.18){for(const z of [-1.55,1.55])line([x,.15,z],[x,2.23,z]);line([x,2.23,-1.55],[x,2.23,1.55]);}
+  for(let y=.15;y<=2.43;y+=.20){line([5.15,y,-2.4],[5.15,y,2.4]);for(const z of [-2.4,2.4])line([4.42,y,z],[5.15,y,z]);}
+  for(let z=-2.4;z<=2.4;z+=.20){line([5.15,.15,z],[5.15,2.43,z]);line([4.42,2.43,z],[5.15,2.43,z]);}
+  for(let x=4.42;x<=5.15;x+=.18){for(const z of [-2.4,2.4])line([x,.15,z],[x,2.43,z]);line([x,2.43,-2.4],[x,2.43,2.4]);}
   return g;
 }
 function addStadium(){
   const back=new THREE.Group();
   const board=(x,z,color)=>{const m=mesh(new THREE.BoxGeometry(2.5,.7,.12),mat(color));m.position.set(x,.4,z);back.add(m);};
   for(let i=0;i<5;i++)board(-5+i*2.5,-3.25,i<3?0x15387b:0xaf2231);
-  for(let row=0;row<4;row++){
+  for(let row=0;row<9;row++){
     const terrace=mesh(new THREE.BoxGeometry(22,.35,1.1),mat(0x202838));terrace.position.set(0,.8+row*.55,-4.2-row*.95);back.add(terrace);
     const crowd=new THREE.InstancedMesh(new THREE.SphereGeometry(.105,6,5),mat(0xb0a397),64);const matrix=new THREE.Matrix4();
     for(let i=0;i<64;i++){matrix.makeTranslation(-10.2+i*.32,.98+row*.55,-4.15-row*.95);crowd.setMatrixAt(i,matrix);crowd.setColorAt(i,new THREE.Color([0x183f9b,0xffce21,0xbe2539,0x8b7771][(i+row)%4]));}back.add(crowd);
   }
   for(const x of [-6,6]){const post=mesh(new THREE.CylinderGeometry(.05,.07,6,8),mat(0x596779));post.position.set(x,3,-4);back.add(post);const lamp=mesh(new THREE.BoxGeometry(1.3,.18,.2),new THREE.MeshStandardMaterial({color:0xe9f3ff,emissive:0x94baff,emissiveIntensity:2}));lamp.position.set(x,6,-4);back.add(lamp);}
+  for(let row=0;row<9;row++){
+    const terrace=mesh(new THREE.BoxGeometry(1.15,.35,18),mat(0x202838));terrace.position.set(7.2+row*.95,.8+row*.55,0);back.add(terrace);
+    const crowd=new THREE.InstancedMesh(new THREE.SphereGeometry(.10,6,5),mat(0x918879),56),m=new THREE.Matrix4();
+    for(let i=0;i<56;i++){m.makeTranslation(7.15+row*.95,.98+row*.55,-8.6+i*.31);crowd.setMatrixAt(i,m);crowd.setColorAt(i,new THREE.Color([0x182552,0xe7c84c,0x9f2933,0x67574b][(i+row)%4]));}back.add(crowd);
+  }
+  for(const [z,color,label] of [[-2.25,'#142349','SARI-LACİVERT'],[2.25,'#a32128','SARI-KIRMIZI']]){
+    const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const ctx=canvas.getContext('2d');ctx.fillStyle=color;ctx.fillRect(0,0,1024,256);ctx.fillStyle='#ffdc35';ctx.fillRect(0,0,50,256);ctx.font='bold 76px Arial';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText(label,540,158);const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;
+    const board=mesh(new THREE.BoxGeometry(.12,.75,3.2),new THREE.MeshStandardMaterial({map:tex,roughness:.8}));board.position.set(5.6,.45,z);back.add(board);
+  }
   scene.add(back);
+}
+function grassMaterial(){
+  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;const ctx=canvas.getContext('2d'),data=ctx.createImageData(512,512);
+  let seed=1729;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
+  for(let i=0;i<data.data.length;i+=4){const n=random()*30;data.data[i]=32+n*.6;data.data[i+1]=63+n;data.data[i+2]=22+n*.4;data.data[i+3]=255;}
+  ctx.putImageData(data,0,0);for(let i=0;i<25000;i++){const x=random()*512,y=random()*512;ctx.strokeStyle=i%2?'rgba(154,174,71,.22)':'rgba(17,41,12,.26)';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+random()*2,y-2-random()*5);ctx.stroke();}
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(18,12);texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+  return new THREE.MeshStandardMaterial({map:texture,roughness:.93,metalness:0});
 }
 function setupScene(){
   const holder=document.getElementById('game3dCanvas');if(!holder)return;
   scene=new THREE.Scene();scene.background=new THREE.Color(0x0a1424);camera=new THREE.PerspectiveCamera(40,1,.1,100);camera.position.set(...VIEW.idle.position);camera.lookAt(...VIEW.idle.target);scene.fog=new THREE.Fog(0x0a1424,13,35);
   renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;if('outputColorSpace' in renderer)renderer.outputColorSpace=THREE.SRGBColorSpace;
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
   holder.appendChild(renderer.domElement);renderer.domElement.style.cssText='display:block;width:100%;height:100%';holder.style.cssText='width:100%;height:100%';
-  scene.add(new THREE.HemisphereLight(0xdcecff,0x18331d,2.0));const sun=new THREE.DirectionalLight(0xffffff,2.8);sun.position.set(-3,8,4);sun.castShadow=true;scene.add(sun);const fill=new THREE.DirectionalLight(0x86a7ff,1.1);fill.position.set(4,4,5);scene.add(fill);
-  const pitch=mesh(new THREE.PlaneGeometry(12,6),mat(0x1f7438,.94,0));pitch.rotation.x=-Math.PI/2;pitch.receiveShadow=true;scene.add(pitch);
+  scene.add(new THREE.HemisphereLight(0xdcecff,0x18331d,1.1));const sun=new THREE.DirectionalLight(0xffffff,2.8);sun.position.set(-3,8,4);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-10;sun.shadow.camera.right=10;sun.shadow.camera.top=10;sun.shadow.camera.bottom=-10;sun.shadow.bias=-.0003;sun.shadow.normalBias=.015;scene.add(sun);const fill=new THREE.DirectionalLight(0x86a7ff,1.1);fill.position.set(4,4,5);scene.add(fill);
+  const pitch=mesh(new THREE.PlaneGeometry(36,24),grassMaterial());pitch.rotation.x=-Math.PI/2;pitch.receiveShadow=true;scene.add(pitch);
   const lineMat=new THREE.LineBasicMaterial({color:0xf5f7fa,transparent:true,opacity:.7});const pts=[new THREE.Vector3(-5.7,.012,-2.8),new THREE.Vector3(5.7,.012,-2.8),new THREE.Vector3(5.7,.012,2.8),new THREE.Vector3(-5.7,.012,2.8),new THREE.Vector3(-5.7,.012,-2.8)];scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),lineMat));
   addStadium();scene.add(createGoal());keeper=createKeeper();playerA=createPlayer('A');playerB=createPlayer('B');scene.add(keeper,playerA,playerB);
-  ball=mesh(new THREE.SphereGeometry(.14,24,18),mat(0xf7f7f7,.45,.02));ball.position.set(-1.0,.14,0);scene.add(ball);const spot=mesh(new THREE.CircleGeometry(.04,16),mat(0xffffff,.8,0));spot.rotation.x=-Math.PI/2;spot.position.set(-1,.013,0);scene.add(spot);
+  ball=mesh(new THREE.SphereGeometry(.14,24,18),mat(0xf7f7f7,.45,.02));ball.position.set(-1.0,.14,0);
+  const directions=new THREE.IcosahedronGeometry(1,0).getAttribute('position'),seen=new Set();
+  for(let i=0;i<directions.count;i++){const v=new THREE.Vector3().fromBufferAttribute(directions,i).normalize(),key=v.toArray().map(x=>x.toFixed(3)).join(',');if(seen.has(key))continue;seen.add(key);const patch=mesh(new THREE.CircleGeometry(.043,5),mat(0x101621,.7,0));patch.position.copy(v).multiplyScalar(.1405);patch.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),v);ball.add(patch);}
+  scene.add(ball);const spot=mesh(new THREE.CircleGeometry(.04,16),mat(0xffffff,.8,0));spot.rotation.x=-Math.PI/2;spot.position.set(-1,.013,0);scene.add(spot);
   clock=new THREE.Clock();resize();window.addEventListener('resize',resize);animate();tryLoadRealModels();
 }
 function normalizeModel(root,targetHeight=2.15){root.updateMatrixWorld(true);let box=new THREE.Box3().setFromObject(root);const size=new THREE.Vector3();box.getSize(size);if(size.y>0){const s=targetHeight/size.y;root.scale.multiplyScalar(s)}root.updateMatrixWorld(true);box=new THREE.Box3().setFromObject(root);root.position.y-=box.min.y;root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){if(Array.isArray(o.material))o.material=o.material.map(m=>m.clone());else o.material=o.material.clone()}}});}
@@ -365,6 +385,7 @@ async function boot(){if(installed)return;const shell=addStageShell();if(!shell)
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.AIFootball3D={beginShot,finishShot,reset:resetPose,reloadModels:tryLoadRealModels};
 })();
+
 
 
 
