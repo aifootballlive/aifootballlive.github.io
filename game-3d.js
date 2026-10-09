@@ -306,7 +306,7 @@ function animate(){
   requestAnimationFrame(animate);
   if(!renderer||!scene||!camera)return;
   const dt=Math.min(clock?.getDelta?.()||.016,.05),t=performance.now();
-  if(DEMO)for(const actor of [...demoActors.values(),keeper])restoreIdleBones(actor);
+  for(const actor of [playerA,playerB,keeper,...demoActors.values()])restoreIdleBones(actor);
   for(const m of mixers)m.update(dt);updateCamera(dt);
   installPlayerA();
   if(animation)runAnimation(t);
@@ -425,6 +425,8 @@ function runAnimation(t){
     if(u>=1){a.phase='result';a.start=t;}
   }else if(a.phase==='result'){
     u=clamp((t-a.start)/(DEMO?1100:850),0,1);
+    const bounce=Math.abs(Math.sin(u*Math.PI*4))*(1-u)*.10;
+    ball.position.y=.14+bounce;
     if(a.result==='goal'){p.rotation.y=angleLerp(Math.PI/2,p.userData.baseRotationY,smooth(u));if(!p.userData.real)p.position.y=Math.sin(u*Math.PI)*.18;}
     if(u>=1){if(DEMO){a.phase='return';a.start=t;p.userData.reactionWeight=0;if(p.userData.real)playAction(p,'run');}else{resetPose();animation=null;}}
   }else if(DEMO&&a.phase==='return'){
