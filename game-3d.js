@@ -21,7 +21,7 @@ const ASSETS={
 const HOME={A:{x:-4.50,z:1.50},B:{x:-4.20,z:2.50}};
 const VIEW={idle:{position:[-7.35,2.45,5.65],target:[.45,1.05,.05]},shot:{position:[-6.15,2.22,4.35],target:[1.15,.98,0]}};
 if(DEMO){VIEW.idle={position:[-12,4.6,0],target:[1,1.05,0]};VIEW.shot=VIEW.idle;}
-const GOAL_Z=DEMO?2.35:0,SHOT_Z=DEMO?.25:0;
+const GOAL_Z=DEMO?2.35:-.28,SHOT_Z=DEMO?.25:0;
 const shotSide=team=>team==='A'?1:team==='B'?-1:.35;
 const shotTarget=team=>GOAL_Z+shotSide(team)*(DEMO?.60:.78);
 const RUN_MS=1100,TURN_MS=190,KICK_CONTACT_MS=180;
@@ -86,7 +86,7 @@ function createKeeper(){
   const armGeo=new THREE.CapsuleGeometry(.075,.54,5,8),legGeo=new THREE.CapsuleGeometry(.095,.62,5,8);
   const la=mesh(armGeo,skin),ra=mesh(armGeo,skin);la.position.set(-.4,1.38,0);ra.position.set(.4,1.38,0);la.rotation.z=-.4;ra.rotation.z=.4;root.add(la,ra);
   const ll=mesh(legGeo,dark),rl=mesh(legGeo,dark);ll.position.set(-.15,.45,0);rl.position.set(.15,.45,0);root.add(ll,rl);
-  root.userData={real:false,la,ra,ll,rl,homeX:3.75,homeZ:0};root.position.set(3.75,0,0);root.rotation.y=-Math.PI/2;return root;
+  root.userData={real:false,la,ra,ll,rl,homeX:2.95,homeZ:GOAL_Z};root.position.set(2.95,0,GOAL_Z);root.rotation.y=-Math.PI/2;return root;
 }
 function createGoal(){
   const g=new THREE.Group(),white=mat(0xf7f8fb,.34,.06);
@@ -111,7 +111,7 @@ function createGoal(){
   for(let x=goalX;x<=backX;x+=.16){
     for(const z of [-halfW,halfW])line([x,.08,z],[x,height,z]);
   }
-  if(!DEMO){for(const child of g.children)child.position.x-=goalX;g.position.set(goalX-.98,0,.28);g.rotation.y=THREE.MathUtils.degToRad(12);}
+  if(!DEMO){for(const child of g.children)child.position.x-=goalX;g.position.set(goalX-1.55,0,GOAL_Z);g.rotation.y=THREE.MathUtils.degToRad(12);}
   return g;
 }
 function addStadium(){
@@ -197,11 +197,10 @@ function addStadium(){
     const board=mesh(new THREE.BoxGeometry(w,.62,.10),new THREE.MeshStandardMaterial({map:tex,emissiveMap:tex,emissive:0xffffff,emissiveIntensity:.18,roughness:.55}));
     board.position.set(x,.34,z);back.add(board);
   };
-  led(.0,-3.62,4.0,'jersey','#102f73','#f8d437');
-  led(3.15,-3.62,2.1,'AI FOOTBALL','#1f2945','#ffffff');
-  led(5.50,-2.10,.10,' ','#202631');
-  const sideA=mesh(new THREE.BoxGeometry(.11,.62,3.0),new THREE.MeshStandardMaterial({color:0x143b86,emissive:0x0d2453,emissiveIntensity:.25,roughness:.55}));sideA.position.set(5.92,.34,-3.25);back.add(sideA);
-  const sideB=mesh(new THREE.BoxGeometry(.11,.62,3.0),new THREE.MeshStandardMaterial({color:0xc72a35,emissive:0x5f1218,emissiveIntensity:.25,roughness:.55}));sideB.position.set(5.92,.34,3.25);back.add(sideB);
+  led(.0,-4.24,4.0,'jersey','#102f73','#f8d437');
+  led(3.15,-4.24,2.1,'AI FOOTBALL','#1f2945','#ffffff');
+  const sideA=mesh(new THREE.BoxGeometry(.11,.62,2.2),new THREE.MeshStandardMaterial({color:0x143b86,emissive:0x0d2453,emissiveIntensity:.25,roughness:.55}));sideA.position.set(5.72,.34,-5.05);back.add(sideA);
+  const sideB=mesh(new THREE.BoxGeometry(.11,.62,2.2),new THREE.MeshStandardMaterial({color:0xc72a35,emissive:0x5f1218,emissiveIntensity:.25,roughness:.55}));sideB.position.set(5.72,.34,5.05);back.add(sideB);
 
   // Stadium light wash.
   const flood1=new THREE.PointLight(0xdceaff,2.4,28,2);flood1.position.set(3.8,6.2,-4.8);back.add(flood1);
@@ -376,11 +375,11 @@ async function tryLoadRealModels(){
       try{
         const gltf=await loader.loadAsync(ASSETS.keeper);
         const actor=prepareActor(gltf,'keeper','A');
-        actor.userData.team='keeper';actor.userData.homeX=3.56;actor.userData.homeZ=GOAL_Z-.10;actor.userData.baseRotationY=-Math.PI/2;
+        actor.userData.team='keeper';actor.userData.homeX=2.95;actor.userData.homeZ=GOAL_Z;actor.userData.baseRotationY=-Math.PI/2;
         recolorKit(actor,'#14633f','#2fa66c');
         const old=keeper;scene.remove(old);
         if(old?.userData?.mixer){const i=mixers.indexOf(old.userData.mixer);if(i>=0)mixers.splice(i,1)}
-        keeper=actor;keeper.position.set(3.56,0,GOAL_Z-.10);keeper.rotation.set(0,-Math.PI/2,0);
+        keeper=actor;keeper.position.set(2.95,0,GOAL_Z);keeper.rotation.set(0,-Math.PI/2,0);
         scene.add(keeper);mixers.push(keeper.userData.mixer);playAction(keeper,'idle');
       }catch(e){console.warn('Kaleci modeli yüklenemedi; basit kaleci devam ediyor',e)}
     };
