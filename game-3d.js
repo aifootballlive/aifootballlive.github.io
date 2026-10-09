@@ -111,7 +111,7 @@ function createGoal(){
   for(let x=goalX;x<=backX;x+=.16){
     for(const z of [-halfW,halfW])line([x,.08,z],[x,height,z]);
   }
-  if(!DEMO){for(const child of g.children)child.position.x-=goalX;g.position.set(goalX-.75,0,.45);g.rotation.y=THREE.MathUtils.degToRad(12);}
+  if(!DEMO){for(const child of g.children)child.position.x-=goalX;g.position.set(goalX-.98,0,.28);g.rotation.y=THREE.MathUtils.degToRad(12);}
   return g;
 }
 function addStadium(){
@@ -200,8 +200,8 @@ function addStadium(){
   led(.0,-3.62,4.0,'jersey','#102f73','#f8d437');
   led(3.15,-3.62,2.1,'AI FOOTBALL','#1f2945','#ffffff');
   led(5.50,-2.10,.10,' ','#202631');
-  const sideA=mesh(new THREE.BoxGeometry(.11,.62,3.0),new THREE.MeshStandardMaterial({color:0x143b86,emissive:0x0d2453,emissiveIntensity:.25,roughness:.55}));sideA.position.set(5.58,.34,-2.25);back.add(sideA);
-  const sideB=mesh(new THREE.BoxGeometry(.11,.62,3.0),new THREE.MeshStandardMaterial({color:0xc72a35,emissive:0x5f1218,emissiveIntensity:.25,roughness:.55}));sideB.position.set(5.58,.34,2.25);back.add(sideB);
+  const sideA=mesh(new THREE.BoxGeometry(.11,.62,3.0),new THREE.MeshStandardMaterial({color:0x143b86,emissive:0x0d2453,emissiveIntensity:.25,roughness:.55}));sideA.position.set(5.92,.34,-3.25);back.add(sideA);
+  const sideB=mesh(new THREE.BoxGeometry(.11,.62,3.0),new THREE.MeshStandardMaterial({color:0xc72a35,emissive:0x5f1218,emissiveIntensity:.25,roughness:.55}));sideB.position.set(5.92,.34,3.25);back.add(sideB);
 
   // Stadium light wash.
   const flood1=new THREE.PointLight(0xdceaff,2.4,28,2);flood1.position.set(3.8,6.2,-4.8);back.add(flood1);
@@ -376,11 +376,11 @@ async function tryLoadRealModels(){
       try{
         const gltf=await loader.loadAsync(ASSETS.keeper);
         const actor=prepareActor(gltf,'keeper','A');
-        actor.userData.team='keeper';actor.userData.homeX=3.78;actor.userData.homeZ=GOAL_Z;actor.userData.baseRotationY=-Math.PI/2;
+        actor.userData.team='keeper';actor.userData.homeX=3.56;actor.userData.homeZ=GOAL_Z-.10;actor.userData.baseRotationY=-Math.PI/2;
         recolorKit(actor,'#14633f','#2fa66c');
         const old=keeper;scene.remove(old);
         if(old?.userData?.mixer){const i=mixers.indexOf(old.userData.mixer);if(i>=0)mixers.splice(i,1)}
-        keeper=actor;keeper.position.set(3.78,0,GOAL_Z);keeper.rotation.set(0,-Math.PI/2,0);
+        keeper=actor;keeper.position.set(3.56,0,GOAL_Z-.10);keeper.rotation.set(0,-Math.PI/2,0);
         scene.add(keeper);mixers.push(keeper.userData.mixer);playAction(keeper,'idle');
       }catch(e){console.warn('Kaleci modeli yüklenemedi; basit kaleci devam ediyor',e)}
     };
