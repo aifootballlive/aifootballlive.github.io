@@ -13,7 +13,7 @@ let demoTeams=[],teamGeneration=0,demoKeeperReady=false,SkeletonClone=null;
 const phaseEvent=phase=>window.dispatchEvent(new CustomEvent('football-scene-phase',{detail:{phase}}));
 
 const ASSETS={
-  playerA:'./assets/models/player-a.glb?v=6',
+  playerA:'./assets/models/player-a-refined.glb?v=1',
   playerB:'./assets/models/player-a.glb?v=6',
   keeper:'./assets/models/player-a.glb?v=6'
 };
@@ -249,7 +249,7 @@ function setupScene(){
 }
 function normalizeModel(root,targetHeight=2.15){root.updateMatrixWorld(true);let box=new THREE.Box3().setFromObject(root);const size=new THREE.Vector3();box.getSize(size);if(size.y>0){const s=targetHeight/size.y;root.scale.multiplyScalar(s)}root.updateMatrixWorld(true);box=new THREE.Box3().setFromObject(root);root.position.y-=box.min.y;root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){if(Array.isArray(o.material))o.material=o.material.map(m=>m.clone());else o.material=o.material.clone()}}});}
 function tintTeamModel(root,team){const main=team==='A'?0x173f9b:0xc91f2c;const yellow=0xffd21f;const skirt=team==='A'?0x152b59:0x6d1821;root.traverse(o=>{if(!o.isMesh||!o.material)return;const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){const n=((o.name||'')+' '+(m.name||'')).toLowerCase();if(/skin|face|head|hair|eye|teeth|mouth/.test(n))continue;if(/sock/.test(n)){if(m.color)m.color.setHex(skirt);continue}if(/skirt|short|bottom|pants/.test(n)){if(m.color)m.color.setHex(skirt);continue}if(/stripe|trim|line|accent/.test(n)){if(m.color)m.color.setHex(yellow);continue}if(/shirt|jersey|top|cloth|uniform|body|torso/.test(n)){if(m.color)m.color.setHex(main);continue}if(/stripe|trim|line|accent/.test(n)){if(m.color)m.color.setHex(yellow)}}});}
-function clipsFor(gltf){const clips=gltf.animations||[];const pick=(...re)=>clips.find(c=>re.some(r=>r.test(c.name.toLowerCase())))||null;return{idle:pick(/idle/,/stand/,/breath/),run:pick(/run/,/jog/,/sprint/),kick:pick(/kick/,/shoot/,/soccer/),celebrate:pick(/celebr/,/victory/,/cheer/),saveLeft:pick(/save.*left/,/dive.*left/,/left.*dive/),saveRight:pick(/save.*right/,/dive.*right/,/right.*dive/),miss:pick(/miss/,/defeat/,/fall/)}};
+function clipsFor(gltf){const clips=gltf.animations||[];const pick=(...re)=>clips.find(c=>re.some(r=>r.test(c.name.toLowerCase())))||null;return{idle:pick(/idle/,/stand/,/breath/),run:pick(/run/,/jog/,/sprint/),walk:pick(/walk/),kick:pick(/kick/,/shoot/,/soccer/),celebrate:pick(/celebr/,/victory/,/cheer/),saveLeft:pick(/save.*left/,/dive.*left/,/left.*dive/),saveRight:pick(/save.*right/,/dive.*right/,/right.*dive/),miss:pick(/miss/,/defeat/,/fall/)}};
 function prepareActor(gltf,type,team){
   // Keep normalization on the visual child; match movement belongs to the wrapper.
   const model=gltf.scene;normalizeModel(model,2.42);tintTeamModel(model,team);
@@ -257,8 +257,8 @@ function prepareActor(gltf,type,team){
   
   const root=new THREE.Group();root.add(model);
   const mixer=new THREE.AnimationMixer(model),clips=clipsFor(gltf),actions={};
-  for(const name of ['idle','run','kick']){
-    if(!clips[name])throw new Error('Player A animation missing: '+name);
+  for(const name of ['idle','run','kick','walk']){
+    if(!clips[name]){if(name==='walk')continue;throw new Error('Player A animation missing: '+name);}
     actions[name]=mixer.clipAction(clips[name]);
   }
   root.userData={real:true,type,team,actions,mixer,homeX:(HOME[team]||HOME.A).x,homeZ:(HOME[team]||HOME.A).z,baseRotationY:facingCamera(HOME[team]||HOME.A),idlePhase:team==='A'?0:2.7,kickContactTime:model.userData.kickContactTime??7/30};
@@ -283,6 +283,27 @@ function refinePlayerASurface(model){
       material.roughness=skin?.52:hair?.57:.86;
       material.ior=skin?1.4:1.46;material.specularIntensity=skin?.38:hair?.55:.30;
       material.sheen=skin||hair?0:.08;material.sheenRoughness=.85;
+      if(!skin){
+        const motion={time:{value:0},strength:{value:0},kick:{value:0}};
+        material.userData.secondaryMotion=motion;
+        material.onBeforeCompile=shader=>{
+          shader.uniforms.secondaryTime=motion.time;shader.uniforms.secondaryStrength=motion.strength;shader.uniforms.secondaryKick=motion.kick;
+          shader.vertexShader='uniform float secondaryTime; uniform float secondaryStrength; uniform float secondaryKick;\n'+shader.vertexShader;
+          const displacement=hair?`
+            float loose=clamp((.98-position.y)/.30,0.,1.)*smoothstep(.035,.12,-position.z);
+            transformed.x+=sin(secondaryTime*8.0+position.y*4.0)*.022*loose*secondaryStrength;
+            transformed.z+=sin(secondaryTime*6.0)*.015*loose*secondaryStrength;
+          `:`
+            float hem=(1.-smoothstep(-.20,.20,position.y))*smoothstep(-.30,-.16,position.y);
+            vec2 outward=normalize(vec2(position.x,position.z+.02)+vec2(.0001));
+            float flutter=sin(secondaryTime*9.0+position.x*17.0)*.010*secondaryStrength;
+            transformed.xz+=outward*hem*(flutter+secondaryKick*.030);
+            transformed.y+=sin(secondaryTime*10.0+position.z*24.0)*.005*hem*secondaryStrength;
+          `;
+          shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n'+displacement);
+        };
+        material.customProgramCacheKey=()=>hair?'player-a-hair-motion-v1':'player-a-cloth-motion-v1';
+      }
       if(material.normalScale)material.normalScale.multiplyScalar(skin?1.18:1.12);
       for(const key of ['map','normalMap'])if(material[key]){
         material[key]=material[key].clone();
@@ -304,8 +325,8 @@ function playAction(actor,name){
   const contact=DEMO||data.team==='A'?PLAYER_A_TIMING.contact:KICK_CONTACT_MS;
   next.reset().setEffectiveWeight(1).setEffectiveTimeScale(name==='kick'?data.kickContactTime/(contact/1000):1);
   next.enabled=true;
-  next.setLoop(name==='idle'||name==='run'?THREE.LoopRepeat:THREE.LoopOnce,name==='idle'||name==='run'?Infinity:1);
-  next.clampWhenFinished=name!=='idle'&&name!=='run';
+  next.setLoop(['idle','run','walk'].includes(name)?THREE.LoopRepeat:THREE.LoopOnce,['idle','run','walk'].includes(name)?Infinity:1);
+  next.clampWhenFinished=!['idle','run','walk'].includes(name);
   next.play();
   next.paused=name==='idle'&&data.type==='player';
   const blend=data.team==='A'?(name==='kick'?.14:name==='idle'?.32:.24):.12;
@@ -459,7 +480,20 @@ function animate(){
     idleKeeper(t);
   }
   if(DEMO){for(const actor of demoActors.values()){if(actor!==animation?.player)idleActor(actor,t,actor.userData.idlePhase||0);stabilizeHead(actor,dt);}stabilizeHead(keeper,dt);demoReactions(t);}else{stabilizeHead(playerA,dt);stabilizeHead(playerB,dt);}
+  updatePlayerASecondaryMotion(dt,t);
   updateCamera(dt);if(animation&&!DEMO&&['outcome','net','result'].includes(animation.phase))fitWholeGoal();renderer.render(scene,camera);
+}
+function updatePlayerASecondaryMotion(dt,t){
+  if(DEMO||!playerA?.userData.real)return;
+  const active=animation?.team==='A',phase=active?animation.phase:null;
+  const wanted=phase==='run'?1:phase==='returnWalk'?.48:phase==='kick'?.9:0;
+  const data=playerA.userData;data.secondaryStrength=lerp(data.secondaryStrength||0,wanted,1-Math.exp(-dt*5));
+  const kick=phase==='kick'?smooth(clamp((t-animation.start)/animation.timing.contact,0,1)):0;
+  data.secondaryKick=lerp(data.secondaryKick||0,kick,1-Math.exp(-dt*10));
+  playerA.traverse(o=>{if(!o.isMesh)return;for(const m of Array.isArray(o.material)?o.material:[o.material]){
+    const uniforms=m.userData.secondaryMotion;if(!uniforms)continue;
+    uniforms.time.value=t/1000;uniforms.strength.value=data.secondaryStrength;uniforms.kick.value=data.secondaryKick;
+  }});
 }
 function stabilizeHead(actor,dt){
   const controls=actor?.userData?.headControl;if(!controls?.length)return;
@@ -483,7 +517,7 @@ function updateCamera(dt){
   let view=VIEW.idle;
   if(animation&&!DEMO){
     const phase=animation.phase;
-    if(['turn','run','kick'].includes(phase))view={position:[-6.8,2.6,2.6],target:[1.6,1,.35]};
+    if(['returnTurn','returnWalk','returnFace'].includes(phase))view=VIEW.idle;else if(['turn','run','kick'].includes(phase))view={position:[-6.8,2.6,2.6],target:[1.6,1,.35]};
     else if(['ball','awaitResult','outcome','net','result'].includes(phase)){
       // Track the ball into the goal from a fixed position beside the shooter.
       const follow=animation.cameraFollow=Math.max(animation.cameraFollow||0,smooth(clamp((ball.position.x+1)/4.45,0,1)));
@@ -571,7 +605,7 @@ function finishShot(team,result){
   // Store the real result without cutting short the turn or run animation.
   animation.result=result;
 }
-function enterKick(a,t){a.phase='kick';a.start=t;if(a.team==='A'&&a.player.userData.kickRig?.left[2]){a.supportFoot=new THREE.Vector3(a.player.position.x-.10,.08,SHOT_Z+.18);}if(a.player.userData.real)playAction(a.player,'kick');setTimeout(()=>{try{window.AIFootballAudio?.kick?.(0)}catch(e){}},Math.max(0,(a.timing?.contact||KICK_CONTACT_MS)*.72));}
+function enterKick(a,t){a.phase='kick';a.start=t;if(a.team==='A'&&a.player.userData.kickRig?.left[2]){a.supportFoot=new THREE.Vector3(a.player.position.x-.10,.08,SHOT_Z+.18);}if(a.player.userData.real){playAction(a.player,'kick');a.kickEnd=t+a.player.userData.actions.kick.getClip().duration/a.player.userData.actions.kick.getEffectiveTimeScale()*1000;}setTimeout(()=>{try{window.AIFootballAudio?.kick?.(0)}catch(e){}},Math.max(0,(a.timing?.contact||KICK_CONTACT_MS)*(a.team==='A'?1:.72)));}
 function keeperSavePose(a,u){
   const side=a.saveSide??shotSide(a.team),style=a.saveStyle||'parry',weight=smooth(u);
   keeper.position.set(3.78,style==='parry'?Math.sin(u*Math.PI)*.22:0,lerp(GOAL_Z,a.targetZ??shotTarget(a.team),weight));
@@ -604,6 +638,7 @@ function keeperSavePose(a,u){
 }
 function runAnimation(t){
   const a=animation,p=a.player;if(!p)return;let u;const side=a.saveSide??shotSide(a.team),targetZ=a.targetZ??shotTarget(a.team);
+  if(a.team==='A'&&a.kickEnd&&t>=a.kickEnd&&!a.followThroughComplete){a.followThroughComplete=true;playAction(p,'idle');}
   if(a.phase==='turn'){
     u=clamp((t-a.start)/a.timing.turn,0,1);p.rotation.y=angleLerp(p.userData.baseRotationY,a.runYaw,smooth(u));
     if(u>=1){a.phase='run';a.start=t;if(!DEMO)(a.team==='A'?playerB:playerA).visible=false;if(p.userData.real)playAction(p,'run');}
@@ -618,9 +653,9 @@ function runAnimation(t){
   }else if(a.phase==='kick'){
     u=clamp((t-a.start)/a.timing.contact,0,1);p.position.x=lerp(-1.9,-1.65,u);p.position.z=SHOT_Z;p.rotation.y=Math.PI/2;
     if(!p.userData.real){p.userData.rl.rotation.x=-1.0*Math.sin(u*Math.PI*.5);p.userData.la.rotation.z=-.18-.45*Math.sin(u*Math.PI*.5);}
-    groundKick(p,smooth(u));if(!a.kickSoundPlayed&&u>=.72){a.kickSoundPlayed=true;try{window.AIFootballAudio?.kick?.(0)}catch(e){}phaseEvent('kick');}if(u>=1){a.phase='ball';a.start=t;phaseEvent('ball');}
+    groundKick(p,smooth(u));if(!a.kickSoundPlayed&&u>=(a.team==='A'?1:.72)){a.kickSoundPlayed=true;try{window.AIFootballAudio?.kick?.(0)}catch(e){}phaseEvent('kick');}if(u>=1){a.phase='ball';a.start=t;phaseEvent('ball');}
   }else if(a.phase==='ball'){
-    if(t-a.start<170)groundKick(p,1-smooth(clamp((t-a.start)/170,0,1)));else if(t-a.start>=450&&!a.playerPoseLocked){a.playerPoseLocked=true;if(a.team==='A')playAction(p,'idle');else if(p.userData.activeAction)p.userData.activeAction.paused=true;}
+    if(t-a.start<(a.team==='A'?240:170))groundKick(p,1-smooth(clamp((t-a.start)/(a.team==='A'?240:170),0,1)));else if(a.team!=='A'&&t-a.start>=450&&!a.playerPoseLocked){a.playerPoseLocked=true;if(p.userData.activeAction)p.userData.activeAction.paused=true;}
     u=clamp((t-a.start)/650,0,1);
     // Both outcomes share the approach. Never cross the goal before its result arrives.
     ball.position.set(lerp(-1,3.45,u),lerp(.14,a.shotHeight||.90,u)+Math.sin(u*Math.PI)*(a.saveStyle==='foot'?.12:.55),lerp(SHOT_Z,targetZ,u));
@@ -659,7 +694,20 @@ function runAnimation(t){
     if(a.result==='save'&&a.saveStyle==='catch'){keeperSavePose(a,1);ball.position.set(3.45,a.shotHeight,targetZ);}
     else ball.position.y=.14+bounce;
     if(a.result==='goal'){p.rotation.y=Math.PI/2;if(!p.userData.real)p.position.y=Math.sin(u*Math.PI)*.18;}
-    if(u>=1){if(DEMO){a.phase='return';a.start=t;p.userData.reactionWeight=0;if(p.userData.real)playAction(p,'run');}else{resetPose();animation=null;}}
+    if(u>=1){if(!DEMO&&a.team==='A'){
+      a.phase='returnTurn';a.start=t;a.returnFrom=p.position.clone();a.returnYaw=Math.atan2(p.userData.homeX-p.position.x,p.userData.homeZ-p.position.z);a.returnStartYaw=p.rotation.y;playAction(p,'idle');
+    }else if(DEMO){a.phase='return';a.start=t;p.userData.reactionWeight=0;if(p.userData.real)playAction(p,'run');}else{resetPose();animation=null;}}
+  }else if(a.phase==='returnTurn'){
+    u=clamp((t-a.start)/420,0,1);p.rotation.y=angleLerp(a.returnStartYaw,a.returnYaw,smooth(u));
+    if(u>=1){a.phase='returnWalk';a.start=t;a.returnDuration=1000*a.returnFrom.distanceTo(new THREE.Vector3(p.userData.homeX,0,p.userData.homeZ))/1.05;playAction(p,'walk');}
+  }else if(a.phase==='returnWalk'){
+    u=clamp((t-a.start)/a.returnDuration,0,1);
+    p.position.set(lerp(a.returnFrom.x,p.userData.homeX,u),0,lerp(a.returnFrom.z,p.userData.homeZ,u));p.rotation.y=a.returnYaw;
+    if(u>.90&&!a.arriving){a.arriving=true;playAction(p,'idle');}
+    if(u>=1){a.phase='returnFace';a.start=t;}
+  }else if(a.phase==='returnFace'){
+    u=clamp((t-a.start)/420,0,1);p.rotation.y=angleLerp(a.returnYaw,p.userData.baseRotationY,smooth(u));
+    if(u>=1){resetPose();animation=null;}
   }else if(DEMO&&a.phase==='return'){
     u=clamp((t-a.start)/1350,0,1);p.position.x=lerp(-1.65,p.userData.homeX,u);p.position.z=lerp(SHOT_Z,p.userData.homeZ,u);p.rotation.y=Math.atan2(p.userData.homeX+1.65,p.userData.homeZ-SHOT_Z);
     if(!p.userData.real){p.userData.ll.rotation.x=Math.sin(u*Math.PI*6)*.5;p.userData.rl.rotation.x=-p.userData.ll.rotation.x;}
@@ -795,6 +843,7 @@ window.addEventListener('ai-football-settings',e=>apply3DSettings(e.detail||{}))
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.AIFootball3D={beginShot,finishShot,reset:resetPose,reloadModels:tryLoadRealModels,configureTeams,playDemoShot,applySettings:apply3DSettings,get ready(){return !!scene},get settings(){return {...runtimeSettings}},get modelStatus(){return [...demoActors].map(([team,actor])=>({team,loaded:actor.userData.real,recoloredPixels:actor.userData.recoloredPixels||0}));}};
 })();
+
 
 
 
