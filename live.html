@@ -143,7 +143,7 @@ function applyRules(r){
   state.startKeeper=numberOr(gameRules.goalkeeper_initial_power??gameRules.start_keeper,100);
   state.keeperCost=numberOr(gameRules.keeper_cost,10);state.shotDelay=numberOr(gameRules.shot_delay,3000);state.shotThreshold=numberOr(gameRules.shot_threshold,10);
   state.soundMaster=numberOr(gameRules.sound_master,DEFAULT_ADMIN_SETTINGS.soundMaster);state.soundCrowd=numberOr(gameRules.sound_crowd,DEFAULT_ADMIN_SETTINGS.soundCrowd);state.soundEffects=numberOr(gameRules.sound_effects,DEFAULT_ADMIN_SETTINGS.soundEffects);state.soundGoal=numberOr(gameRules.sound_goal,DEFAULT_ADMIN_SETTINGS.soundGoal);
-  state.soundEnabled=boolOr(gameRules.sound_enabled,true);state.crowdEnabled=boolOr(gameRules.crowd_enabled,true);state.announcerEnabled=boolOr(gameRules.announcer_enabled,true);state.goalFxEnabled=boolOr(gameRules.goal_fx_enabled,true);
+  state.soundEnabled=true;state.crowdEnabled=boolOr(gameRules.crowd_enabled,true);state.announcerEnabled=boolOr(gameRules.announcer_enabled,true);state.goalFxEnabled=boolOr(gameRules.goal_fx_enabled,true);
   state.cameraZoom=numberOr(gameRules.camera_zoom,100);state.stadiumExposure=numberOr(gameRules.stadium_exposure,116);state.idleMotion=numberOr(gameRules.idle_motion,100);state.ballSize=numberOr(gameRules.ball_size,100);state.goalSize=numberOr(gameRules.goal_size,100);state.confettiAmount=numberOr(gameRules.confetti_amount,70);
   state.sceneLabel=boolOr(gameRules.scene_label,true);state.showQueues=boolOr(gameRules.show_queues,true);state.showStatus=boolOr(gameRules.show_status,true);
   applyRuntimeSettings();render()
@@ -245,7 +245,7 @@ async function boot(){await getAuth();await loadRemote(true);setupRealtime();db.
 render();boot();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=5"></script>
-<script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=35"></script>
-<script id="game3dScript" src="./game-3d.js?v=38"></script>
+<script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=37"></script>
+<script id="game3dScript" src="./game-3d.js?v=40"></script>
 </body>
 </html>
