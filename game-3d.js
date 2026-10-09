@@ -12,8 +12,8 @@ const phaseEvent=phase=>window.dispatchEvent(new CustomEvent('football-scene-pha
 
 const ASSETS={
   playerA:'./assets/models/player-a.glb?v=6',
-  playerB:'./assets/models/player-b-existing.glb?v=2',
-  keeper:'./assets/models/goalkeeper.glb'
+  playerB:'./assets/models/player-a.glb?v=6',
+  keeper:'./assets/models/player-a.glb?v=6'
 };
 
 const HOME={A:{x:-3.85,z:1.35},B:{x:-3.55,z:2.35}};
@@ -177,10 +177,10 @@ function grassMaterial(){
 }
 function setupScene(){
   const holder=document.getElementById('game3dCanvas');if(!holder)return;
-  scene=new THREE.Scene();scene.background=new THREE.Color(0x0a1424);camera=new THREE.PerspectiveCamera(40,1,.1,100);camera.position.set(...VIEW.idle.position);camera.lookAt(...VIEW.idle.target);scene.fog=new THREE.Fog(0x0a1424,13,35);
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x09111f);camera=new THREE.PerspectiveCamera(40,1,.1,100);camera.position.set(...VIEW.idle.position);camera.lookAt(...VIEW.idle.target);scene.fog=new THREE.Fog(0x09111f,18,42);
   renderer=new THREE.WebGLRenderer({antialias:true,alpha:DEMO,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;if('outputColorSpace' in renderer)renderer.outputColorSpace=THREE.SRGBColorSpace;
   if(DEMO){scene.background=null;scene.fog=null;renderer.setClearColor(0x000000,0);holder.style.background='url("assets/backgrounds/stadium-v1.png") center center / cover no-repeat';}
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.16;
   holder.appendChild(renderer.domElement);renderer.domElement.style.cssText='display:block;width:100%;height:100%';holder.style.cssText='width:100%;height:100%';
   if(DEMO)holder.style.background='url("assets/backgrounds/stadium-v1.png") center center / cover no-repeat';
   scene.add(new THREE.HemisphereLight(0xdcecff,0x18331d,1.1));const sun=new THREE.DirectionalLight(0xffffff,2.8);sun.position.set(-3,8,4);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-10;sun.shadow.camera.right=10;sun.shadow.camera.top=10;sun.shadow.camera.bottom=-10;sun.shadow.bias=-.0003;sun.shadow.normalBias=.015;scene.add(sun);const fill=new THREE.DirectionalLight(0x86a7ff,1.1);fill.position.set(4,4,5);scene.add(fill);
@@ -360,13 +360,21 @@ function demoIdle(actor,t,phase){
 }
 function idleKeeper(t){
   if(!keeper||animation)return;
-  const s=Math.sin(t*.0021),s2=Math.sin(t*.0012);
-  keeper.position.y=.012+Math.abs(s)*.012;
-  keeper.position.z=(keeper.userData.homeZ??0)+s2*.06;
-  keeper.rotation.z=s*.012;
-  if(!keeper.userData.real&&keeper.userData.la&&keeper.userData.ra){
-    keeper.userData.la.rotation.z=-.4+s*.07;
-    keeper.userData.ra.rotation.z=.4-s*.07;
+  const s=Math.sin(t*.00105),s2=Math.sin(t*.00068);
+  keeper.position.y=0;
+  keeper.position.z=(keeper.userData.homeZ??0)+s2*.035;
+  keeper.rotation.z=0;
+  if(keeper.userData.real){
+    idleBone(keeper,'mixamorigHips','X',-.065);
+    idleBone(keeper,'mixamorigLeftUpLeg','X',-.10);
+    idleBone(keeper,'mixamorigRightUpLeg','X',-.10);
+    idleBone(keeper,'mixamorigLeftLeg','X',.14);
+    idleBone(keeper,'mixamorigRightLeg','X',.14);
+    idleBone(keeper,'mixamorigLeftArm','Z',-.11+s*.018);
+    idleBone(keeper,'mixamorigRightArm','Z',.11-s*.018);
+  }else if(keeper.userData.la&&keeper.userData.ra){
+    keeper.userData.la.rotation.z=-.4+s*.03;
+    keeper.userData.ra.rotation.z=.4-s*.03;
   }
 }
 function animate(){
