@@ -253,6 +253,7 @@ function clipsFor(gltf){const clips=gltf.animations||[];const pick=(...re)=>clip
 function prepareActor(gltf,type,team){
   // Keep normalization on the visual child; match movement belongs to the wrapper.
   const model=gltf.scene;normalizeModel(model,2.42);tintTeamModel(model,team);
+  if(!DEMO&&type==='player'&&team==='A')refinePlayerASurface(model);
   
   const root=new THREE.Group();root.add(model);
   const mixer=new THREE.AnimationMixer(model),clips=clipsFor(gltf),actions={};
@@ -271,6 +272,29 @@ function prepareActor(gltf,type,team){
   }
   root.position.set(root.userData.homeX,0,root.userData.homeZ);root.rotation.y=root.userData.baseRotationY;playAction(root,'idle');if(root.userData.actions.idle)root.userData.actions.idle.setEffectiveTimeScale(team==='A'?.58:.52);return root;
 }
+function refinePlayerASurface(model){
+  model.traverse(object=>{
+    if(!object.isMesh)return;
+    const refine=source=>{
+      const material=new THREE.MeshPhysicalMaterial();
+      THREE.MeshStandardMaterial.prototype.copy.call(material,source);
+      const skin=/skin/i.test(source.name),hair=/hair/i.test(source.name);
+      material.metalness=0;material.clearcoat=0;
+      material.roughness=skin?.52:hair?.57:.86;
+      material.ior=skin?1.4:1.46;material.specularIntensity=skin?.38:hair?.55:.30;
+      material.sheen=skin||hair?0:.08;material.sheenRoughness=.85;
+      if(material.normalScale)material.normalScale.multiplyScalar(skin?1.18:1.12);
+      for(const key of ['map','normalMap'])if(material[key]){
+        material[key]=material[key].clone();
+        material[key].anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+        material[key].generateMipmaps=true;material[key].minFilter=THREE.LinearMipmapLinearFilter;
+        material[key].needsUpdate=true;
+      }
+      material.needsUpdate=true;return material;
+    };
+    object.material=Array.isArray(object.material)?object.material.map(refine):refine(object.material);
+  });
+}
 function playAction(actor,name){
   if(!actor?.userData?.real)return;
   const data=actor.userData,actions=data.actions||{},next=actions[name]||actions.idle;
@@ -284,7 +308,7 @@ function playAction(actor,name){
   next.clampWhenFinished=name!=='idle'&&name!=='run';
   next.play();
   next.paused=name==='idle'&&data.type==='player';
-  const blend=data.team==='A'?(name==='kick'?.20:.24):.12;
+  const blend=data.team==='A'?(name==='kick'?.14:name==='idle'?.32:.24):.12;
   if(previous&&previous!==next){next.crossFadeFrom(previous,blend,false)}else{next.fadeIn(blend)}
   for(const action of Object.values(actions)){if(action!==next&&action!==previous)action.stop()}
   data.activeAction=next;
@@ -518,8 +542,17 @@ function groundKick(player,weight){
   player.updateMatrixWorld(true);const planted=rig.left[2].getWorldPosition(new THREE.Vector3());planted.y=.08;
   const hipsWorld=rig.hips.getWorldPosition(new THREE.Vector3()),parentScale=rig.hips.parent.getWorldScale(new THREE.Vector3());
   // Adapt the drop-kick clip to a ball on the grass, keeping the support foot planted.
-  rig.hips.position.y-=(Math.max(0,hipsWorld.y-.98)/parentScale.y)*weight;player.updateMatrixWorld(true);
-  solveLeg(rig.left,planted,weight);solveLeg(rig.right,new THREE.Vector3(-1.06,.19,SHOT_Z),weight);player.updateMatrixWorld(true);
+  let hipDrop=Math.max(0,hipsWorld.y-.98);
+  if(player.userData.team==='A'&&animation?.supportFoot){
+    const h=rig.left[0].getWorldPosition(new THREE.Vector3()),k=rig.left[1].getWorldPosition(new THREE.Vector3());
+    const reach=h.distanceTo(k)+k.distanceTo(rig.left[2].getWorldPosition(new THREE.Vector3())),support=animation.supportFoot;
+    const horizontal=Math.hypot(h.x-support.x,h.z-support.z);
+    const vertical=Math.sqrt(Math.max(.04,reach*reach-horizontal*horizontal));
+    hipDrop=Math.max(0,h.y-support.y-vertical+.025);
+  }
+  rig.hips.position.y-=(hipDrop/parentScale.y)*weight;player.updateMatrixWorld(true);
+  const support=player.userData.team==='A'&&animation?.supportFoot?animation.supportFoot:planted;
+  solveLeg(rig.left,support,weight);solveLeg(rig.right,new THREE.Vector3(-1.06,.19,SHOT_Z),weight);player.updateMatrixWorld(true);
 }
 function beginShot(team){
   if(!playerA||!playerB||!keeper||!ball)return;
@@ -538,7 +571,7 @@ function finishShot(team,result){
   // Store the real result without cutting short the turn or run animation.
   animation.result=result;
 }
-function enterKick(a,t){a.phase='kick';a.start=t;if(a.player.userData.real)playAction(a.player,'kick');setTimeout(()=>{try{window.AIFootballAudio?.kick?.(0)}catch(e){}},Math.max(0,(a.timing?.contact||KICK_CONTACT_MS)*.72));}
+function enterKick(a,t){a.phase='kick';a.start=t;if(a.team==='A'&&a.player.userData.kickRig?.left[2]){a.supportFoot=new THREE.Vector3(a.player.position.x-.10,.08,SHOT_Z+.18);}if(a.player.userData.real)playAction(a.player,'kick');setTimeout(()=>{try{window.AIFootballAudio?.kick?.(0)}catch(e){}},Math.max(0,(a.timing?.contact||KICK_CONTACT_MS)*.72));}
 function keeperSavePose(a,u){
   const side=a.saveSide??shotSide(a.team),style=a.saveStyle||'parry',weight=smooth(u);
   keeper.position.set(3.78,style==='parry'?Math.sin(u*Math.PI)*.22:0,lerp(GOAL_Z,a.targetZ??shotTarget(a.team),weight));
@@ -587,7 +620,7 @@ function runAnimation(t){
     if(!p.userData.real){p.userData.rl.rotation.x=-1.0*Math.sin(u*Math.PI*.5);p.userData.la.rotation.z=-.18-.45*Math.sin(u*Math.PI*.5);}
     groundKick(p,smooth(u));if(!a.kickSoundPlayed&&u>=.72){a.kickSoundPlayed=true;try{window.AIFootballAudio?.kick?.(0)}catch(e){}phaseEvent('kick');}if(u>=1){a.phase='ball';a.start=t;phaseEvent('ball');}
   }else if(a.phase==='ball'){
-    if(t-a.start<170)groundKick(p,1-smooth(clamp((t-a.start)/170,0,1)));else if(t-a.start>=450&&!a.playerPoseLocked){a.playerPoseLocked=true;if(p.userData.activeAction)p.userData.activeAction.paused=true;}
+    if(t-a.start<170)groundKick(p,1-smooth(clamp((t-a.start)/170,0,1)));else if(t-a.start>=450&&!a.playerPoseLocked){a.playerPoseLocked=true;if(a.team==='A')playAction(p,'idle');else if(p.userData.activeAction)p.userData.activeAction.paused=true;}
     u=clamp((t-a.start)/650,0,1);
     // Both outcomes share the approach. Never cross the goal before its result arrives.
     ball.position.set(lerp(-1,3.45,u),lerp(.14,a.shotHeight||.90,u)+Math.sin(u*Math.PI)*(a.saveStyle==='foot'?.12:.55),lerp(SHOT_Z,targetZ,u));
