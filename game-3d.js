@@ -208,12 +208,17 @@ function addStadium(){
   scene.add(back);
 }
 function grassMaterial(){
-  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;const ctx=canvas.getContext('2d'),data=ctx.createImageData(512,512);
-  let seed=1729;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
-  for(let i=0;i<data.data.length;i+=4){const n=random()*30;data.data[i]=32+n*.6;data.data[i+1]=63+n;data.data[i+2]=22+n*.4;data.data[i+3]=255;}
-  ctx.putImageData(data,0,0);for(let i=0;i<25000;i++){const x=random()*512,y=random()*512;ctx.strokeStyle=i%2?'rgba(154,174,71,.22)':'rgba(17,41,12,.26)';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+random()*2,y-2-random()*5);ctx.stroke();}
-  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(18,12);texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
-  return new THREE.MeshStandardMaterial({map:texture,roughness:.93,metalness:0});
+  const texture=new THREE.TextureLoader().load('./assets/textures/natural-grass-v3.png?v=1');
+  texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(18,12);texture.anisotropy=renderer.capabilities.getMaxAnisotropy();
+  const bump=texture.clone();bump.colorSpace=THREE.NoColorSpace;
+  const material=new THREE.MeshStandardMaterial({map:texture,bumpMap:bump,color:0xb2bd9c,bumpScale:.012,roughness:1,metalness:0});
+  material.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`
+    #include <map_fragment>
+    #ifdef USE_MAP
+      float mowing=sin(vMapUv.x*3.14159265/1.5);
+      diffuseColor.rgb*=1.0+0.045*mowing;
+    #endif
+  `);};material.customProgramCacheKey=()=> 'reference-grass-v3';return material;
 }
 function setupScene(){
   const holder=document.getElementById('game3dCanvas');if(!holder)return;
