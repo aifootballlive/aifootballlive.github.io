@@ -463,7 +463,7 @@ function updateCamera(dt){
     else if(['ball','awaitResult','outcome','net','result'].includes(phase)){
       // Track the ball into the goal from a fixed position beside the shooter.
       const follow=animation.cameraFollow=Math.max(animation.cameraFollow||0,smooth(clamp((ball.position.x+1)/4.45,0,1)));
-      view={position:[lerp(-6,-4.7,follow),lerp(2.1,1.5,follow),1.55],target:[lerp(1.6,4.42,follow),lerp(1.0,1.12,follow),GOAL_Z+ball.position.z*.08]};
+      view={position:[lerp(-6,-4.45,follow),lerp(2.1,1.5,follow),2.02],target:[lerp(1.6,4.42,follow),lerp(1.0,1.12,follow),GOAL_Z+ball.position.z*.08]};
     }else view=VIEW.shot;
   }else if(animation)view=VIEW.shot;
   const closeView=animation&&!DEMO&&['outcome','net','result'].includes(animation.phase);
