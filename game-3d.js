@@ -315,7 +315,7 @@ function animate(){
     idleActor(playerB,t,1.7);
     idleKeeper(t);
   }
-  if(DEMO){for(const actor of demoActors.values()){if(actor!==animation?.player)idleActor(actor,t,actor.userData.idlePhase||0);stabilizeHead(actor,dt);}stabilizeHead(keeper,dt);demoReactions(t);}else stabilizeHead(playerA,dt);
+  if(DEMO){for(const actor of demoActors.values()){if(actor!==animation?.player)idleActor(actor,t,actor.userData.idlePhase||0);stabilizeHead(actor,dt);}stabilizeHead(keeper,dt);demoReactions(t);}else{stabilizeHead(playerA,dt);stabilizeHead(playerB,dt);}
   renderer.render(scene,camera);
 }
 function stabilizeHead(actor,dt){
