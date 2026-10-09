@@ -110,19 +110,9 @@ function kick(at=0){
   const fx=pct(settings.soundEffects,92);
   if(!fx)return;
   at=Math.max(0,Number(at)||0);
-  const baseCrowd=.65*pct(settings.soundCrowd,72);
-  if(crowdGain){
-    const t=ctx.currentTime+at;
-    crowdLfoGain?.gain.setValueAtTime(0,t);
-    crowdLfoGain?.gain.setValueAtTime(.019*pct(settings.soundCrowd,72),t+.5);
-    crowdGain.gain.cancelScheduledValues(t);
-    crowdGain.gain.setValueAtTime(Math.max(.0015,baseCrowd*.06),t);
-    crowdGain.gain.setValueAtTime(Math.max(.0015,baseCrowd*.06),t+.4);
-    crowdGain.gain.linearRampToValueAtTime(baseCrowd,t+.5);
-  }
-
+  // Kick is mixed over the uninterrupted crowd recording.
   const out=ctx.createGain(),comp=ctx.createDynamicsCompressor(),lowShelf=ctx.createBiquadFilter();
-  out.gain.value=2.4*fx;
+  out.gain.value=2.8*fx;
   lowShelf.type='lowshelf';lowShelf.frequency.value=180;lowShelf.gain.value=7;
   comp.threshold.value=-8;comp.knee.value=8;comp.ratio.value=4;comp.attack.value=.001;comp.release.value=.18;
   out.connect(lowShelf);lowShelf.connect(comp);comp.connect(master);
