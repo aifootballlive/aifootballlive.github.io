@@ -85,7 +85,7 @@ function noiseBurst(at=0,dur=.08,vol=.07,freq=900,type='bandpass',gainGroup='eff
   g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(Math.max(.0001,vol*factor),now+.006);g.gain.exponentialRampToValueAtTime(.0001,now+dur);
   s.connect(filter);filter.connect(g);g.connect(master);s.start(now);s.stop(now+dur+.04);
 }
-function kick(at=0){const now=Date.now();if(now-lastKickAt<120)return;lastKickAt=now;noiseBurst(at,.085,.22,220,'lowpass');noiseBurst(at+.004,.045,.10,1650,'bandpass');tone(82,at,.16,.19,'sine');tone(182,at+.010,.10,.075,'triangle')}
+function kick(at=0){const now=Date.now();if(now-lastKickAt<120)return;lastKickAt=now;noiseBurst(at,.095,.52,210,'lowpass');noiseBurst(at+.003,.050,.28,1700,'bandpass');noiseBurst(at+.008,.032,.16,3200,'highpass');tone(78,at,.18,.42,'sine');tone(176,at+.008,.12,.19,'triangle');tone(340,at+.012,.07,.10,'square')}
 function bounce(at=0,scale=1){noiseBurst(at,.05,.062*scale,1200,'bandpass');tone(155,at,.07,.048*scale,'sine')}
 function netHit(){noiseBurst(0,.14,.065,1500,'highpass');bounce(.05,.8);bounce(.22,.52);bounce(.40,.32)}
 function saveSound(){noiseBurst(0,.10,.09,520,'bandpass');tone(145,0,.17,.067,'triangle');bounce(.16,.72)}
