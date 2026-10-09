@@ -2,6 +2,7 @@
 'use strict';
 let ctx=null,master=null,teamTimer=null,currentTeam=null,enabled=false,lastGoalAt=0,lastKickAt=0,nativeGoalSound=null;
 let userMuted=false;
+let crowdBufferPromise=null,crowdLoading=false,crowdGeneration=0;
 let crowdSource=null,crowdGain=null,crowdLfo=null,crowdLfoGain=null;
 let settings={soundMaster:88,soundCrowd:72,soundEffects:92,soundGoal:100,soundEnabled:true,crowdEnabled:true,announcerEnabled:true};
 const $=id=>document.getElementById(id);
@@ -14,7 +15,7 @@ function readSettings(next){
 }
 function refreshVolumes(){
   if(master)master.gain.value=.86*pct(settings.soundMaster,88);
-  if(crowdGain)crowdGain.gain.value=.075*pct(settings.soundCrowd,72);
+  if(crowdGain)crowdGain.gain.value=.65*pct(settings.soundCrowd,72);
 }
 function ensureButton(){
   let b=$('soundEnable');if(b)return b;
@@ -41,19 +42,21 @@ function noiseBuffer(seconds=2){
   for(let i=0;i<len;i++)data[i]=(Math.random()*2-1);
   return buffer;
 }
-function startCrowd(){
-  if(!enabled||!ctx||crowdSource||!settings.crowdEnabled)return;
-  crowdSource=ctx.createBufferSource();crowdSource.buffer=noiseBuffer(3);crowdSource.loop=true;
-  const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=720;filter.Q.value=.42;
-  const low=ctx.createBiquadFilter();low.type='lowpass';low.frequency.value=2500;
-  crowdGain=ctx.createGain();crowdGain.gain.value=.075*pct(settings.soundCrowd,72);
-  crowdLfo=ctx.createOscillator();crowdLfo.frequency.value=.085;
-  crowdLfoGain=ctx.createGain();crowdLfoGain.gain.value=.019*pct(settings.soundCrowd,72);
-  crowdLfo.connect(crowdLfoGain);crowdLfoGain.connect(crowdGain.gain);
-  crowdSource.connect(filter);filter.connect(low);low.connect(crowdGain);crowdGain.connect(master);
-  crowdSource.start();crowdLfo.start();
+async function startCrowd(){
+  if(!enabled||!ctx||crowdSource||crowdLoading||!settings.crowdEnabled)return;
+  crowdLoading=true;const generation=crowdGeneration;
+  try{
+    if(!crowdBufferPromise)crowdBufferPromise=fetch('./assets/audio/crowd-stadium-v1.mp3?v=1').then(r=>{if(!r.ok)throw new Error('Crowd audio unavailable');return r.arrayBuffer()}).then(bytes=>ctx.decodeAudioData(bytes));
+    const buffer=await crowdBufferPromise;
+    if(generation!==crowdGeneration||!enabled||userMuted||!settings.crowdEnabled||ctx.state!=='running')return;
+    crowdSource=ctx.createBufferSource();crowdSource.buffer=buffer;crowdSource.loop=true;
+    crowdGain=ctx.createGain();crowdGain.gain.value=.65*pct(settings.soundCrowd,72);
+    crowdSource.connect(crowdGain);crowdGain.connect(master);crowdSource.start();
+  }catch(error){crowdBufferPromise=null;console.warn('Seyirci sesi yuklenemedi',error)}
+  finally{crowdLoading=false;if(generation!==crowdGeneration&&enabled&&!userMuted&&settings.crowdEnabled)startCrowd();}
 }
 function stopCrowd(){
+  crowdGeneration++;
   try{crowdSource?.stop();crowdLfo?.stop()}catch(e){}
   crowdSource=null;crowdGain=null;crowdLfo=null;crowdLfoGain=null;
 }
@@ -107,7 +110,7 @@ function kick(at=0){
   const fx=pct(settings.soundEffects,92);
   if(!fx)return;
   at=Math.max(0,Number(at)||0);
-  const baseCrowd=.075*pct(settings.soundCrowd,72);
+  const baseCrowd=.65*pct(settings.soundCrowd,72);
   if(crowdGain){
     const t=ctx.currentTime+at;
     crowdLfoGain?.gain.setValueAtTime(0,t);
@@ -153,7 +156,7 @@ function cheer(){
   if(!enabled||!ctx)return;
   noiseBurst(0,.9,.11,1050,'bandpass','goal');noiseBurst(.18,1.25,.08,1650,'bandpass','goal');
   if(crowdGain&&settings.crowdEnabled){
-    const base=.075*pct(settings.soundCrowd,72),peak=.19*pct(settings.soundGoal,100),now=ctx.currentTime;
+    const base=.65*pct(settings.soundCrowd,72),peak=.85*pct(settings.soundGoal,100),now=ctx.currentTime;
     crowdGain.gain.cancelScheduledValues(now);crowdGain.gain.setValueAtTime(base,now);crowdGain.gain.linearRampToValueAtTime(peak,now+.16);crowdGain.gain.linearRampToValueAtTime(base,now+2.3);
   }
 }
