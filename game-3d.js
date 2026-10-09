@@ -460,27 +460,22 @@ function updateCamera(dt){
   if(animation&&!DEMO){
     const phase=animation.phase;
     if(['turn','run','kick'].includes(phase))view={position:[-6.8,2.6,2.6],target:[1.6,1,.35]};
-    else if(['ball','awaitResult'].includes(phase)){
-      const follow=clamp((ball.position.x+1)/4.45,0,1);
-      view={position:[-6.0,2.45,1.7],target:[lerp(1.6,3.1,follow),lerp(.95,ball.position.y,follow*.3),ball.position.z*.22]};
-    }else if(['outcome','net','result'].includes(phase)){
-      // A low view beside the shooter, looking into the goal rather than at the player.
-      animation.player.updateWorldMatrix(true,true);
-      const hip=animation.player.userData.kickRig?.hips;
-      const foreground=hip?hip.getWorldPosition(new THREE.Vector3()):animation.player.position.clone().add(new THREE.Vector3(0,1.05,0));
-      view={position:[foreground.x-.85,foreground.y-.25,foreground.z+.55],target:[4.42,1.12,GOAL_Z]};
+    else if(['ball','awaitResult','outcome','net','result'].includes(phase)){
+      // Track the ball into the goal from a fixed position beside the shooter.
+      const follow=animation.cameraFollow=Math.max(animation.cameraFollow||0,smooth(clamp((ball.position.x+1)/4.45,0,1)));
+      view={position:[lerp(-6,-4.7,follow),lerp(2.1,1.5,follow),1.55],target:[lerp(1.6,4.42,follow),lerp(1.0,1.12,follow),GOAL_Z+ball.position.z*.08]};
     }else view=VIEW.shot;
   }else if(animation)view=VIEW.shot;
   const closeView=animation&&!DEMO&&['outcome','net','result'].includes(animation.phase);
   const baseFov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(52)/2)/Math.min(1,camera.aspect)));
-  camera.fov=lerp(camera.fov,DEMO?49:closeView?baseFov*1.12:baseFov,1-Math.exp(-dt*3.1));camera.updateProjectionMatrix();
-  const k=1-Math.exp(-dt*(closeView?7.5:3.1)),zoom=Math.max(.75,Math.min(1.4,(Number(runtimeSettings.cameraZoom)||100)/100));
+  camera.fov=lerp(camera.fov,DEMO?49:baseFov,1-Math.exp(-dt*3.1));camera.updateProjectionMatrix();
+  const k=1-Math.exp(-dt*(3.1)),zoom=Math.max(.75,Math.min(1.4,(Number(runtimeSettings.cameraZoom)||100)/100));
   const [tx,ty,tz]=view.target;
   const px=tx+(view.position[0]-tx)*zoom,py=ty+(view.position[1]-ty)*zoom,pz=tz+(view.position[2]-tz)*zoom;
   camera.position.x=lerp(camera.position.x,px,k);camera.position.y=lerp(camera.position.y,py,k);camera.position.z=lerp(camera.position.z,pz,k);
   cameraTarget.x=lerp(cameraTarget.x,tx,k);cameraTarget.y=lerp(cameraTarget.y,ty,k);cameraTarget.z=lerp(cameraTarget.z,tz,k);camera.lookAt(cameraTarget.x,cameraTarget.y,cameraTarget.z);
   // Leave space around the shooting player's hips at the portrait frame's left edge.
-  if(animation&&!DEMO&&['turn','run','kick','ball','awaitResult','outcome','net','result'].includes(animation.phase)){
+  if(animation&&!DEMO&&['turn','run','kick'].includes(animation.phase)){
     const actor=animation.team==='B'?playerB:playerA;
     if(actor?.visible){
       camera.updateMatrixWorld();actor.updateWorldMatrix(true,true);
@@ -592,7 +587,7 @@ function runAnimation(t){
     if(!p.userData.real){p.userData.rl.rotation.x=-1.0*Math.sin(u*Math.PI*.5);p.userData.la.rotation.z=-.18-.45*Math.sin(u*Math.PI*.5);}
     groundKick(p,smooth(u));if(!a.kickSoundPlayed&&u>=.72){a.kickSoundPlayed=true;try{window.AIFootballAudio?.kick?.(0)}catch(e){}phaseEvent('kick');}if(u>=1){a.phase='ball';a.start=t;phaseEvent('ball');}
   }else if(a.phase==='ball'){
-    if(t-a.start<170)groundKick(p,1-smooth(clamp((t-a.start)/170,0,1)));
+    if(t-a.start<170)groundKick(p,1-smooth(clamp((t-a.start)/170,0,1)));else if(t-a.start>=450&&!a.playerPoseLocked){a.playerPoseLocked=true;if(p.userData.activeAction)p.userData.activeAction.paused=true;}
     u=clamp((t-a.start)/650,0,1);
     // Both outcomes share the approach. Never cross the goal before its result arrives.
     ball.position.set(lerp(-1,3.45,u),lerp(.14,a.shotHeight||.90,u)+Math.sin(u*Math.PI)*(a.saveStyle==='foot'?.12:.55),lerp(SHOT_Z,targetZ,u));
@@ -630,7 +625,7 @@ function runAnimation(t){
     const bounce=Math.abs(Math.sin(u*Math.PI*4))*(1-u)*.10;
     if(a.result==='save'&&a.saveStyle==='catch'){keeperSavePose(a,1);ball.position.set(3.45,a.shotHeight,targetZ);}
     else ball.position.y=.14+bounce;
-    if(a.result==='goal'){p.rotation.y=angleLerp(Math.PI/2,p.userData.baseRotationY,smooth(u));if(!p.userData.real)p.position.y=Math.sin(u*Math.PI)*.18;}
+    if(a.result==='goal'){p.rotation.y=Math.PI/2;if(!p.userData.real)p.position.y=Math.sin(u*Math.PI)*.18;}
     if(u>=1){if(DEMO){a.phase='return';a.start=t;p.userData.reactionWeight=0;if(p.userData.real)playAction(p,'run');}else{resetPose();animation=null;}}
   }else if(DEMO&&a.phase==='return'){
     u=clamp((t-a.start)/1350,0,1);p.position.x=lerp(-1.65,p.userData.homeX,u);p.position.z=lerp(SHOT_Z,p.userData.homeZ,u);p.rotation.y=Math.atan2(p.userData.homeX+1.65,p.userData.homeZ-SHOT_Z);
