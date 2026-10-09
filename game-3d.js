@@ -16,8 +16,8 @@ const ASSETS={
   keeper:'./assets/models/goalkeeper.glb'
 };
 
-const HOME={A:{x:-3.25,z:1.75},B:{x:-2.9,z:2.65}};
-const VIEW={idle:{position:[-3.65,2.00,4.55],target:[-.35,1.18,1.15]},shot:{position:[-3.95,2.00,4.85],target:[.95,1.02,.15]}};
+const HOME={A:{x:-3.10,z:-1.12},B:{x:-3.00,z:1.12}};
+const VIEW={idle:{position:[-5.15,2.18,0],target:[-.15,1.16,0]},shot:{position:[-4.55,2.02,0],target:[1.05,1.02,0]}};
 if(DEMO){VIEW.idle={position:[-12,4.6,0],target:[1,1.05,0]};VIEW.shot=VIEW.idle;}
 const GOAL_Z=DEMO?2.35:0,SHOT_Z=DEMO?.25:0;
 const shotSide=team=>team==='A'?1:team==='B'?-1:.35;
@@ -39,7 +39,7 @@ function addStageShell(){
   const wrap=document.createElement('section');
   wrap.id='game3dStage';
   wrap.innerHTML='<div id="game3dLabel">3D MAÇ SAHNESİ</div><div id="game3dCanvas"></div>';
-  wrap.style.cssText='position:relative;height:clamp(340px,54vw,440px);margin:5px 0;border:1px solid #2b3556;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#10192a,#112c1b);';
+  wrap.style.cssText='position:relative;height:clamp(380px,58vw,500px);margin:5px 0;border:1px solid #2b3556;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#10192a,#112c1b);';
   const label=wrap.firstElementChild;
   label.style.cssText='position:absolute;z-index:3;left:8px;top:7px;padding:4px 7px;border-radius:7px;background:rgba(8,14,26,.72);color:#fff;font-size:8px;font-weight:900;letter-spacing:.4px;pointer-events:none';
   if(DEMO)document.querySelector('.scene-anchor').replaceWith(wrap);else score.insertAdjacentElement('afterend',wrap);
@@ -153,7 +153,20 @@ function setupScene(){
   if(DEMO)holder.style.background='url("assets/backgrounds/stadium-v1.png") center center / cover no-repeat';
   scene.add(new THREE.HemisphereLight(0xdcecff,0x18331d,1.1));const sun=new THREE.DirectionalLight(0xffffff,2.8);sun.position.set(-3,8,4);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-10;sun.shadow.camera.right=10;sun.shadow.camera.top=10;sun.shadow.camera.bottom=-10;sun.shadow.bias=-.0003;sun.shadow.normalBias=.015;scene.add(sun);const fill=new THREE.DirectionalLight(0x86a7ff,1.1);fill.position.set(4,4,5);scene.add(fill);
   const pitch=mesh(new THREE.PlaneGeometry(36,24),grassMaterial());pitch.rotation.x=-Math.PI/2;pitch.receiveShadow=true;scene.add(pitch);
-  const lineMat=new THREE.LineBasicMaterial({color:0xf5f7fa,transparent:true,opacity:.7});const pts=[new THREE.Vector3(-5.7,.012,-2.8),new THREE.Vector3(5.7,.012,-2.8),new THREE.Vector3(5.7,.012,2.8),new THREE.Vector3(-5.7,.012,2.8),new THREE.Vector3(-5.7,.012,-2.8)];scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),lineMat));
+  const lineMat=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.88});
+  const line=(pts,closed=false)=>{
+    const v=pts.map(p=>new THREE.Vector3(p[0],.016,p[1]));
+    if(closed)v.push(v[0].clone());
+    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(v),lineMat));
+  };
+  // Visible goal-side half of a football pitch.
+  line([[-7.6,-4.35],[5.7,-4.35],[5.7,4.35],[-7.6,4.35]],true);
+  // Penalty area and six-yard box.
+  line([[.65,-3.55],[4.42,-3.55],[4.42,3.55],[.65,3.55]],false);
+  line([[2.75,-1.95],[4.42,-1.95],[4.42,1.95],[2.75,1.95]],false);
+  // Penalty spot and a subtle penalty arc.
+  const penaltySpot=mesh(new THREE.CircleGeometry(.045,18),mat(0xffffff,.75,0));penaltySpot.rotation.x=-Math.PI/2;penaltySpot.position.set(.95,.018,0);scene.add(penaltySpot);
+  const arcPts=[];for(let a=-1.05;a<=1.05;a+=.09)arcPts.push([.95-1.15*Math.cos(a),1.15*Math.sin(a)]);line(arcPts,false);
   if(!DEMO)addStadium();
   if(DEMO){const points=[[-3.25,.014,-5],[-3.25,.014,5]],line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points.map(p=>new THREE.Vector3(...p))),lineMat);scene.add(line);}
   scene.add(createGoal());keeper=createKeeper();keeper.userData.homeZ=GOAL_Z;keeper.position.z=GOAL_Z;playerA=createPlayer('A');playerB=createPlayer('B');scene.add(keeper,playerA,playerB);
@@ -168,7 +181,7 @@ function tintTeamModel(root,team){const main=team==='A'?0x173f9b:0xc91f2c;const 
 function clipsFor(gltf){const clips=gltf.animations||[];const pick=(...re)=>clips.find(c=>re.some(r=>r.test(c.name.toLowerCase())))||null;return{idle:pick(/idle/,/stand/,/breath/),run:pick(/run/,/jog/,/sprint/),kick:pick(/kick/,/shoot/,/soccer/),celebrate:pick(/celebr/,/victory/,/cheer/),saveLeft:pick(/save.*left/,/dive.*left/,/left.*dive/),saveRight:pick(/save.*right/,/dive.*right/,/right.*dive/),miss:pick(/miss/,/defeat/,/fall/)}};
 function prepareActor(gltf,type,team){
   // Keep normalization on the visual child; match movement belongs to the wrapper.
-  const model=gltf.scene;normalizeModel(model,2.30);tintTeamModel(model,team);
+  const model=gltf.scene;normalizeModel(model,2.42);tintTeamModel(model,team);
   const root=new THREE.Group();root.add(model);
   const mixer=new THREE.AnimationMixer(model),clips=clipsFor(gltf),actions={};
   for(const name of ['idle','run','kick']){
@@ -239,7 +252,7 @@ async function tryLoadRealModels(){
   })();
   return playerALoad;
 }
-function resize(){if(!renderer||!camera)return;const box=document.getElementById('game3dCanvas')?.getBoundingClientRect();if(!box||!box.width)return;renderer.setSize(box.width,box.height,false);camera.aspect=box.width/box.height;camera.fov=DEMO?49:(camera.aspect<1.25?50:34);camera.updateProjectionMatrix()}
+function resize(){if(!renderer||!camera)return;const box=document.getElementById('game3dCanvas')?.getBoundingClientRect();if(!box||!box.width)return;renderer.setSize(box.width,box.height,false);camera.aspect=box.width/box.height;camera.fov=DEMO?49:(camera.aspect<1.25?46:32);camera.updateProjectionMatrix()}
 function resetPose(){if(DEMO){resetDemoPose();return;}if(!playerA||!playerB||!keeper||!ball)return;for(const p of [playerA,playerB]){p.visible=true;p.position.set(p.userData.homeX,0,p.userData.homeZ);p.rotation.set(0,p.userData.baseRotationY??Math.PI/2,0);if(p.userData.real)playAction(p,'idle');else{p.userData.ll.rotation.set(0,0,0);p.userData.rl.rotation.set(0,0,0);p.userData.la.rotation.set(0,0,-.18);p.userData.ra.rotation.set(0,0,.18)}}keeper.position.set(keeper.userData.homeX??3.75,0,keeper.userData.homeZ??0);keeper.rotation.set(0,keeper.userData.baseRotationY??-Math.PI/2,0);if(keeper.userData.real)playAction(keeper,'idle');else{keeper.userData.la.rotation.set(0,0,-.4);keeper.userData.ra.rotation.set(0,0,.4)}ball.position.set(-1,.14,0);}
 function naturalRealIdle(actor,t,phase=0){
   if(!actor?.userData?.real)return;
