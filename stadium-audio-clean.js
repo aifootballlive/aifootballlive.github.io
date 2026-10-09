@@ -50,14 +50,22 @@ function stopCrowd(){
 async function enableSound(){
   readSettings();if(!settings.soundEnabled)return;
   patchNativeGoalSound();
-  const b=ensureButton();b.textContent='SES AÇIK';b.style.background='#287a5b';
+  const b=ensureButton();
   try{
     if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();
     if(!master){master=ctx.createGain();master.connect(ctx.destination)}
     if(ctx.state==='suspended')await ctx.resume();
     enabled=ctx.state==='running';window.__aiFootballSoundEnabled=enabled;
-    refreshVolumes();if(enabled&&settings.crowdEnabled)startCrowd();
-  }catch(e){enabled=false;window.__aiFootballSoundEnabled=false}
+    if(enabled){
+      b.textContent='SES AÇIK';b.style.background='#287a5b';
+      refreshVolumes();if(settings.crowdEnabled)startCrowd();
+    }else{
+      b.textContent='SES İÇİN TIKLA';b.style.background='#8a5b19';
+    }
+  }catch(e){
+    enabled=false;window.__aiFootballSoundEnabled=false;
+    b.textContent='SES İÇİN TIKLA';b.style.background='#8a5b19';
+  }
 }
 function disableSound(){
   enabled=false;window.__aiFootballSoundEnabled=false;stopTeamMusic();stopCrowd();
@@ -87,36 +95,45 @@ function noiseBurst(at=0,dur=.08,vol=.07,freq=900,type='bandpass',gainGroup='eff
   s.connect(filter);filter.connect(g);g.connect(master);s.start(now);s.stop(now+dur+.04);
 }
 function kick(at=0){
-  const now=Date.now();if(now-lastKickAt<120)return;lastKickAt=now;
-  if(!enabled||!ctx||ctx.state!=='running')return;
+  const nowMs=Date.now();if(nowMs-lastKickAt<120)return;lastKickAt=nowMs;
+  if(!ctx||ctx.state!=='running')return;
+  const fx=Math.max(.9,pct(settings.soundEffects,92));
   const baseCrowd=.075*pct(settings.soundCrowd,72);
   if(crowdGain){
     const t=ctx.currentTime;
     crowdGain.gain.cancelScheduledValues(t);
-    crowdGain.gain.setValueAtTime(Math.max(.002,baseCrowd*.10),t);
-    crowdGain.gain.linearRampToValueAtTime(baseCrowd,t+.42);
+    crowdGain.gain.setValueAtTime(Math.max(.0015,baseCrowd*.06),t);
+    crowdGain.gain.linearRampToValueAtTime(baseCrowd,t+.48);
   }
-  const bus=ctx.createGain(),comp=ctx.createDynamicsCompressor(),low=ctx.createBiquadFilter();
-  bus.gain.value=3.6;
-  low.type='lowpass';low.frequency.value=430;low.Q.value=.65;
-  comp.threshold.value=-20;comp.knee.value=14;comp.ratio.value=7;comp.attack.value=.001;comp.release.value=.18;
-  bus.connect(low);low.connect(comp);comp.connect(master);
-  const thudNoise=(delay,dur,vol,cutoff)=>{
-    const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain(),t=ctx.currentTime+delay;
-    s.buffer=noiseBuffer(Math.max(.14,dur+.06));f.type='lowpass';f.frequency.value=cutoff;f.Q.value=.5;
-    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-    s.connect(f);f.connect(g);g.connect(bus);s.start(t);s.stop(t+dur+.06);
+
+  const out=ctx.createGain(),comp=ctx.createDynamicsCompressor(),lowShelf=ctx.createBiquadFilter();
+  out.gain.value=4.6*fx;
+  lowShelf.type='lowshelf';lowShelf.frequency.value=180;lowShelf.gain.value=7;
+  comp.threshold.value=-22;comp.knee.value=10;comp.ratio.value=6;comp.attack.value=.001;comp.release.value=.18;
+  out.connect(lowShelf);lowShelf.connect(comp);comp.connect(master);
+
+  const noiseHit=(delay,dur,vol,lowpass)=>{
+    const src=ctx.createBufferSource(),lp=ctx.createBiquadFilter(),hp=ctx.createBiquadFilter(),g=ctx.createGain(),t=ctx.currentTime+delay;
+    src.buffer=noiseBuffer(Math.max(.16,dur+.06));
+    hp.type='highpass';hp.frequency.value=55;
+    lp.type='lowpass';lp.frequency.value=lowpass;lp.Q.value=.55;
+    g.gain.setValueAtTime(.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol,t+.002);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    src.connect(hp);hp.connect(lp);lp.connect(g);g.connect(out);src.start(t);src.stop(t+dur+.06);
   };
-  const thump=(freq,delay,dur,vol,type='sine')=>{
+  const body=(freq,delay,dur,vol)=>{
     const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+delay;
-    o.type=type;o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(Math.max(36,freq*.58),t+dur);
-    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-    o.connect(g);g.connect(bus);o.start(t);o.stop(t+dur+.03);
+    o.type='sine';o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(Math.max(38,freq*.54),t+dur);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.0015);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g);g.connect(out);o.start(t);o.stop(t+dur+.03);
   };
-  thudNoise(at,.13,1.35,300);
-  thudNoise(at+.004,.09,.72,520);
-  thump(88,at,.20,1.05,'sine');
-  thump(132,at+.004,.14,.55,'triangle');
+
+  // Leather-ball impact: one dull body hit, one short contact slap.
+  noiseHit(at,.145,1.25,520);
+  noiseHit(at+.004,.075,.58,980);
+  body(96,at,.205,1.15);
+  body(154,at+.006,.115,.42);
 }function bounce(at=0,scale=1){noiseBurst(at,.05,.062*scale,1200,'bandpass');tone(155,at,.07,.048*scale,'sine')}
 function netHit(){noiseBurst(0,.14,.065,1500,'highpass');bounce(.05,.8);bounce(.22,.52);bounce(.40,.32)}
 function saveSound(){noiseBurst(0,.10,.09,520,'bandpass');tone(145,0,.17,.067,'triangle');bounce(.16,.72)}
@@ -196,7 +213,7 @@ function boot(){
   readSettings();settings.soundEnabled=true;
   window.__AI_FOOTBALL_SETTINGS={...(window.__AI_FOOTBALL_SETTINGS||{}),soundEnabled:true};
   window.__aiFootballSoundEnabled=false;patchNativeGoalSound();
-  const b=ensureButton();b.textContent='SES AÇIK';b.style.background='#287a5b';bind();
+  const b=ensureButton();b.textContent='SES İÇİN TIKLA';b.style.background='#8a5b19';bind();
   const unlock=e=>{
     if(e?.target?.id==='soundEnable')return;
     if(settings.soundEnabled&&(!enabled||ctx?.state!=='running'))enableSound().catch(()=>{});
