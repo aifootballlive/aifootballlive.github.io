@@ -1,7 +1,8 @@
 (()=>{
 'use strict';
 let THREE=null,GLTFLoader=null,scene=null,camera=null,renderer=null,clock=null;
-let ball=null,keeper=null,playerA=null,playerB=null;
+let ball=null,keeper=null,playerA=null,playerB=null,goalObject=null;
+let runtimeSettings={cameraZoom:100,stadiumExposure:116,idleMotion:100,ballSize:100,goalSize:100,sceneLabel:true};
 let animation=null,installed=false,hooked=false,realMode=false;
 let playerALoad=null,pendingPlayerA=null,pendingPlayerB=null;
 const mixers=[];
@@ -45,7 +46,15 @@ function addStageShell(){
   if(DEMO)document.querySelector('.scene-anchor').replaceWith(wrap);else score.insertAdjacentElement('afterend',wrap);
   return wrap;
 }
-function setLabel(text){const el=document.getElementById('game3dLabel');if(el)el.textContent=text}
+function setLabel(text){const el=document.getElementById('game3dLabel');if(el){el.textContent=text;el.style.display=runtimeSettings.sceneLabel?'block':'none'}}
+function apply3DSettings(next={}){
+  runtimeSettings={...runtimeSettings,...next};
+  const exp=Math.max(.7,Math.min(1.5,(Number(runtimeSettings.stadiumExposure)||116)/100));
+  if(renderer)renderer.toneMappingExposure=exp;
+  if(ball){const s=Math.max(.7,Math.min(1.6,(Number(runtimeSettings.ballSize)||100)/100));ball.scale.setScalar(s)}
+  if(goalObject){const s=Math.max(.8,Math.min(1.3,(Number(runtimeSettings.goalSize)||100)/100));goalObject.scale.set(1,s,s)}
+  const label=document.getElementById('game3dLabel');if(label)label.style.display=runtimeSettings.sceneLabel?'block':'none';
+}
 async function loadThree(){
   if(THREE)return THREE;
   const mod=await import('https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js');THREE=mod;
@@ -180,7 +189,7 @@ function setupScene(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x09111f);camera=new THREE.PerspectiveCamera(40,1,.1,100);camera.position.set(...VIEW.idle.position);camera.lookAt(...VIEW.idle.target);scene.fog=new THREE.Fog(0x09111f,18,42);
   renderer=new THREE.WebGLRenderer({antialias:true,alpha:DEMO,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;if('outputColorSpace' in renderer)renderer.outputColorSpace=THREE.SRGBColorSpace;
   if(DEMO){scene.background=null;scene.fog=null;renderer.setClearColor(0x000000,0);holder.style.background='url("assets/backgrounds/stadium-v1.png") center center / cover no-repeat';}
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.16;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=Math.max(.7,Math.min(1.5,(Number(runtimeSettings.stadiumExposure)||116)/100));
   holder.appendChild(renderer.domElement);renderer.domElement.style.cssText='display:block;width:100%;height:100%';holder.style.cssText='width:100%;height:100%';
   if(DEMO)holder.style.background='url("assets/backgrounds/stadium-v1.png") center center / cover no-repeat';
   scene.add(new THREE.HemisphereLight(0xdcecff,0x18331d,1.1));const sun=new THREE.DirectionalLight(0xffffff,2.8);sun.position.set(-3,8,4);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-10;sun.shadow.camera.right=10;sun.shadow.camera.top=10;sun.shadow.camera.bottom=-10;sun.shadow.bias=-.0003;sun.shadow.normalBias=.015;scene.add(sun);const fill=new THREE.DirectionalLight(0x86a7ff,1.1);fill.position.set(4,4,5);scene.add(fill);
@@ -201,11 +210,11 @@ function setupScene(){
   const arcPts=[];for(let a=-1.05;a<=1.05;a+=.09)arcPts.push([.95-1.15*Math.cos(a),1.15*Math.sin(a)]);line(arcPts,false);
   if(!DEMO)addStadium();
   if(DEMO){const points=[[-3.25,.014,-5],[-3.25,.014,5]],line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points.map(p=>new THREE.Vector3(...p))),lineMat);scene.add(line);}
-  scene.add(createGoal());keeper=createKeeper();keeper.userData.homeZ=GOAL_Z;keeper.position.z=GOAL_Z;playerA=createPlayer('A');playerB=createPlayer('B');scene.add(keeper,playerA,playerB);
+  goalObject=createGoal();scene.add(goalObject);keeper=createKeeper();keeper.userData.homeZ=GOAL_Z;keeper.position.z=GOAL_Z;playerA=createPlayer('A');playerB=createPlayer('B');scene.add(keeper,playerA,playerB);
   ball=mesh(new THREE.SphereGeometry(.18,28,22),mat(0xfafafa,.40,.02));ball.position.set(-1.0,.18,SHOT_Z);
   const directions=new THREE.IcosahedronGeometry(1,0).getAttribute('position'),seen=new Set();
   for(let i=0;i<directions.count;i++){const v=new THREE.Vector3().fromBufferAttribute(directions,i).normalize(),key=v.toArray().map(x=>x.toFixed(3)).join(',');if(seen.has(key))continue;seen.add(key);const patch=mesh(new THREE.CircleGeometry(.055,5),mat(0x101621,.7,0));patch.position.copy(v).multiplyScalar(.1805);patch.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),v);ball.add(patch);}
-  scene.add(ball);const spot=mesh(new THREE.CircleGeometry(.055,16),mat(0xffffff,.8,0));spot.rotation.x=-Math.PI/2;spot.position.set(-1,.013,0);scene.add(spot);
+  scene.add(ball);apply3DSettings(window.__AI_FOOTBALL_SETTINGS||{});const spot=mesh(new THREE.CircleGeometry(.055,16),mat(0xffffff,.8,0));spot.rotation.x=-Math.PI/2;spot.position.set(-1,.013,0);scene.add(spot);
   clock=new THREE.Clock();resize();window.addEventListener('resize',resize);animate();if(!DEMO)tryLoadRealModels();
 }
 function normalizeModel(root,targetHeight=2.15){root.updateMatrixWorld(true);let box=new THREE.Box3().setFromObject(root);const size=new THREE.Vector3();box.getSize(size);if(size.y>0){const s=targetHeight/size.y;root.scale.multiplyScalar(s)}root.updateMatrixWorld(true);box=new THREE.Box3().setFromObject(root);root.position.y-=box.min.y;root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){if(Array.isArray(o.material))o.material=o.material.map(m=>m.clone());else o.material=o.material.clone()}}});}
@@ -310,12 +319,14 @@ function resize(){if(!renderer||!camera)return;const box=document.getElementById
 function resetPose(){if(DEMO){resetDemoPose();return;}if(!playerA||!playerB||!keeper||!ball)return;for(const p of [playerA,playerB]){p.visible=true;p.position.set(p.userData.homeX,0,p.userData.homeZ);p.rotation.set(0,p.userData.baseRotationY??Math.PI/2,0);if(p.userData.real)playAction(p,'idle');else{p.userData.ll.rotation.set(0,0,0);p.userData.rl.rotation.set(0,0,0);p.userData.la.rotation.set(0,0,-.18);p.userData.ra.rotation.set(0,0,.18)}}keeper.position.set(keeper.userData.homeX??3.75,0,keeper.userData.homeZ??0);keeper.rotation.set(0,keeper.userData.baseRotationY??-Math.PI/2,0);if(keeper.userData.real)playAction(keeper,'idle');else{keeper.userData.la.rotation.set(0,0,-.4);keeper.userData.ra.rotation.set(0,0,.4)}ball.position.set(-1,.14,0);}
 function naturalRealIdle(actor,t,phase=0){
   if(!actor?.userData?.real)return;
+  const motion=Math.max(0,Math.min(1.5,(Number(runtimeSettings.idleMotion)||0)/100));
+  if(motion<=0)return;
   const slow=Math.sin(t*.00042+phase),look=Math.sin(t*.00027+phase*1.7);
-  idleBone(actor,'mixamorigHips','Z',slow*.016);
-  idleBone(actor,'mixamorigSpine','Z',-slow*.012);
-  idleBone(actor,'mixamorigNeck','Y',look*.15);
-  if(slow>0)idleBone(actor,'mixamorigLeftUpLeg','X',slow*.028);
-  else idleBone(actor,'mixamorigRightUpLeg','X',-slow*.028);
+  idleBone(actor,'mixamorigHips','Z',slow*.016*motion);
+  idleBone(actor,'mixamorigSpine','Z',-slow*.012*motion);
+  idleBone(actor,'mixamorigNeck','Y',look*.15*motion);
+  if(slow>0)idleBone(actor,'mixamorigLeftUpLeg','X',slow*.028*motion);
+  else idleBone(actor,'mixamorigRightUpLeg','X',-slow*.028*motion);
 }
 function idleActor(actor,t,phase=0){
   if(!actor||(animation&&(!DEMO||animation.player===actor)))return;
@@ -325,9 +336,9 @@ function idleActor(actor,t,phase=0){
     naturalRealIdle(actor,t,actor.userData.idlePhase??phase);
     return;
   }
-  const s=Math.sin(t*.00165+phase),s2=Math.sin(t*.00082+phase*.7);
-  actor.position.y=.008+s*.006;
-  actor.rotation.z=s2*.008;
+  const motion=Math.max(0,Math.min(1.5,(Number(runtimeSettings.idleMotion)||0)/100)),s=Math.sin(t*.00165+phase),s2=Math.sin(t*.00082+phase*.7);
+  actor.position.y=.008+s*.006*motion;
+  actor.rotation.z=s2*.008*motion;
   if(actor.userData.la&&actor.userData.ra){
     actor.userData.la.rotation.z=-.18+s*.035;
     actor.userData.ra.rotation.z=.18-s*.035;
@@ -635,9 +646,10 @@ function bindStatusAnimation(){
   read();
 }
 function hookGame(){if(hooked)return;if(typeof window.resolveShot!=='function'){setTimeout(hookGame,150);return}hooked=true;const old=window.resolveShot;window.resolveShot=async function(team,shot){try{beginShot(team)}catch(e){}await sleep(360);const r=await old.apply(this,arguments);const ev=document.getElementById('event');const txt=(ev?.dataset.matchMessage||ev?.textContent||'').trim();const goal=txt.match(/^GOL!\s*(Sarı-Lacivert|Sarı-Kırmızı)/i);const save=txt.match(/^(Sarı-Lacivert|Sarı-Kırmızı)\s+kalecisi kurtardı!/i);const attacking=goal?(/^Sarı-Lacivert/i.test(goal[1])?'A':'B'):save?(/^Sarı-Lacivert/i.test(save[1])?'B':'A'):null;if(attacking===team){try{finishShot(team,goal?'goal':'save')}catch(e){}}return r};}
-async function boot(){if(installed)return;const shell=addStageShell();if(!shell){setTimeout(boot,120);return}installed=true;try{await loadThree();setupScene();if(DEMO)window.dispatchEvent(new CustomEvent('football-scene-ready'));else{bindStatusAnimation();hookGame()}}catch(e){console.error('3D sahne yüklenemedi',e);setLabel('3D SAHNE YÜKLENEMEDİ')}}
+async function boot(){if(installed)return;const shell=addStageShell();if(!shell){setTimeout(boot,120);return}installed=true;runtimeSettings={...runtimeSettings,...(window.__AI_FOOTBALL_SETTINGS||{})};try{await loadThree();setupScene();if(DEMO)window.dispatchEvent(new CustomEvent('football-scene-ready'));else{bindStatusAnimation();hookGame()}}catch(e){console.error('3D sahne yüklenemedi',e);setLabel('3D SAHNE YÜKLENEMEDİ')}}
+window.addEventListener('ai-football-settings',e=>apply3DSettings(e.detail||{}));
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-window.AIFootball3D={beginShot,finishShot,reset:resetPose,reloadModels:tryLoadRealModels,configureTeams,playDemoShot,get ready(){return !!scene},get modelStatus(){return [...demoActors].map(([team,actor])=>({team,loaded:actor.userData.real,recoloredPixels:actor.userData.recoloredPixels||0}));}};
+window.AIFootball3D={beginShot,finishShot,reset:resetPose,reloadModels:tryLoadRealModels,configureTeams,playDemoShot,applySettings:apply3DSettings,get ready(){return !!scene},get settings(){return {...runtimeSettings}},get modelStatus(){return [...demoActors].map(([team,actor])=>({team,loaded:actor.userData.real,recoloredPixels:actor.userData.recoloredPixels||0}));}};
 })();
 
 
