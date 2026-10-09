@@ -43,7 +43,7 @@ function addStageShell(){
   wrap.style.cssText='position:relative;height:clamp(400px,54vw,620px);margin:5px 0;border:1px solid #2b3556;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#10192a,#112c1b);';
   const label=wrap.firstElementChild;
   label.style.cssText='position:absolute;z-index:3;left:8px;top:7px;padding:4px 7px;border-radius:7px;background:rgba(8,14,26,.72);color:#fff;font-size:8px;font-weight:900;letter-spacing:.4px;pointer-events:none';
-  if(DEMO)document.querySelector('.scene-anchor').replaceWith(wrap);else score.insertAdjacentElement('afterend',wrap);
+  if(DEMO)document.querySelector('.scene-anchor').replaceWith(wrap);else{score.insertAdjacentElement('afterend',wrap);const sound=document.getElementById('soundEnable');if(sound)score.parentElement.appendChild(sound);}
   return wrap;
 }
 function setLabel(text){const el=document.getElementById('game3dLabel');if(el){el.textContent=text;el.style.display=runtimeSettings.sceneLabel?'block':'none'}}
@@ -315,7 +315,7 @@ async function tryLoadRealModels(){
   })();
   return playerALoad;
 }
-function resize(){if(!renderer||!camera)return;const box=document.getElementById('game3dCanvas')?.getBoundingClientRect();if(!box||!box.width)return;renderer.setSize(box.width,box.height,false);camera.aspect=box.width/box.height;camera.fov=DEMO?49:(camera.aspect<1.25?54:42);camera.updateProjectionMatrix()}
+function resize(){if(!renderer||!camera)return;const box=document.getElementById('game3dCanvas')?.getBoundingClientRect();if(!box||!box.width)return;renderer.setSize(box.width,box.height,false);camera.aspect=box.width/box.height;camera.fov=DEMO?49:THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(52)/2)/Math.min(1,camera.aspect)));camera.updateProjectionMatrix()}
 function resetPose(){if(DEMO){resetDemoPose();return;}if(!playerA||!playerB||!keeper||!ball)return;for(const p of [playerA,playerB]){p.visible=true;p.position.set(p.userData.homeX,0,p.userData.homeZ);p.rotation.set(0,p.userData.baseRotationY??Math.PI/2,0);if(p.userData.real)playAction(p,'idle');else{p.userData.ll.rotation.set(0,0,0);p.userData.rl.rotation.set(0,0,0);p.userData.la.rotation.set(0,0,-.18);p.userData.ra.rotation.set(0,0,.18)}}keeper.position.set(keeper.userData.homeX??3.75,0,keeper.userData.homeZ??0);keeper.rotation.set(0,keeper.userData.baseRotationY??-Math.PI/2,0);if(keeper.userData.real)playAction(keeper,'idle');else{keeper.userData.la.rotation.set(0,0,-.4);keeper.userData.ra.rotation.set(0,0,.4)}ball.position.set(-1,.14,0);}
 function naturalRealIdle(actor,t,phase=0){
   if(!actor?.userData?.real)return;
