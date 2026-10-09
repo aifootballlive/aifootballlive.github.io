@@ -236,14 +236,7 @@ function setupScene(){
     if(closed)v.push(v[0].clone());
     scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(v),lineMat));
   };
-  // Visible goal-side half of a football pitch.
-  line([[-7.6,-4.35],[5.7,-4.35],[5.7,4.35],[-7.6,4.35]],true);
-  // Penalty area and six-yard box.
-  line([[.65,-3.55],[4.42,-3.55],[4.42,3.55],[.65,3.55]],false);
-  line([[2.75,-1.95],[4.42,-1.95],[4.42,1.95],[2.75,1.95]],false);
-  // Penalty spot and a subtle penalty arc.
-  const penaltySpot=mesh(new THREE.CircleGeometry(.045,18),mat(0xffffff,.75,0));penaltySpot.rotation.x=-Math.PI/2;penaltySpot.position.set(.95,.018,0);scene.add(penaltySpot);
-  const arcPts=[];for(let a=-1.05;a<=1.05;a+=.09)arcPts.push([.95-1.15*Math.cos(a),1.15*Math.sin(a)]);line(arcPts,false);
+  // Keep the turf clear of markings that do not match the rotated goal.
   if(!DEMO)addStadium();
   if(DEMO){const points=[[-3.25,.014,-5],[-3.25,.014,5]],line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points.map(p=>new THREE.Vector3(...p))),lineMat);scene.add(line);}
   goalObject=createGoal();scene.add(goalObject);keeper=createKeeper();keeper.userData.homeZ=GOAL_Z;keeper.position.z=GOAL_Z;playerA=createPlayer('A');playerB=createPlayer('B');scene.add(keeper,playerA,playerB);
