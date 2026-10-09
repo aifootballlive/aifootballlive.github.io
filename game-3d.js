@@ -147,7 +147,7 @@ function addStadium(){
     addCrowdRow(5.93+row*.46,.86+row*.39,-5.25,118,.089,'z',row);
   }
   // Upper deck / dark roof gives the same packed-stadium framing as the reference.
-  const roof=mesh(new THREE.BoxGeometry(5.8,.32,12.6),mat(0x0c111a,.82,.03));roof.position.set(8.6,5.35,0);back.add(roof);
+  const roof=mesh(new THREE.BoxGeometry(5.8,.32,12.6),mat(0x0c111a,.82,.03));roof.position.set(8.6,5.35,0);
   for(let z=-5.4;z<=5.4;z+=1.35){
     const lamp=mesh(new THREE.BoxGeometry(.24,.18,.85),new THREE.MeshStandardMaterial({color:0xf4f7ff,emissive:0xd7e7ff,emissiveIntensity:3.0,roughness:.35}));
     lamp.position.set(5.75,4.92,z);back.add(lamp);
@@ -166,6 +166,26 @@ function addStadium(){
   crowdTexture.repeat.set(1,.56);crowdTexture.offset.set(0,.44);
   crowdTexture.anisotropy=renderer.capabilities.getMaxAnisotropy();
   const crowdMaterial=new THREE.MeshBasicMaterial({map:crowdTexture,side:THREE.DoubleSide,toneMapped:false});
+  // Soften the top of the stand into the night sky without a hard photo edge.
+  crowdMaterial.onBeforeCompile=shader=>{
+    shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`
+      #include <map_fragment>
+      #ifdef USE_MAP
+        float upperBlend=smoothstep(0.80,0.995,vMapUv.y);
+        vec2 spread=vec2(0.004,0.007)*upperBlend;
+        vec3 softCrowd=texture2D(map,vMapUv).rgb*0.20;
+        softCrowd+=texture2D(map,vMapUv+vec2(spread.x,0.0)).rgb*0.15;
+        softCrowd+=texture2D(map,vMapUv-vec2(spread.x,0.0)).rgb*0.15;
+        softCrowd+=texture2D(map,vMapUv+vec2(0.0,spread.y)).rgb*0.15;
+        softCrowd+=texture2D(map,vMapUv-vec2(0.0,spread.y)).rgb*0.15;
+        softCrowd+=texture2D(map,vMapUv+spread).rgb*0.10;
+        softCrowd+=texture2D(map,vMapUv-spread).rgb*0.10;
+        diffuseColor.rgb=mix(diffuseColor.rgb,softCrowd,upperBlend);
+        diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.00273,0.00561,0.01298),upperBlend);
+      #endif
+    `);
+  };
+  crowdMaterial.customProgramCacheKey=()=> 'soft-stand-top-v1';
   const mainCrowd=new THREE.Mesh(new THREE.PlaneGeometry(12.6,4.7),crowdMaterial);
   mainCrowd.position.set(5.54,3.0,0);mainCrowd.rotation.y=-Math.PI/2;back.add(mainCrowd);
   const sideCrowd=new THREE.Mesh(new THREE.PlaneGeometry(15.5,4.7),crowdMaterial);
