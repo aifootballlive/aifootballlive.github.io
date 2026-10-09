@@ -36,6 +36,9 @@ html,body{background:#050a12}
 .wrap>.queues{bottom:28%;left:4%;right:12%}.wrap>.status{bottom:23%;gap:6px;left:4%;right:12%;font-size:9px}
 #soundEnable{bottom:23%!important;right:3%!important;font-size:7px!important;padding:6px 5px!important;max-width:70px}
 .wrap>.status{right:24%}
+
+/* Soft stadium light haze above the crowd. */
+#game3dCanvas::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse 40% 14% at 18% 24%,rgba(47,95,165,.20),transparent 75%),radial-gradient(ellipse 40% 13% at 86% 23%,rgba(181,147,65,.13),transparent 75%),linear-gradient(180deg,transparent 13%,rgba(16,28,47,.18) 24%,transparent 42%);filter:blur(12px)}
 </style>
 </head>
 <body>
@@ -277,6 +280,6 @@ render();boot();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=6"></script>
 <script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=41"></script>
-<script id="game3dScript" src="./game-3d.js?v=49"></script>
+<script id="game3dScript" src="./game-3d.js?v=50"></script>
 </body>
 </html>

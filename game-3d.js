@@ -110,6 +110,7 @@ function createGoal(){
   for(let x=goalX;x<=backX;x+=.16){
     for(const z of [-halfW,halfW])line([x,.08,z],[x,height,z]);
   }
+  if(!DEMO){for(const child of g.children)child.position.x-=goalX;g.position.x=goalX;g.rotation.y=THREE.MathUtils.degToRad(12);}
   return g;
 }
 function addStadium(){
@@ -171,8 +172,8 @@ function addStadium(){
     shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`
       #include <map_fragment>
       #ifdef USE_MAP
-        float upperBlend=smoothstep(0.80,0.995,vMapUv.y);
-        vec2 spread=vec2(0.004,0.007)*upperBlend;
+        float upperBlend=smoothstep(0.72,0.995,vMapUv.y);
+        vec2 spread=vec2(0.012,0.018)*upperBlend;
         vec3 softCrowd=texture2D(map,vMapUv).rgb*0.20;
         softCrowd+=texture2D(map,vMapUv+vec2(spread.x,0.0)).rgb*0.15;
         softCrowd+=texture2D(map,vMapUv-vec2(spread.x,0.0)).rgb*0.15;
