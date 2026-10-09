@@ -115,7 +115,10 @@ function createGoal(){
 function addStadium(){
   const back=new THREE.Group();
   const dark=mat(0x161d2b,.88,0),stepMat=mat(0x252d3d,.9,0);
-  const crowdColors=[0x162e68,0xf0c52f,0xb52b36,0xe8e4dc,0x4a4650,0x7d674f];
+  const leftCrowd=[0x102f73,0x173f9b,0xf0c52f,0xf6d84a,0x1b2b55,0xe8e4dc];
+  const rightCrowd=[0xb5222d,0xd12b38,0xf0c52f,0xf6d84a,0x5e1b25,0xe8e4dc];
+  const neutralCrowd=[0x202733,0x343b48,0x5b4a42,0xe8e4dc];
+  const skinTones=[0xd7ad8b,0xb98264,0x8c5b45,0xe2bea0,0x6f4435];
   const addCrowdRow=(x,y,zStart,count,spacing,axis='z',seed=0)=>{
     const heads=new THREE.InstancedMesh(new THREE.SphereGeometry(.075,7,6),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.9,vertexColors:true}),count);
     const torsos=new THREE.InstancedMesh(new THREE.BoxGeometry(.16,.22,.09),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.92,vertexColors:true}),count);
@@ -125,9 +128,11 @@ function addStadium(){
       const jitter=((i*17+seed*13)%11-5)*.008;
       mh.makeTranslation(pos[0],pos[1]+.13+jitter,pos[2]);heads.setMatrixAt(i,mh);
       mt.makeTranslation(pos[0],pos[1],pos[2]);torsos.setMatrixAt(i,mt);
-      const col=new THREE.Color(crowdColors[(i+seed)%crowdColors.length]);
-      heads.setColorAt(i,new THREE.Color([0xd7ad8b,0xb98264,0x8c5b45,0xe2bea0][(i+seed)%4]));
-      torsos.setColorAt(i,col);
+      const side=pos[2] < -.28 ? 'left' : pos[2] > .28 ? 'right' : 'neutral';
+      const palette=side==='left'?leftCrowd:side==='right'?rightCrowd:neutralCrowd;
+      const colorIndex=(i*7+seed*3)%palette.length;
+      heads.setColorAt(i,new THREE.Color(skinTones[(i+seed*2)%skinTones.length]));
+      torsos.setColorAt(i,new THREE.Color(palette[colorIndex]));
     }
     back.add(torsos,heads);
   };
@@ -136,7 +141,7 @@ function addStadium(){
   for(let row=0;row<11;row++){
     const step=mesh(new THREE.BoxGeometry(.72,.30,11.2),row%2?dark:stepMat);
     step.position.set(6.05+row*.46,.58+row*.39,0);back.add(step);
-    addCrowdRow(5.93+row*.46,.86+row*.39,-5.25,82,.128,'z',row);
+    addCrowdRow(5.93+row*.46,.86+row*.39,-5.25,106,.099,'z',row);
   }
   // Upper deck / dark roof gives the same packed-stadium framing as the reference.
   const roof=mesh(new THREE.BoxGeometry(5.8,.32,12.6),mat(0x0c111a,.82,.03));roof.position.set(8.6,5.35,0);back.add(roof);
@@ -149,7 +154,7 @@ function addStadium(){
   for(let row=0;row<7;row++){
     const terrace=mesh(new THREE.BoxGeometry(15,.27,.78),row%2?dark:stepMat);
     terrace.position.set(-1.0,.72+row*.38,-4.35-row*.52);back.add(terrace);
-    addCrowdRow(-7.8,.98+row*.38,-4.15-row*.52,84,.165,'x',row+20);
+    addCrowdRow(-7.8,.98+row*.38,-4.15-row*.52,102,.136,'x',row+20);
   }
 
   // Rails and pitch-side LED boards.
