@@ -423,9 +423,11 @@ function stabilizeHead(actor,dt){
   }
 }
 function updateCamera(dt){
-  const view=animation?VIEW.shot:VIEW.idle,k=1-Math.exp(-dt*4.5);
-  camera.position.x=lerp(camera.position.x,view.position[0],k);camera.position.y=lerp(camera.position.y,view.position[1],k);camera.position.z=lerp(camera.position.z,view.position[2],k);
-  cameraTarget.x=lerp(cameraTarget.x,view.target[0],k);cameraTarget.y=lerp(cameraTarget.y,view.target[1],k);cameraTarget.z=lerp(cameraTarget.z,view.target[2],k);camera.lookAt(cameraTarget.x,cameraTarget.y,cameraTarget.z);
+  const view=animation?VIEW.shot:VIEW.idle,k=1-Math.exp(-dt*4.5),zoom=Math.max(.75,Math.min(1.4,(Number(runtimeSettings.cameraZoom)||100)/100));
+  const tx=view.target[0],ty=view.target[1],tz=view.target[2];
+  const px=tx+(view.position[0]-tx)*zoom,py=ty+(view.position[1]-ty)*zoom,pz=tz+(view.position[2]-tz)*zoom;
+  camera.position.x=lerp(camera.position.x,px,k);camera.position.y=lerp(camera.position.y,py,k);camera.position.z=lerp(camera.position.z,pz,k);
+  cameraTarget.x=lerp(cameraTarget.x,tx,k);cameraTarget.y=lerp(cameraTarget.y,ty,k);cameraTarget.z=lerp(cameraTarget.z,tz,k);camera.lookAt(cameraTarget.x,cameraTarget.y,cameraTarget.z);
 }
 function solveLeg(chain,target,weight){
   if(chain.some(b=>!b))return;const [hip,knee,foot]=chain;
