@@ -476,7 +476,7 @@ function runAnimation(t){
   }else if(a.phase==='kick'){
     u=clamp((t-a.start)/a.timing.contact,0,1);p.position.x=lerp(-1.9,-1.65,u);p.position.z=SHOT_Z;p.rotation.y=Math.PI/2;
     if(!p.userData.real){p.userData.rl.rotation.x=-1.0*Math.sin(u*Math.PI*.5);p.userData.la.rotation.z=-.18-.45*Math.sin(u*Math.PI*.5);}
-    groundKick(p,smooth(u));if(!a.kickSoundPlayed&&u>=.72){a.kickSoundPlayed=true;phaseEvent('kick');}if(u>=1){a.phase='ball';a.start=t;phaseEvent('ball');}
+    groundKick(p,smooth(u));if(!a.kickSoundPlayed&&u>=.72){a.kickSoundPlayed=true;try{window.AIFootballAudio?.kick?.(0)}catch(e){}phaseEvent('kick');}if(u>=1){a.phase='ball';a.start=t;phaseEvent('ball');}
   }else if(a.phase==='ball'){
     if(t-a.start<170)groundKick(p,1-smooth(clamp((t-a.start)/170,0,1)));
     u=clamp((t-a.start)/650,0,1);
