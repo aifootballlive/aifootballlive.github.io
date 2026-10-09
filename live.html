@@ -155,11 +155,11 @@ async function resetMatch(){if(!adminAuthed||!confirm('Maç tamamen sıfırlans�
 async function logoutAdmin(){await db.auth.signOut();adminAuthed=false;render();location.replace('./admin-edm2026.html')}
 function onPending(payload){const row=payload.new||{};const t=teamFromId(row.attacking_team_id);if(payload.eventType==='INSERT'&&row.status==='pending'&&t){state[t].queue++;render();if(adminAuthed)processQueue();return}if(payload.eventType==='UPDATE'&&row.status==='processing'&&t&&!terminalShots.has(row.id)){terminalShots.add(row.id);state[t].queue=Math.max(0,state[t].queue-1);render();return}if(payload.eventType==='DELETE'){loadRemote(true)}}
 function setupRealtime(){if(!ids.game)return;const channel=db.channel('match-'+ids.game).on('postgres_changes',{event:'UPDATE',schema:'public',table:'teams',filter:'game_id=eq.'+ids.game},p=>{const t=teamFromId(p.new.id);if(t){state[t].score=Number(p.new.score)||0;render()}}).on('postgres_changes',{event:'UPDATE',schema:'public',table:'goalkeeper_opponent_state',filter:'game_id=eq.'+ids.game},p=>{if(p.new.id===ids.keeperState.A)state.keeper.A=Number(p.new.power);if(p.new.id===ids.keeperState.B)state.keeper.B=Number(p.new.power);render()}).on('postgres_changes',{event:'*',schema:'public',table:'pending_shots',filter:'game_id=eq.'+ids.game},onPending).on('postgres_changes',{event:'INSERT',schema:'public',table:'game_events',filter:'game_id=eq.'+ids.game},p=>handleEventRow(p.new,true)).on('postgres_changes',{event:'UPDATE',schema:'public',table:'games',filter:'id=eq.'+ids.game},p=>applyRules(p.new.rules)).subscribe(status=>{realtimeStatus=status;setConn();if(status==='SUBSCRIBED'){loadRemote(true);if(adminAuthed)processQueue()}})}
-async function refreshAndResume(){if(document.hidden)return;await loadRemote(true);if(adminAuthed)await processQueue();}
+async function refreshAndResume(){if(document.hidden||(typeof localShotBusy!=='undefined'&&localShotBusy))return;await loadRemote(true);if(adminAuthed)await processQueue();}
 async function boot(){await getAuth();await loadRemote(true);setupRealtime();db.auth.onAuthStateChange((_event,session)=>{adminAuthed=!!(session&&session.user&&session.user.id===ADMIN_UID);render();setConn();if(adminAuthed)processQueue();});if(adminAuthed)processQueue();setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
 render();boot();
 </script>
-<script id="instantSyncFix" src="./instant-sync.js?v=3"></script>
+<script id="instantSyncFix" src="./instant-sync.js?v=4"></script>
 <script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=25"></script>
 <script id="game3dScript" src="./game-3d.js?v=31"></script>
 </body>
