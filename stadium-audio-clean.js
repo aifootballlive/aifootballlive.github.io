@@ -85,7 +85,33 @@ function noiseBurst(at=0,dur=.08,vol=.07,freq=900,type='bandpass',gainGroup='eff
   g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(Math.max(.0001,vol*factor),now+.006);g.gain.exponentialRampToValueAtTime(.0001,now+dur);
   s.connect(filter);filter.connect(g);g.connect(master);s.start(now);s.stop(now+dur+.04);
 }
-function kick(at=0){const now=Date.now();if(now-lastKickAt<120)return;lastKickAt=now;noiseBurst(at,.095,.52,210,'lowpass');noiseBurst(at+.003,.050,.28,1700,'bandpass');noiseBurst(at+.008,.032,.16,3200,'highpass');tone(78,at,.18,.42,'sine');tone(176,at+.008,.12,.19,'triangle');tone(340,at+.012,.07,.10,'square')}
+function kick(at=0){
+  const now=Date.now();if(now-lastKickAt<120)return;lastKickAt=now;
+  if(!enabled||!ctx)return;
+  const baseCrowd=.075*pct(settings.soundCrowd,72);
+  if(crowdGain){
+    const t=ctx.currentTime;
+    crowdGain.gain.cancelScheduledValues(t);
+    crowdGain.gain.setValueAtTime(Math.max(.004,baseCrowd*.22),t);
+    crowdGain.gain.linearRampToValueAtTime(baseCrowd,t+.34);
+  }
+  const bus=ctx.createGain(),comp=ctx.createDynamicsCompressor();
+  bus.gain.value=2.2;comp.threshold.value=-16;comp.knee.value=10;comp.ratio.value=5;comp.attack.value=.002;comp.release.value=.12;
+  bus.connect(comp);comp.connect(master);
+  const burst=(delay,dur,vol,freq,type)=>{
+    const s=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),g=ctx.createGain(),t=ctx.currentTime+delay;
+    s.buffer=noiseBuffer(Math.max(.12,dur+.05));filter.type=type;filter.frequency.value=freq;filter.Q.value=.7;
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    s.connect(filter);filter.connect(g);g.connect(bus);s.start(t);s.stop(t+dur+.05);
+  };
+  const hit=(freq,delay,dur,vol,type='sine')=>{
+    const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+delay;o.type=type;o.frequency.value=freq;
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g);g.connect(bus);o.start(t);o.stop(t+dur+.03);
+  };
+  burst(at,.085,.95,230,'lowpass');burst(at+.002,.050,.58,1350,'bandpass');burst(at+.006,.035,.34,3400,'highpass');
+  hit(76,at,.19,.82,'sine');hit(168,at+.006,.13,.45,'triangle');hit(330,at+.010,.08,.24,'square');
+}
 function bounce(at=0,scale=1){noiseBurst(at,.05,.062*scale,1200,'bandpass');tone(155,at,.07,.048*scale,'sine')}
 function netHit(){noiseBurst(0,.14,.065,1500,'highpass');bounce(.05,.8);bounce(.22,.52);bounce(.40,.32)}
 function saveSound(){noiseBurst(0,.10,.09,520,'bandpass');tone(145,0,.17,.067,'triangle');bounce(.16,.72)}
@@ -167,6 +193,7 @@ function boot(){
     if(e?.target?.id==='soundEnable')return;
     if(settings.soundEnabled&&!enabled)enableSound().catch(()=>{});
   };
+  if(settings.soundEnabled)enableSound().catch(()=>{});
   document.addEventListener('pointerdown',unlock,{capture:true});
   document.addEventListener('touchstart',unlock,{capture:true,passive:true});
   document.addEventListener('keydown',unlock,{capture:true});
