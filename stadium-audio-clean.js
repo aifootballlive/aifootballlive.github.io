@@ -2,6 +2,7 @@
 'use strict';
 let ctx=null,master=null,teamTimer=null,currentTeam=null,enabled=false,lastGoalAt=0,lastKickAt=0,nativeGoalSound=null;
 let userMuted=false;
+let goalBufferPromise=null,goalSource=null,goalGeneration=0;
 let crowdBufferPromise=null,crowdLoading=false,crowdGeneration=0;
 let crowdSource=null,crowdGain=null,crowdLfo=null,crowdLfoGain=null;
 let settings={soundMaster:88,soundCrowd:72,soundEffects:92,soundGoal:100,soundEnabled:true,crowdEnabled:true,announcerEnabled:true};
@@ -65,7 +66,7 @@ async function enableSound(){
   patchNativeGoalSound();
   const b=ensureButton();
   try{
-    if(!ctx){ctx=new(window.AudioContext||window.webkitAudioContext)();ctx.addEventListener('statechange',syncSoundState);}
+    if(!ctx){ctx=new(window.AudioContext||window.webkitAudioContext)();ctx.addEventListener('statechange',syncSoundState);loadGoalBuffer().catch(()=>{});}
     if(!master){master=ctx.createGain();master.connect(ctx.destination)}
     syncSoundState();
     if(ctx.state!=='running'&&ctx.state!=='closed')await ctx.resume();
@@ -77,6 +78,7 @@ async function enableSound(){
   }
 }
 function disableSound(){
+  goalGeneration++;try{goalSource?.stop()}catch(e){}goalSource=null;
   userMuted=true;
   enabled=false;window.__aiFootballSoundEnabled=false;stopTeamMusic();stopCrowd();
   try{if(master)master.gain.value=0}catch(e){}
@@ -160,21 +162,22 @@ function startTeamMusic(team){
   currentTeam=team;if(teamTimer)clearInterval(teamTimer);playMotif(team);teamTimer=setInterval(()=>playMotif(team),4200);
 }
 function stopTeamMusic(){currentTeam=null;if(teamTimer){clearInterval(teamTimer);teamTimer=null}}
-function speakGoal(){
-  if(!enabled)return;
-  const now=Date.now();if(now-lastGoalAt<1600)return;lastGoalAt=now;cheer();
-  if(settings.announcerEnabled){
-    try{
-      if('speechSynthesis'in window){
-        speechSynthesis.cancel();
-        const u=new SpeechSynthesisUtterance('Gooooooooooooool!');
-        u.lang='tr-TR';u.rate=.58;u.pitch=.82;u.volume=pct(settings.soundGoal,100);
-        const voices=speechSynthesis.getVoices(),tr=voices.find(v=>/^tr/i.test(v.lang));
-        if(tr)u.voice=tr;speechSynthesis.speak(u);
-      }
-    }catch(e){}
-  }
-  [392,523,659,784].forEach((f,i)=>tone(f,i*.09,.28,.045,'sawtooth','goal'));
+function loadGoalBuffer(){
+  if(!goalBufferPromise)goalBufferPromise=fetch('./assets/audio/goal-shout-v1.wav?v=1').then(r=>{if(!r.ok)throw new Error('Goal audio unavailable');return r.arrayBuffer()}).then(bytes=>ctx.decodeAudioData(bytes)).catch(error=>{goalBufferPromise=null;throw error});
+  return goalBufferPromise;
+}
+async function speakGoal(){
+  if(!enabled||userMuted||ctx?.state!=='running'||!settings.announcerEnabled)return;
+  const now=Date.now();if(now-lastGoalAt<1600||goalSource)return;lastGoalAt=now;
+  const generation=goalGeneration;
+  try{
+    const buffer=await loadGoalBuffer();
+    if(generation!==goalGeneration||!enabled||userMuted||!settings.announcerEnabled||ctx.state!=='running'||goalSource)return;
+    const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;source.loop=false;
+    gain.gain.value=1.25*pct(settings.soundGoal,100);source.connect(gain);gain.connect(master);goalSource=source;
+    source.onended=()=>{if(goalSource===source)goalSource=null;source.disconnect();gain.disconnect();};
+    source.start(0,0,Math.min(4,buffer.duration));
+  }catch(error){console.warn('Gol sesi yuklenemedi',error)}
 }
 async function applySettings(next){
   readSettings(next);
