@@ -252,6 +252,7 @@ function clipsFor(gltf){const clips=gltf.animations||[];const pick=(...re)=>clip
 function prepareActor(gltf,type,team){
   // Keep normalization on the visual child; match movement belongs to the wrapper.
   const model=gltf.scene;normalizeModel(model,2.42);tintTeamModel(model,team);
+  if(!DEMO&&type==='player'&&team==='B')recolorKit(model,'#c91f2c','#ffd21f');
   const root=new THREE.Group();root.add(model);
   const mixer=new THREE.AnimationMixer(model),clips=clipsFor(gltf),actions={};
   for(const name of ['idle','run','kick']){
@@ -525,6 +526,7 @@ function runAnimation(t){
     // Both outcomes share the approach. Never cross the goal before its result arrives.
     ball.position.set(lerp(-1,3.45,u),lerp(.14,.90,u)+Math.sin(u*Math.PI)*.55,lerp(SHOT_Z,targetZ,u));
     ball.rotation.x+=.25;ball.rotation.z+=.18;
+    if(a.result==='goal'){const dive=smooth(u);keeper.position.z=GOAL_Z-side*1.05*dive;keeper.position.y=Math.sin(u*Math.PI)*.20;keeper.rotation.x=-side*.95*dive;}
     if(a.result==='save'){
       keeper.position.z=lerp(GOAL_Z,targetZ-side*Math.sin(.85)*(DEMO?.65:1.3),smooth(u));
       if(!keeper.userData.real)keeper.rotation.x=lerp(0,.85*(side>0?1:-1),smooth(u));else{const actionName=side>0?'saveRight':'saveLeft';if(keeper.userData.actions?.[actionName])playAction(keeper,actionName);else keeper.rotation.x=lerp(0,.95*(side>0?1:-1),smooth(u));}
@@ -536,8 +538,10 @@ function runAnimation(t){
     u=clamp((t-a.start)/350,0,1);
     if(a.result==='goal'){
       // The goal plane is x=4.42; only a confirmed goal may travel beyond it.
-      ball.position.set(lerp(3.45,5.01,u),lerp(.90,.70,u)+Math.sin(u*Math.PI)*.12,targetZ);
-      keeper.position.z=lerp(GOAL_Z,GOAL_Z-side*.2,smooth(u));
+      const end=DEMO?new THREE.Vector3(5.01,.70,targetZ):goalObject.localToWorld(new THREE.Vector3(.82,.70,targetZ-goalObject.position.z));
+      ball.position.set(lerp(3.45,end.x,u),lerp(.90,end.y,u)+Math.sin(u*Math.PI)*.12,lerp(targetZ,end.z,u));
+      keeper.position.z=GOAL_Z-side*1.05;keeper.position.y=0;keeper.rotation.x=-side*.95;
+      const local=goalObject.worldToLocal(ball.position.clone());if(!a.goalSoundPlayed&&local.x>=0){a.goalSoundPlayed=true;phaseEvent('net');}
     }else{
       // A save rebounds away from the net and outside the central shooting lane.
       ball.position.set(lerp(3.45,2.35,u),lerp(.90,.14,u)+Math.sin(u*Math.PI)*.30,lerp(targetZ,GOAL_Z+side*1.4,u));
@@ -547,11 +551,11 @@ function runAnimation(t){
       else keeper.rotation.x=.95*(side>0?1:-1);
     }
     ball.rotation.x+=.25;ball.rotation.z+=.18;
-    if(u>=1){a.phase=a.result==='goal'?'net':'result';a.start=t;if(a.phase==='net')phaseEvent('net');}
+    if(u>=1){a.phase=a.result==='goal'?'net':'result';a.start=t;if(a.phase==='net'&&!a.goalSoundPlayed){a.goalSoundPlayed=true;phaseEvent('net');}}
   }else if(a.phase==='net'){
     u=clamp((t-a.start)/420,0,1);
     // Contact with the rear net reverses the ball and drops it inside the goal.
-    ball.position.set(lerp(5.01,4.68,smooth(u)),lerp(.70,.14,u)+Math.sin(u*Math.PI)*.08,targetZ);
+    if(!a.netEnd)a.netEnd=ball.position.clone();ball.position.set(a.netEnd.x-.25*smooth(u),lerp(.70,.14,u)+Math.sin(u*Math.PI)*.08,a.netEnd.z);
     ball.rotation.x+=.08;
     if(u>=1){a.phase='result';a.start=t;}
   }else if(a.phase==='result'){
