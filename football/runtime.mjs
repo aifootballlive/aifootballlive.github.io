@@ -1,10 +1,11 @@
+import {eventId} from './id.mjs';
 import {loadState} from './config.mjs';
 import {FootballEngine} from './engine.mjs';
 import {EventController} from './controller.mjs?v=22';
 const CHANNEL='aifootball-live-demo-v1',LOCK='aifootball-demo-controller';
 export class Runtime extends EventTarget {
   constructor(){
-    super();this.state=loadState();this.clientId=crypto.randomUUID();this.leader=false;this.seenCommands=new Set();this.closed=false;
+    super();this.state=loadState();this.clientId=eventId();this.leader=false;this.seenCommands=new Set();this.closed=false;
     const endpoint=document.querySelector('meta[name="football-controller"]')?.content;
     if(endpoint){this.remoteUrl=new URL(endpoint,location.href);this.remoteUrl.protocol=location.protocol==='https:'?'wss:':'ws:';this.connectRemote();return;}
     this.channel=new BroadcastChannel(CHANNEL);this.engine=new FootballEngine(this.state,{publish:state=>this.publish(state)});
@@ -40,7 +41,7 @@ export class Runtime extends EventTarget {
   command(command,payload={}){
     if(this.remoteUrl){if(this.socket.readyState===WebSocket.OPEN)this.socket.send(JSON.stringify({type:'command',command,payload}));else this.dispatchEvent(new CustomEvent('error',{detail:'Yerel yayın bağlantısı henüz hazır değil.'}));}
     else if(this.leader)this.controller.execute(command,payload).catch(error=>this.report(error));
-    else this.channel.postMessage({type:'command',id:crypto.randomUUID(),command,payload});
+    else this.channel.postMessage({type:'command',id:eventId(),command,payload});
   }
   close(){this.closed=true;clearTimeout(this.reconnect);this.socket?.close();this.release?.();this.channel?.close();}
 }

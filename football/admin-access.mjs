@@ -6,7 +6,7 @@ async function enter(){
   gate.hidden=true;panel.hidden=false;
   document.getElementById('ownerAccount').textContent=session.owner||'Yönetici';
   document.getElementById('deviceControls').hidden=session.device!=='pc';
-  if(!window.adminLoaded){window.adminLoaded=true;await import('./admin.mjs');}
+  if(!window.adminLoaded){window.adminLoaded=true;await import('./admin.mjs?v=24');}
   return true;
 }
 document.getElementById('pairPhone').onclick=async()=>{try{const result=await request('/api/admin/pair',{});document.getElementById('pairDetails').textContent=`Kod: ${result.code} · 10 dakika geçerli. Telefonda aynı Wi-Fi üzerinden ${result.phoneUrl} adresini açın.`;}catch(error){document.getElementById('pairDetails').textContent=error.message;}};

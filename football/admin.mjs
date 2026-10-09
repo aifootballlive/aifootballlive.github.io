@@ -1,4 +1,5 @@
-import {Runtime} from './runtime.mjs?v=22';
+import {eventId} from './id.mjs';
+import {Runtime} from './runtime.mjs?v=24';
 const runtime=new Runtime();window.footballRuntime=runtime;const $=id=>document.getElementById(id);let draft=null,lastTeamSignature='';
 function button(text,onclick){const b=document.createElement('button');b.textContent=text;b.onclick=onclick;return b;}
 function field(label,value,type='text'){const wrap=document.createElement('label');wrap.append(document.createTextNode(label));const input=document.createElement('input');input.type=type;input.value=value;wrap.append(input);return {wrap,input};}
@@ -23,7 +24,7 @@ $('connect').onclick=()=>runtime.command('connection',{mode:$('mode').value,brid
 for(const id of ['audioEnabled','crowd','volume'])$(id).onchange=()=>runtime.command('audio',{enabled:$('audioEnabled').checked,crowd:$('crowd').checked,volume:Number($('volume').value)});
 $('goalSound').onclick=()=>runtime.command('audioTest',{sound:'goal'});$('saveSound').onclick=()=>runtime.command('audioTest',{sound:'save'});
 for(const b of document.querySelectorAll('[data-social]'))b.onclick=()=>runtime.command('social',{type:b.dataset.social});
-$('addTeam').onclick=()=>{if(draft.teams.length>=6){$('notice').textContent='En fazla 6 takım eklenebilir.';return;}draft.teams.push({id:'team-'+crypto.randomUUID().slice(0,8),name:'Yeni takım',shortName:'YT',color:'#7bcced',secondaryColor:'#174d5c',model:'./assets/models/player-a.glb?v=6'});editors();};
+$('addTeam').onclick=()=>{if(draft.teams.length>=6){$('notice').textContent='En fazla 6 takım eklenebilir.';return;}draft.teams.push({id:'team-'+eventId().slice(0,8),name:'Yeni takım',shortName:'YT',color:'#7bcced',secondaryColor:'#174d5c',model:'./assets/models/player-a.glb?v=6'});editors();};
 $('addGift').onclick=()=>{if(!draft.teams.length)return;draft.giftMappings.push({giftId:'gift-'+draft.giftMappings.length,name:'Yeni hediye',teamId:draft.teams[0].id,shots:1,points:1});editors();};
 $('saveConfig').onclick=()=>{draft.gameSettings.goalProbability=Number($('probability').value)/100;draft.audioSettings={...runtime.state.audioSettings};draft.connection={...runtime.state.connection};runtime.command('config',draft);};
 runtime.addEventListener('state',({detail})=>render(detail));runtime.addEventListener('error',({detail})=>$('notice').textContent=detail);render(runtime.state);
