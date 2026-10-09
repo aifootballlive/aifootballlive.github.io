@@ -464,9 +464,8 @@ function updateCamera(dt){
       const follow=clamp((ball.position.x+1)/4.45,0,1);
       view={position:[-6.0,2.45,1.7],target:[lerp(1.6,3.1,follow),lerp(.95,ball.position.y,follow*.3),ball.position.z*.22]};
     }else if(['outcome','net','result'].includes(phase)){
-      const goal=animation.result==='goal';
-      const focus=goal?ball.position:{x:3.45,y:1.0,z:animation.targetZ??shotTarget(animation.team)};
-      view={position:[animation.player.position.x-2.65,1.65,animation.player.position.z+1.65],target:[focus.x,Math.max(.9,focus.y),focus.z*.35]};
+      // A low view beside the shooter, looking into the goal rather than at the player.
+      view={position:[animation.player.position.x-2.25,1.16,animation.player.position.z+1.05],target:[4.42,1.12,GOAL_Z]};
     }else view=VIEW.shot;
   }else if(animation)view=VIEW.shot;
   const closeView=animation&&!DEMO&&['outcome','net','result'].includes(animation.phase);
@@ -488,9 +487,9 @@ function updateCamera(dt){
       const edge=center.clone().addScaledVector(right,-.42),projected=edge.clone().project(camera);
       const depth=-edge.clone().applyMatrix4(camera.matrixWorldInverse).z;
       if(depth>0&&projected.x<-.84){
-        const shift=(projected.x+.84)*depth*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*camera.aspect;
+        const shift=(projected.x+(closeView?.68:.84))*depth*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*camera.aspect;
         camera.position.addScaledVector(right,shift);
-        cameraTarget.x+=right.x*shift;cameraTarget.y+=right.y*shift;cameraTarget.z+=right.z*shift;
+        if(!closeView){cameraTarget.x+=right.x*shift;cameraTarget.y+=right.y*shift;cameraTarget.z+=right.z*shift;}
         camera.lookAt(cameraTarget.x,cameraTarget.y,cameraTarget.z);
       }
     }
