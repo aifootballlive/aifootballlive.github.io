@@ -16,8 +16,8 @@ const ASSETS={
   keeper:'./assets/models/goalkeeper.glb'
 };
 
-const HOME={A:{x:-3.10,z:-1.12},B:{x:-3.00,z:1.12}};
-const VIEW={idle:{position:[-5.15,2.18,0],target:[-.15,1.16,0]},shot:{position:[-4.55,2.02,0],target:[1.05,1.02,0]}};
+const HOME={A:{x:-3.55,z:1.72},B:{x:-3.25,z:2.62}};
+const VIEW={idle:{position:[-6.60,2.62,5.40],target:[.55,1.06,0]},shot:{position:[-5.85,2.42,4.35],target:[1.05,1.02,0]}};
 if(DEMO){VIEW.idle={position:[-12,4.6,0],target:[1,1.05,0]};VIEW.shot=VIEW.idle;}
 const GOAL_Z=DEMO?2.35:0,SHOT_Z=DEMO?.25:0;
 const shotSide=team=>team==='A'?1:team==='B'?-1:.35;
@@ -197,7 +197,7 @@ function prepareActor(gltf,type,team){
       return bone?{bone,restWorld:bone.getWorldQuaternion(new THREE.Quaternion()),smoothed:null,limit:name.endsWith('Head')?.20:.30}:null;
     }).filter(Boolean);
   }
-  root.position.set(root.userData.homeX,0,root.userData.homeZ);root.rotation.y=root.userData.baseRotationY;playAction(root,'idle');return root;
+  root.position.set(root.userData.homeX,0,root.userData.homeZ);root.rotation.y=root.userData.baseRotationY;playAction(root,'idle');if(root.userData.actions.idle)root.userData.actions.idle.setEffectiveTimeScale(team==='A'?.58:.52);return root;
 }
 function playAction(actor,name){
   if(!actor?.userData?.real)return;
@@ -252,7 +252,7 @@ async function tryLoadRealModels(){
   })();
   return playerALoad;
 }
-function resize(){if(!renderer||!camera)return;const box=document.getElementById('game3dCanvas')?.getBoundingClientRect();if(!box||!box.width)return;renderer.setSize(box.width,box.height,false);camera.aspect=box.width/box.height;camera.fov=DEMO?49:(camera.aspect<1.25?46:32);camera.updateProjectionMatrix()}
+function resize(){if(!renderer||!camera)return;const box=document.getElementById('game3dCanvas')?.getBoundingClientRect();if(!box||!box.width)return;renderer.setSize(box.width,box.height,false);camera.aspect=box.width/box.height;camera.fov=DEMO?49:(camera.aspect<1.25?52:39);camera.updateProjectionMatrix()}
 function resetPose(){if(DEMO){resetDemoPose();return;}if(!playerA||!playerB||!keeper||!ball)return;for(const p of [playerA,playerB]){p.visible=true;p.position.set(p.userData.homeX,0,p.userData.homeZ);p.rotation.set(0,p.userData.baseRotationY??Math.PI/2,0);if(p.userData.real)playAction(p,'idle');else{p.userData.ll.rotation.set(0,0,0);p.userData.rl.rotation.set(0,0,0);p.userData.la.rotation.set(0,0,-.18);p.userData.ra.rotation.set(0,0,.18)}}keeper.position.set(keeper.userData.homeX??3.75,0,keeper.userData.homeZ??0);keeper.rotation.set(0,keeper.userData.baseRotationY??-Math.PI/2,0);if(keeper.userData.real)playAction(keeper,'idle');else{keeper.userData.la.rotation.set(0,0,-.4);keeper.userData.ra.rotation.set(0,0,.4)}ball.position.set(-1,.14,0);}
 function naturalRealIdle(actor,t,phase=0){
   if(!actor?.userData?.real)return;
