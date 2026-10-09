@@ -19,7 +19,7 @@ function ensureButton(){
   let b=$('soundEnable');if(b)return b;
   b=document.createElement('button');b.id='soundEnable';b.textContent='SESİ AÇ';
   Object.assign(b.style,{position:'fixed',right:'10px',bottom:'10px',zIndex:'500',border:'1px solid #6f84c5',background:'#1f315c',color:'#fff',borderRadius:'10px',padding:'10px 12px',fontWeight:'900',fontSize:'11px',boxShadow:'0 6px 22px rgba(0,0,0,.35)'});
-  b.onclick=toggleSound;document.body.appendChild(b);return b;
+  b.onclick=async e=>{e.preventDefault();e.stopPropagation();if(enabled)disableSound();else{settings.soundEnabled=true;window.__AI_FOOTBALL_SETTINGS={...(window.__AI_FOOTBALL_SETTINGS||{}),soundEnabled:true};await enableSound();}};document.body.appendChild(b);return b;
 }
 function patchNativeGoalSound(){
   if(nativeGoalSound||typeof window.playGoalSound!=='function')return;
@@ -163,7 +163,10 @@ function bind(){
 }
 function boot(){
   readSettings();window.__aiFootballSoundEnabled=false;patchNativeGoalSound();ensureButton();bind();
-  const unlock=()=>{if(settings.soundEnabled&&!enabled)enableSound().catch(()=>{})};
+  const unlock=e=>{
+    if(e?.target?.id==='soundEnable')return;
+    if(settings.soundEnabled&&!enabled)enableSound().catch(()=>{});
+  };
   document.addEventListener('pointerdown',unlock,{capture:true});
   document.addEventListener('touchstart',unlock,{capture:true,passive:true});
   document.addEventListener('keydown',unlock,{capture:true});
