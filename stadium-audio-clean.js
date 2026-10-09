@@ -18,7 +18,7 @@ function refreshVolumes(){
 }
 function ensureButton(){
   let b=$('soundEnable');if(b)return b;
-  b=document.createElement('button');b.id='soundEnable';b.textContent='SESİ AÇ';
+  b=document.createElement('button');b.id='soundEnable';b.textContent='SESİ KAPAT';
   Object.assign(b.style,{position:'fixed',right:'10px',bottom:'10px',zIndex:'500',border:'1px solid #6f84c5',background:'#1f315c',color:'#fff',borderRadius:'10px',padding:'10px 12px',fontWeight:'900',fontSize:'11px',boxShadow:'0 6px 22px rgba(0,0,0,.35)'});
   b.onclick=async e=>{e.preventDefault();e.stopPropagation();await toggleSound();};document.body.appendChild(b);return b;
 }
@@ -26,10 +26,10 @@ function syncSoundState(){
   enabled=!userMuted&&settings.soundEnabled&&ctx?.state==='running';
   window.__aiFootballSoundEnabled=enabled;
   const b=ensureButton();
-  b.textContent=userMuted||!settings.soundEnabled?'SES KAPALI':enabled?'SES AÇIK':'SES İÇİN TIKLA';
-  b.style.background=enabled?'#287a5b':userMuted||!settings.soundEnabled?'#1f315c':'#8a5b19';
-  b.setAttribute('aria-pressed',String(enabled));
-  if(enabled){refreshVolumes();if(settings.crowdEnabled)startCrowd()}else{stopTeamMusic();stopCrowd();}
+  b.textContent=userMuted||!settings.soundEnabled?'SESİ AÇ':'SESİ KAPAT';
+  b.style.background=userMuted||!settings.soundEnabled?'#1f315c':'#8e2f44';
+  b.setAttribute('aria-pressed',String(!userMuted&&settings.soundEnabled));
+  if(enabled){refreshVolumes();if(settings.crowdEnabled)startCrowd()}else if(userMuted||!settings.soundEnabled){stopTeamMusic();stopCrowd();}
 }
 function patchNativeGoalSound(){
   if(nativeGoalSound||typeof window.playGoalSound!=='function')return;
@@ -70,7 +70,7 @@ async function enableSound(){
 
   }catch(e){
     enabled=false;window.__aiFootballSoundEnabled=false;
-    b.textContent='SES İÇİN TIKLA';b.style.background='#8a5b19';
+    b.textContent='SESİ KAPAT';b.style.background='#8e2f44';
   }
 }
 function disableSound(){
@@ -82,7 +82,7 @@ function disableSound(){
   syncSoundState();
 }
 async function toggleSound(){
-  if(enabled){disableSound()}
+  if(!userMuted&&settings.soundEnabled){disableSound()}
   else{userMuted=false;settings.soundEnabled=true;window.__AI_FOOTBALL_SETTINGS={...(window.__AI_FOOTBALL_SETTINGS||{}),soundEnabled:true};await enableSound()}
 }
 function tone(freq,at,dur=.16,vol=.045,type='sine',gainGroup='effects'){
@@ -223,19 +223,19 @@ function bind(){
   }
 }
 function boot(){
-  readSettings();settings.soundEnabled=true;
+  readSettings();userMuted=false;settings.soundEnabled=true;
   window.__AI_FOOTBALL_SETTINGS={...(window.__AI_FOOTBALL_SETTINGS||{}),soundEnabled:true};
   window.__aiFootballSoundEnabled=false;patchNativeGoalSound();
-  const b=ensureButton();b.textContent='SES İÇİN TIKLA';b.style.background='#8a5b19';bind();
+  const b=ensureButton();b.textContent='SESİ KAPAT';b.style.background='#8e2f44';bind();
   const unlock=e=>{
     if(e?.target?.id==='soundEnable')return;
-    if(settings.soundEnabled&&(!enabled||ctx?.state!=='running'))enableSound().catch(()=>{});
+    if(!userMuted&&settings.soundEnabled&&(!enabled||ctx?.state!=='running'))enableSound().catch(()=>{});
   };
   enableSound().catch(()=>{});
   document.addEventListener('pointerdown',unlock,{capture:true});
   document.addEventListener('touchstart',unlock,{capture:true,passive:true});
   document.addEventListener('keydown',unlock,{capture:true});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&settings.soundEnabled)enableSound().catch(()=>{})});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!userMuted&&settings.soundEnabled)enableSound().catch(()=>{})});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.AIFootballAudio={enableSound,disableSound,toggleSound,startTeamMusic,stopTeamMusic,speakGoal,kick,bounce,applySettings,get enabled(){return enabled},get settings(){return {...settings}}};
