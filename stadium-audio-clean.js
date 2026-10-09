@@ -114,10 +114,12 @@ function kick(at=0){
   at=Math.max(0,Number(at)||0);
   // Kick is mixed over the uninterrupted crowd recording.
   const out=ctx.createGain(),comp=ctx.createDynamicsCompressor(),lowShelf=ctx.createBiquadFilter();
-  out.gain.value=2.8*fx;
+  out.gain.value=4.8*fx;
   lowShelf.type='lowshelf';lowShelf.frequency.value=180;lowShelf.gain.value=7;
   comp.threshold.value=-8;comp.knee.value=8;comp.ratio.value=4;comp.attack.value=.001;comp.release.value=.18;
-  out.connect(lowShelf);lowShelf.connect(comp);comp.connect(master);
+  out.connect(lowShelf);lowShelf.connect(comp);
+  const impactGain=ctx.createGain();impactGain.gain.value=2.2;
+  comp.connect(impactGain);impactGain.connect(master);
 
   const noiseHit=(delay,dur,vol,lowpass)=>{
     const src=ctx.createBufferSource(),lp=ctx.createBiquadFilter(),hp=ctx.createBiquadFilter(),g=ctx.createGain(),t=ctx.currentTime+delay;
