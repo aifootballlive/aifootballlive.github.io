@@ -110,7 +110,7 @@ function createGoal(){
   for(let x=goalX;x<=backX;x+=.16){
     for(const z of [-halfW,halfW])line([x,.08,z],[x,height,z]);
   }
-  if(!DEMO){for(const child of g.children)child.position.x-=goalX;g.position.x=goalX;g.rotation.y=THREE.MathUtils.degToRad(12);}
+  if(!DEMO){for(const child of g.children)child.position.x-=goalX;g.position.x=goalX;g.rotation.y=THREE.MathUtils.degToRad(-10);}
   return g;
 }
 function addStadium(){
@@ -149,22 +149,10 @@ function addStadium(){
   }
   // Upper deck / dark roof gives the same packed-stadium framing as the reference.
   const roof=mesh(new THREE.BoxGeometry(5.8,.32,12.6),mat(0x0c111a,.82,.03));roof.position.set(8.6,5.35,0);
-  for(let z=-5.4;z<=5.4;z+=1.35){
-    const lamp=mesh(new THREE.BoxGeometry(.24,.18,.85),new THREE.MeshStandardMaterial({color:0xf4f7ff,emissive:0xd7e7ff,emissiveIntensity:3.0,roughness:.35}));
-    lamp.position.set(5.75,4.92,z);back.add(lamp);
-  }
-
-  // Side stand visible on the left/background.
-  for(let row=0;row<7;row++){
-    const terrace=mesh(new THREE.BoxGeometry(15,.27,.78),row%2?dark:stepMat);
-    terrace.position.set(-1.0,.72+row*.38,-4.35-row*.52);back.add(terrace);
-    addCrowdRow(-4.15-row*.52,.98+row*.38,-7.8,116,.132,'x',row+20);
-  }
-
   // Reference crowd panels cover the stepped stands, leaving the live goal in 3D.
-  const crowdTexture=new THREE.TextureLoader().load('./assets/backgrounds/packed-stands.png?v=1');
+  const crowdTexture=new THREE.TextureLoader().load('./assets/backgrounds/continuous-stands-v2.png?v=1');
   crowdTexture.colorSpace=THREE.SRGBColorSpace;
-  crowdTexture.repeat.set(1,.56);crowdTexture.offset.set(0,.44);
+  crowdTexture.repeat.set(1,1);crowdTexture.offset.set(0,0);
   crowdTexture.anisotropy=renderer.capabilities.getMaxAnisotropy();
   const crowdMaterial=new THREE.MeshBasicMaterial({map:crowdTexture,side:THREE.DoubleSide,toneMapped:false});
   // Soften the top of the stand into the night sky without a hard photo edge.
@@ -187,10 +175,8 @@ function addStadium(){
     `);
   };
   crowdMaterial.customProgramCacheKey=()=> 'soft-stand-top-v1';
-  const mainCrowd=new THREE.Mesh(new THREE.PlaneGeometry(12.6,4.7),crowdMaterial);
-  mainCrowd.position.set(5.54,3.0,0);mainCrowd.rotation.y=-Math.PI/2;back.add(mainCrowd);
-  const sideCrowd=new THREE.Mesh(new THREE.PlaneGeometry(15.5,4.7),crowdMaterial);
-  sideCrowd.position.set(-1,3.0,-4.0);back.add(sideCrowd);
+  const continuousCrowd=new THREE.Mesh(new THREE.PlaneGeometry(29,6.0),crowdMaterial);
+  continuousCrowd.position.set(5.75,3.35,0);continuousCrowd.rotation.y=-Math.PI/2;back.add(continuousCrowd);
 
   // Rails and pitch-side LED boards.
   const railMat=mat(0x8993a2,.45,.22);
