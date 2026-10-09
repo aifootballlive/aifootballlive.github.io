@@ -107,7 +107,8 @@ async function refreshAndResume(){if(document.hidden)return;await loadRemote(tru
 async function boot(){await getAuth();await loadRemote(true);setupRealtime();db.auth.onAuthStateChange((_event,session)=>{adminAuthed=!!(session&&session.user&&session.user.id===ADMIN_UID);render();setConn();processQueue();});processQueue();setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
 render();boot();
 </script>
+<script id="instantSyncFix" src="./instant-sync.js?v=2"></script>
 <script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=25"></script>
-<script id="game3dScript" src="./game-3d.js?v=30"></script>
+<script id="game3dScript" src="./game-3d.js?v=31"></script>
 </body>
 </html>
