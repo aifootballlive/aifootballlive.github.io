@@ -87,7 +87,7 @@ function createKeeper(){
   const armGeo=new THREE.CapsuleGeometry(.075,.54,5,8),legGeo=new THREE.CapsuleGeometry(.095,.62,5,8);
   const la=mesh(armGeo,skin),ra=mesh(armGeo,skin);la.position.set(-.4,1.38,0);ra.position.set(.4,1.38,0);la.rotation.z=-.4;ra.rotation.z=.4;root.add(la,ra);
   const ll=mesh(legGeo,dark),rl=mesh(legGeo,dark);ll.position.set(-.15,.45,0);rl.position.set(.15,.45,0);root.add(ll,rl);
-  root.userData={real:false,la,ra,ll,rl,homeX:3.75,homeZ:0};root.position.set(3.75,0,0);root.rotation.y=-Math.PI/2;return root;
+  root.userData={real:false,la,ra,ll,rl,homeX:3.78,homeZ:GOAL_Z};root.position.set(3.78,0,GOAL_Z);root.rotation.y=-Math.PI/2;return root;
 }
 function createGoal(){
   const g=new THREE.Group(),white=mat(0xf7f8fb,.34,.06);
@@ -200,9 +200,8 @@ function addStadium(){
   };
   led(-2.75,-4.15,12.0,'jersey','#102f73','#f8d437');
   led(4.05,-4.15,1.6,'AI FOOTBALL','#1f2945','#ffffff');
-  led(5.50,-2.10,.10,' ','#202631');
   const sideA=mesh(new THREE.BoxGeometry(.11,.62,3.5),new THREE.MeshStandardMaterial({color:0x143b86,emissive:0x0d2453,emissiveIntensity:.25,roughness:.55}));sideA.position.set(5.65,.34,-2.35);back.add(sideA);
-  const sideB=mesh(new THREE.BoxGeometry(.11,.62,3.0),new THREE.MeshStandardMaterial({color:0xc72a35,emissive:0x5f1218,emissiveIntensity:.25,roughness:.55}));sideB.position.set(5.58,.34,2.25);back.add(sideB);
+  const sideB=mesh(new THREE.BoxGeometry(.11,.62,2.2),new THREE.MeshStandardMaterial({color:0xc72a35,emissive:0x5f1218,emissiveIntensity:.25,roughness:.55}));sideB.position.set(5.72,.34,5.05);back.add(sideB);
 
   // Stadium light wash.
   const flood1=new THREE.PointLight(0xdceaff,2.4,28,2);flood1.position.set(3.8,6.2,-4.8);back.add(flood1);
