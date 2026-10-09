@@ -106,7 +106,7 @@ function createGoal(){
   for(let z=-halfW;z<=halfW;z+=.20){
     line([backX,.10,z],[backX,height,z]);
     line([goalX,height,z],[backX,height,z]);
-    line([goalX,.08,z],[backX,.08,z]);
+
   }
   for(let x=goalX;x<=backX;x+=.16){
     for(const z of [-halfW,halfW])line([x,.08,z],[x,height,z]);
