@@ -160,6 +160,17 @@ function addStadium(){
     addCrowdRow(-4.15-row*.52,.98+row*.38,-7.8,116,.132,'x',row+20);
   }
 
+  // Reference crowd panels cover the stepped stands, leaving the live goal in 3D.
+  const crowdTexture=new THREE.TextureLoader().load('./assets/backgrounds/packed-stands.png?v=1');
+  crowdTexture.colorSpace=THREE.SRGBColorSpace;
+  crowdTexture.repeat.set(1,.56);crowdTexture.offset.set(0,.44);
+  crowdTexture.anisotropy=renderer.capabilities.getMaxAnisotropy();
+  const crowdMaterial=new THREE.MeshBasicMaterial({map:crowdTexture,side:THREE.DoubleSide,toneMapped:false});
+  const mainCrowd=new THREE.Mesh(new THREE.PlaneGeometry(12.6,4.7),crowdMaterial);
+  mainCrowd.position.set(5.54,3.0,0);mainCrowd.rotation.y=-Math.PI/2;back.add(mainCrowd);
+  const sideCrowd=new THREE.Mesh(new THREE.PlaneGeometry(15.5,4.7),crowdMaterial);
+  sideCrowd.position.set(-1,3.0,-4.0);back.add(sideCrowd);
+
   // Rails and pitch-side LED boards.
   const railMat=mat(0x8993a2,.45,.22);
   for(const y of [1.02,2.58,4.10]){
