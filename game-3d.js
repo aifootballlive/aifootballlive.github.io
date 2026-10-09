@@ -423,7 +423,7 @@ function animate(){
   if(!renderer||!scene||!camera)return;
   const dt=Math.min(clock?.getDelta?.()||.016,.05),t=performance.now();
   for(const actor of [playerA,playerB,keeper,...demoActors.values()])restoreIdleBones(actor);
-  for(const m of mixers)m.update(dt);updateCamera(dt);
+  for(const m of mixers)m.update(dt);
   installPlayerA();
   if(animation)runAnimation(t);
   else{
@@ -432,7 +432,7 @@ function animate(){
     idleKeeper(t);
   }
   if(DEMO){for(const actor of demoActors.values()){if(actor!==animation?.player)idleActor(actor,t,actor.userData.idlePhase||0);stabilizeHead(actor,dt);}stabilizeHead(keeper,dt);demoReactions(t);}else{stabilizeHead(playerA,dt);stabilizeHead(playerB,dt);}
-  renderer.render(scene,camera);
+  updateCamera(dt);renderer.render(scene,camera);
 }
 function stabilizeHead(actor,dt){
   const controls=actor?.userData?.headControl;if(!controls?.length)return;
@@ -471,6 +471,24 @@ function updateCamera(dt){
   const px=tx+(view.position[0]-tx)*zoom,py=ty+(view.position[1]-ty)*zoom,pz=tz+(view.position[2]-tz)*zoom;
   camera.position.x=lerp(camera.position.x,px,k);camera.position.y=lerp(camera.position.y,py,k);camera.position.z=lerp(camera.position.z,pz,k);
   cameraTarget.x=lerp(cameraTarget.x,tx,k);cameraTarget.y=lerp(cameraTarget.y,ty,k);cameraTarget.z=lerp(cameraTarget.z,tz,k);camera.lookAt(cameraTarget.x,cameraTarget.y,cameraTarget.z);
+  // Leave space around the shooting player's hips at the portrait frame's left edge.
+  if(animation&&!DEMO&&['turn','run','kick','ball','awaitResult'].includes(animation.phase)){
+    const actor=animation.team==='B'?playerB:playerA;
+    if(actor?.visible){
+      camera.updateMatrixWorld();actor.updateWorldMatrix(true,true);
+      const hip=actor.userData.kickRig?.hips;
+      const center=hip?hip.getWorldPosition(new THREE.Vector3()):actor.position.clone().add(new THREE.Vector3(0,1.2,0));
+      const right=new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld,0);
+      const edge=center.clone().addScaledVector(right,-.42),projected=edge.clone().project(camera);
+      const depth=-edge.clone().applyMatrix4(camera.matrixWorldInverse).z;
+      if(depth>0&&projected.x<-.84){
+        const shift=(projected.x+.84)*depth*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*camera.aspect;
+        camera.position.addScaledVector(right,shift);
+        cameraTarget.x+=right.x*shift;cameraTarget.y+=right.y*shift;cameraTarget.z+=right.z*shift;
+        camera.lookAt(cameraTarget.x,cameraTarget.y,cameraTarget.z);
+      }
+    }
+  }
 }
 function solveLeg(chain,target,weight){
   if(chain.some(b=>!b))return;const [hip,knee,foot]=chain;
