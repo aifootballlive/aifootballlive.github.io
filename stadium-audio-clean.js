@@ -48,15 +48,16 @@ function stopCrowd(){
   crowdSource=null;crowdGain=null;crowdLfo=null;crowdLfoGain=null;
 }
 async function enableSound(){
+  readSettings();if(!settings.soundEnabled)return;
+  patchNativeGoalSound();
+  const b=ensureButton();b.textContent='SES AÇIK';b.style.background='#287a5b';
   try{
-    readSettings();if(!settings.soundEnabled)return;
-    patchNativeGoalSound();
     if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();
-    if(ctx.state==='suspended')await ctx.resume();
     if(!master){master=ctx.createGain();master.connect(ctx.destination)}
-    enabled=true;window.__aiFootballSoundEnabled=true;refreshVolumes();if(settings.crowdEnabled)startCrowd();
-    const b=ensureButton();b.textContent='SESİ KAPAT';b.style.background='#8e2f44';
-  }catch(e){console.error('Ses açılamadı',e)}
+    if(ctx.state==='suspended')await ctx.resume();
+    enabled=ctx.state==='running';window.__aiFootballSoundEnabled=enabled;
+    refreshVolumes();if(enabled&&settings.crowdEnabled)startCrowd();
+  }catch(e){enabled=false;window.__aiFootballSoundEnabled=false}
 }
 function disableSound(){
   enabled=false;window.__aiFootballSoundEnabled=false;stopTeamMusic();stopCrowd();
@@ -87,32 +88,36 @@ function noiseBurst(at=0,dur=.08,vol=.07,freq=900,type='bandpass',gainGroup='eff
 }
 function kick(at=0){
   const now=Date.now();if(now-lastKickAt<120)return;lastKickAt=now;
-  if(!enabled||!ctx)return;
+  if(!enabled||!ctx||ctx.state!=='running')return;
   const baseCrowd=.075*pct(settings.soundCrowd,72);
   if(crowdGain){
     const t=ctx.currentTime;
     crowdGain.gain.cancelScheduledValues(t);
-    crowdGain.gain.setValueAtTime(Math.max(.004,baseCrowd*.22),t);
-    crowdGain.gain.linearRampToValueAtTime(baseCrowd,t+.34);
+    crowdGain.gain.setValueAtTime(Math.max(.002,baseCrowd*.10),t);
+    crowdGain.gain.linearRampToValueAtTime(baseCrowd,t+.42);
   }
-  const bus=ctx.createGain(),comp=ctx.createDynamicsCompressor();
-  bus.gain.value=2.2;comp.threshold.value=-16;comp.knee.value=10;comp.ratio.value=5;comp.attack.value=.002;comp.release.value=.12;
-  bus.connect(comp);comp.connect(master);
-  const burst=(delay,dur,vol,freq,type)=>{
-    const s=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),g=ctx.createGain(),t=ctx.currentTime+delay;
-    s.buffer=noiseBuffer(Math.max(.12,dur+.05));filter.type=type;filter.frequency.value=freq;filter.Q.value=.7;
-    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-    s.connect(filter);filter.connect(g);g.connect(bus);s.start(t);s.stop(t+dur+.05);
+  const bus=ctx.createGain(),comp=ctx.createDynamicsCompressor(),low=ctx.createBiquadFilter();
+  bus.gain.value=3.6;
+  low.type='lowpass';low.frequency.value=430;low.Q.value=.65;
+  comp.threshold.value=-20;comp.knee.value=14;comp.ratio.value=7;comp.attack.value=.001;comp.release.value=.18;
+  bus.connect(low);low.connect(comp);comp.connect(master);
+  const thudNoise=(delay,dur,vol,cutoff)=>{
+    const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain(),t=ctx.currentTime+delay;
+    s.buffer=noiseBuffer(Math.max(.14,dur+.06));f.type='lowpass';f.frequency.value=cutoff;f.Q.value=.5;
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    s.connect(f);f.connect(g);g.connect(bus);s.start(t);s.stop(t+dur+.06);
   };
-  const hit=(freq,delay,dur,vol,type='sine')=>{
-    const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+delay;o.type=type;o.frequency.value=freq;
+  const thump=(freq,delay,dur,vol,type='sine')=>{
+    const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+delay;
+    o.type=type;o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(Math.max(36,freq*.58),t+dur);
     g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
     o.connect(g);g.connect(bus);o.start(t);o.stop(t+dur+.03);
   };
-  burst(at,.085,.95,230,'lowpass');burst(at+.002,.050,.58,1350,'bandpass');burst(at+.006,.035,.34,3400,'highpass');
-  hit(76,at,.19,.82,'sine');hit(168,at+.006,.13,.45,'triangle');hit(330,at+.010,.08,.24,'square');
-}
-function bounce(at=0,scale=1){noiseBurst(at,.05,.062*scale,1200,'bandpass');tone(155,at,.07,.048*scale,'sine')}
+  thudNoise(at,.13,1.35,300);
+  thudNoise(at+.004,.09,.72,520);
+  thump(88,at,.20,1.05,'sine');
+  thump(132,at+.004,.14,.55,'triangle');
+}function bounce(at=0,scale=1){noiseBurst(at,.05,.062*scale,1200,'bandpass');tone(155,at,.07,.048*scale,'sine')}
 function netHit(){noiseBurst(0,.14,.065,1500,'highpass');bounce(.05,.8);bounce(.22,.52);bounce(.40,.32)}
 function saveSound(){noiseBurst(0,.10,.09,520,'bandpass');tone(145,0,.17,.067,'triangle');bounce(.16,.72)}
 function cheer(){
@@ -188,15 +193,19 @@ function bind(){
   }
 }
 function boot(){
-  readSettings();window.__aiFootballSoundEnabled=false;patchNativeGoalSound();ensureButton();bind();
+  readSettings();settings.soundEnabled=true;
+  window.__AI_FOOTBALL_SETTINGS={...(window.__AI_FOOTBALL_SETTINGS||{}),soundEnabled:true};
+  window.__aiFootballSoundEnabled=false;patchNativeGoalSound();
+  const b=ensureButton();b.textContent='SES AÇIK';b.style.background='#287a5b';bind();
   const unlock=e=>{
     if(e?.target?.id==='soundEnable')return;
-    if(settings.soundEnabled&&!enabled)enableSound().catch(()=>{});
+    if(settings.soundEnabled&&(!enabled||ctx?.state!=='running'))enableSound().catch(()=>{});
   };
-  if(settings.soundEnabled)enableSound().catch(()=>{});
+  enableSound().catch(()=>{});
   document.addEventListener('pointerdown',unlock,{capture:true});
   document.addEventListener('touchstart',unlock,{capture:true,passive:true});
   document.addEventListener('keydown',unlock,{capture:true});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&settings.soundEnabled)enableSound().catch(()=>{})});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.AIFootballAudio={enableSound,disableSound,toggleSound,startTeamMusic,stopTeamMusic,speakGoal,kick,bounce,applySettings,get enabled(){return enabled},get settings(){return {...settings}}};
