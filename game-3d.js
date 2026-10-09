@@ -17,7 +17,7 @@ const ASSETS={
   keeper:'./assets/models/player-a.glb?v=6'
 };
 
-const HOME={A:{x:-3.85,z:1.35},B:{x:-3.55,z:2.35}};
+const HOME={A:{x:-4.50,z:1.50},B:{x:-4.20,z:2.50}};
 const VIEW={idle:{position:[-7.35,2.45,5.65],target:[.45,1.05,.05]},shot:{position:[-6.15,2.22,4.35],target:[1.15,.98,0]}};
 if(DEMO){VIEW.idle={position:[-12,4.6,0],target:[1,1.05,0]};VIEW.shot=VIEW.idle;}
 const GOAL_Z=DEMO?2.35:0,SHOT_Z=DEMO?.25:0;
