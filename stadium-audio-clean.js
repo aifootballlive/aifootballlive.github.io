@@ -2,7 +2,7 @@
 'use strict';
 let ctx=null,master=null,teamTimer=null,currentTeam=null,enabled=false,lastGoalAt=0,nativeGoalSound=null;
 let crowdSource=null,crowdGain=null,crowdLfo=null,crowdLfoGain=null;
-let settings={soundMaster:78,soundCrowd:55,soundEffects:85,soundGoal:100,soundEnabled:true,crowdEnabled:true,announcerEnabled:true};
+let settings={soundMaster:88,soundCrowd:72,soundEffects:92,soundGoal:100,soundEnabled:true,crowdEnabled:true,announcerEnabled:true};
 const $=id=>document.getElementById(id);
 const has3d=()=>!!document.getElementById('game3dStage');
 const clamp01=v=>Math.max(0,Math.min(1,Number(v)||0));
@@ -12,8 +12,8 @@ function readSettings(next){
   settings={...settings,...src};
 }
 function refreshVolumes(){
-  if(master)master.gain.value=.78*pct(settings.soundMaster,78);
-  if(crowdGain)crowdGain.gain.value=.055*pct(settings.soundCrowd,55);
+  if(master)master.gain.value=.86*pct(settings.soundMaster,88);
+  if(crowdGain)crowdGain.gain.value=.075*pct(settings.soundCrowd,72);
 }
 function ensureButton(){
   let b=$('soundEnable');if(b)return b;
@@ -36,9 +36,9 @@ function startCrowd(){
   crowdSource=ctx.createBufferSource();crowdSource.buffer=noiseBuffer(3);crowdSource.loop=true;
   const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=720;filter.Q.value=.42;
   const low=ctx.createBiquadFilter();low.type='lowpass';low.frequency.value=2500;
-  crowdGain=ctx.createGain();crowdGain.gain.value=.055*pct(settings.soundCrowd,55);
+  crowdGain=ctx.createGain();crowdGain.gain.value=.075*pct(settings.soundCrowd,72);
   crowdLfo=ctx.createOscillator();crowdLfo.frequency.value=.085;
-  crowdLfoGain=ctx.createGain();crowdLfoGain.gain.value=.014*pct(settings.soundCrowd,55);
+  crowdLfoGain=ctx.createGain();crowdLfoGain.gain.value=.019*pct(settings.soundCrowd,72);
   crowdLfo.connect(crowdLfoGain);crowdLfoGain.connect(crowdGain.gain);
   crowdSource.connect(filter);filter.connect(low);low.connect(crowdGain);crowdGain.connect(master);
   crowdSource.start();crowdLfo.start();
@@ -71,7 +71,7 @@ async function toggleSound(){
 }
 function tone(freq,at,dur=.16,vol=.045,type='sine',gainGroup='effects'){
   if(!enabled||!ctx)return;
-  const factor=gainGroup==='goal'?pct(settings.soundGoal,100):pct(settings.soundEffects,85);
+  const factor=(gainGroup==='goal'?pct(settings.soundGoal,100):pct(settings.soundEffects,92))*1.10;
   const o=ctx.createOscillator(),g=ctx.createGain(),now=ctx.currentTime+at;
   o.type=type;o.frequency.value=freq;
   g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(Math.max(.0001,vol*factor),now+.008);g.gain.exponentialRampToValueAtTime(.0001,now+dur);
@@ -79,21 +79,21 @@ function tone(freq,at,dur=.16,vol=.045,type='sine',gainGroup='effects'){
 }
 function noiseBurst(at=0,dur=.08,vol=.07,freq=900,type='bandpass',gainGroup='effects'){
   if(!enabled||!ctx)return;
-  const factor=gainGroup==='goal'?pct(settings.soundGoal,100):pct(settings.soundEffects,85);
+  const factor=(gainGroup==='goal'?pct(settings.soundGoal,100):pct(settings.soundEffects,92))*1.10;
   const s=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),g=ctx.createGain(),now=ctx.currentTime+at;
   s.buffer=noiseBuffer(Math.max(.12,dur+.04));filter.type=type;filter.frequency.value=freq;filter.Q.value=.65;
   g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(Math.max(.0001,vol*factor),now+.006);g.gain.exponentialRampToValueAtTime(.0001,now+dur);
   s.connect(filter);filter.connect(g);g.connect(master);s.start(now);s.stop(now+dur+.04);
 }
-function kick(at=0){noiseBurst(at,.065,.12,260,'lowpass');tone(92,at,.13,.12,'sine');tone(170,at+.012,.07,.035,'triangle')}
-function bounce(at=0,scale=1){noiseBurst(at,.045,.05*scale,1200,'bandpass');tone(155,at,.065,.04*scale,'sine')}
+function kick(at=0){noiseBurst(at,.07,.14,260,'lowpass');tone(92,at,.14,.135,'sine');tone(170,at+.012,.08,.045,'triangle')}
+function bounce(at=0,scale=1){noiseBurst(at,.05,.062*scale,1200,'bandpass');tone(155,at,.07,.048*scale,'sine')}
 function netHit(){noiseBurst(0,.14,.065,1500,'highpass');bounce(.05,.8);bounce(.22,.52);bounce(.40,.32)}
-function saveSound(){noiseBurst(0,.09,.075,520,'bandpass');tone(145,0,.16,.055,'triangle');bounce(.16,.65)}
+function saveSound(){noiseBurst(0,.10,.09,520,'bandpass');tone(145,0,.17,.067,'triangle');bounce(.16,.72)}
 function cheer(){
   if(!enabled||!ctx)return;
   noiseBurst(0,.9,.11,1050,'bandpass','goal');noiseBurst(.18,1.25,.08,1650,'bandpass','goal');
   if(crowdGain&&settings.crowdEnabled){
-    const base=.055*pct(settings.soundCrowd,55),peak=.15*pct(settings.soundGoal,100),now=ctx.currentTime;
+    const base=.075*pct(settings.soundCrowd,72),peak=.19*pct(settings.soundGoal,100),now=ctx.currentTime;
     crowdGain.gain.cancelScheduledValues(now);crowdGain.gain.setValueAtTime(base,now);crowdGain.gain.linearRampToValueAtTime(peak,now+.16);crowdGain.gain.linearRampToValueAtTime(base,now+2.3);
   }
 }
