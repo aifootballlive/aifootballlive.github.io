@@ -132,6 +132,20 @@ function addStadium(){
   }
   const adBack=mesh(new THREE.BoxGeometry(.10,.50,5.8),new THREE.MeshStandardMaterial({color:0x202b45,emissive:0x10182b,emissiveIntensity:.22,roughness:.6}));
   adBack.position.set(5.55,.28,0);back.add(adBack);
+  // Dense stand directly behind the goal, matching the reference framing.
+  for(let row=0;row<7;row++){
+    const step=mesh(new THREE.BoxGeometry(.72,.26,9.4),mat(row%2?0x171d2a:0x202838));
+    step.position.set(6.25+row*.48,.72+row*.42,0);back.add(step);
+    const crowd=new THREE.InstancedMesh(new THREE.SphereGeometry(.085,6,5),mat(0xa39a91),72);
+    const cm=new THREE.Matrix4();
+    for(let i=0;i<72;i++){
+      const z=-4.35+i*.122;
+      cm.makeTranslation(6.08+row*.48,.90+row*.42,z);
+      crowd.setMatrixAt(i,cm);
+      crowd.setColorAt(i,new THREE.Color([0x172f73,0xd5ae27,0xa92a35,0x514a48,0xe9e6dc][(i+row)%5]));
+    }
+    back.add(crowd);
+  }
   const stadiumGlow=new THREE.PointLight(0xcfe4ff,1.35,22,2);stadiumGlow.position.set(-1,5.8,-6.5);back.add(stadiumGlow);
   scene.add(back);
 }
