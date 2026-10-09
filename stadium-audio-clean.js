@@ -67,7 +67,7 @@ function disableSound(){
 }
 async function toggleSound(){
   if(enabled){settings.soundEnabled=false;disableSound()}
-  else{settings.soundEnabled=true;await enableSound()}
+  else{settings.soundEnabled=true;window.__AI_FOOTBALL_SETTINGS={...(window.__AI_FOOTBALL_SETTINGS||{}),soundEnabled:true};await enableSound()}
 }
 function tone(freq,at,dur=.16,vol=.045,type='sine',gainGroup='effects'){
   if(!enabled||!ctx)return;
@@ -163,7 +163,10 @@ function bind(){
 }
 function boot(){
   readSettings();window.__aiFootballSoundEnabled=false;patchNativeGoalSound();ensureButton();bind();
-  if(settings.soundEnabled)document.addEventListener('pointerdown',()=>{if(!enabled)enableSound()},{once:true,capture:true});
+  const unlock=()=>{if(settings.soundEnabled&&!enabled)enableSound().catch(()=>{})};
+  document.addEventListener('pointerdown',unlock,{capture:true});
+  document.addEventListener('touchstart',unlock,{capture:true,passive:true});
+  document.addEventListener('keydown',unlock,{capture:true});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 window.AIFootballAudio={enableSound,disableSound,toggleSound,startTeamMusic,stopTeamMusic,speakGoal,kick,bounce,applySettings,get enabled(){return enabled},get settings(){return {...settings}}};
