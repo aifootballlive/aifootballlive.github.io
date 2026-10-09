@@ -463,16 +463,19 @@ function updateCamera(dt){
     }else if(['outcome','net','result'].includes(phase)){
       const goal=animation.result==='goal';
       const focus=goal?ball.position:{x:3.45,y:1.0,z:shotTarget(animation.team)};
-      view={position:goal?[-3.1,1.8,2.3]:[-3.4,1.85,2.5],target:[focus.x,Math.max(.55,focus.y),focus.z]};
+      view={position:[animation.player.position.x-2.65,1.65,animation.player.position.z+1.65],target:[focus.x,Math.max(.9,focus.y),focus.z*.35]};
     }else view=VIEW.shot;
   }else if(animation)view=VIEW.shot;
+  const closeView=animation&&!DEMO&&['outcome','net','result'].includes(animation.phase);
+  const baseFov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(52)/2)/Math.min(1,camera.aspect)));
+  camera.fov=lerp(camera.fov,DEMO?49:closeView?baseFov*.73:baseFov,1-Math.exp(-dt*3.1));camera.updateProjectionMatrix();
   const k=1-Math.exp(-dt*3.1),zoom=Math.max(.75,Math.min(1.4,(Number(runtimeSettings.cameraZoom)||100)/100));
   const [tx,ty,tz]=view.target;
   const px=tx+(view.position[0]-tx)*zoom,py=ty+(view.position[1]-ty)*zoom,pz=tz+(view.position[2]-tz)*zoom;
   camera.position.x=lerp(camera.position.x,px,k);camera.position.y=lerp(camera.position.y,py,k);camera.position.z=lerp(camera.position.z,pz,k);
   cameraTarget.x=lerp(cameraTarget.x,tx,k);cameraTarget.y=lerp(cameraTarget.y,ty,k);cameraTarget.z=lerp(cameraTarget.z,tz,k);camera.lookAt(cameraTarget.x,cameraTarget.y,cameraTarget.z);
   // Leave space around the shooting player's hips at the portrait frame's left edge.
-  if(animation&&!DEMO&&['turn','run','kick','ball','awaitResult'].includes(animation.phase)){
+  if(animation&&!DEMO&&['turn','run','kick','ball','awaitResult','outcome','net','result'].includes(animation.phase)){
     const actor=animation.team==='B'?playerB:playerA;
     if(actor?.visible){
       camera.updateMatrixWorld();actor.updateWorldMatrix(true,true);
