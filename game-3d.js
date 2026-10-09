@@ -96,7 +96,7 @@ function createGoal(){
   const bar=mesh(cyl(r,halfW*2),white);bar.position.set(goalX,height,0);bar.rotation.x=Math.PI/2;g.add(bar);
   const backL=mesh(cyl(r*.8,backX-goalX),white);backL.position.set((goalX+backX)/2,.11,-halfW);backL.rotation.z=Math.PI/2;g.add(backL);
   const backR=mesh(cyl(r*.8,backX-goalX),white);backR.position.set((goalX+backX)/2,.11,halfW);backR.rotation.z=Math.PI/2;g.add(backR);
-  const netMat=new THREE.LineBasicMaterial({color:0xeef3f8,transparent:true,opacity:.70});
+  const netMat=new THREE.LineBasicMaterial({color:0xeef3f8,transparent:true,opacity:.88});
   const line=(a,b)=>g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...a),new THREE.Vector3(...b)]),netMat));
   for(let y=.10;y<=height;y+=.18){
     line([backX,y,-halfW],[backX,y,halfW]);
@@ -110,7 +110,7 @@ function createGoal(){
   for(let x=goalX;x<=backX;x+=.16){
     for(const z of [-halfW,halfW])line([x,.08,z],[x,height,z]);
   }
-  if(!DEMO){for(const child of g.children)child.position.x-=goalX;g.position.x=goalX;g.rotation.y=THREE.MathUtils.degToRad(-10);}
+  if(!DEMO){for(const child of g.children)child.position.x-=goalX;g.position.set(goalX-.75,0,.45);g.rotation.y=THREE.MathUtils.degToRad(12);}
   return g;
 }
 function addStadium(){
@@ -175,8 +175,13 @@ function addStadium(){
     `);
   };
   crowdMaterial.customProgramCacheKey=()=> 'soft-stand-top-v1';
-  const continuousCrowd=new THREE.Mesh(new THREE.PlaneGeometry(29,6.0),crowdMaterial);
-  continuousCrowd.position.set(5.75,3.35,0);continuousCrowd.rotation.y=-Math.PI/2;back.add(continuousCrowd);
+  // One continuous UV strip follows the side stand around the stadium bend.
+  const outline=[[-14,-4.4],[4.25,-4.4],[5.0,-4.15],[5.55,-3.6],[5.75,-2.9],[5.75,14]];
+  const lengths=[0];for(let i=1;i<outline.length;i++)lengths.push(lengths[i-1]+Math.hypot(outline[i][0]-outline[i-1][0],outline[i][1]-outline[i-1][1]));
+  const vertices=[],uvs=[],indices=[],total=lengths[lengths.length-1];
+  for(let i=0;i<outline.length;i++){const [x,z]=outline[i];vertices.push(x,.35,z,x,6.35,z);uvs.push(lengths[i]/total,0,lengths[i]/total,1);if(i<outline.length-1){const n=i*2;indices.push(n,n+1,n+2,n+1,n+3,n+2);}}
+  const crowdGeometry=new THREE.BufferGeometry();crowdGeometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));crowdGeometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));crowdGeometry.setIndex(indices);crowdGeometry.computeVertexNormals();
+  back.add(new THREE.Mesh(crowdGeometry,crowdMaterial));
 
   // Rails and pitch-side LED boards.
   const railMat=mat(0x8993a2,.45,.22);
@@ -449,8 +454,21 @@ function stabilizeHead(actor,dt){
   }
 }
 function updateCamera(dt){
-  const view=animation?VIEW.shot:VIEW.idle,k=1-Math.exp(-dt*4.5),zoom=Math.max(.75,Math.min(1.4,(Number(runtimeSettings.cameraZoom)||100)/100));
-  const tx=view.target[0],ty=view.target[1],tz=view.target[2];
+  let view=VIEW.idle;
+  if(animation&&!DEMO){
+    const phase=animation.phase;
+    if(['turn','run','kick'].includes(phase))view={position:[-6.8,2.6,2.6],target:[1.6,1,.35]};
+    else if(['ball','awaitResult'].includes(phase)){
+      const follow=clamp((ball.position.x+1)/4.45,0,1);
+      view={position:[-6.0,2.45,1.7],target:[lerp(1.6,3.1,follow),lerp(.95,ball.position.y,follow*.3),ball.position.z*.22]};
+    }else if(['outcome','net','result'].includes(phase)){
+      const goal=animation.result==='goal';
+      const focus=goal?ball.position:{x:3.45,y:1.0,z:shotTarget(animation.team)};
+      view={position:goal?[-3.1,1.8,2.3]:[-3.4,1.85,2.5],target:[focus.x,Math.max(.55,focus.y),focus.z]};
+    }else view=VIEW.shot;
+  }else if(animation)view=VIEW.shot;
+  const k=1-Math.exp(-dt*3.1),zoom=Math.max(.75,Math.min(1.4,(Number(runtimeSettings.cameraZoom)||100)/100));
+  const [tx,ty,tz]=view.target;
   const px=tx+(view.position[0]-tx)*zoom,py=ty+(view.position[1]-ty)*zoom,pz=tz+(view.position[2]-tz)*zoom;
   camera.position.x=lerp(camera.position.x,px,k);camera.position.y=lerp(camera.position.y,py,k);camera.position.z=lerp(camera.position.z,pz,k);
   cameraTarget.x=lerp(cameraTarget.x,tx,k);cameraTarget.y=lerp(cameraTarget.y,ty,k);cameraTarget.z=lerp(cameraTarget.z,tz,k);camera.lookAt(cameraTarget.x,cameraTarget.y,cameraTarget.z);
