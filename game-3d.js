@@ -252,7 +252,7 @@ function clipsFor(gltf){const clips=gltf.animations||[];const pick=(...re)=>clip
 function prepareActor(gltf,type,team){
   // Keep normalization on the visual child; match movement belongs to the wrapper.
   const model=gltf.scene;normalizeModel(model,2.42);tintTeamModel(model,team);
-  if(!DEMO&&type==='player'&&team==='B')recolorKit(model,'#c91f2c','#ffd21f');
+  
   const root=new THREE.Group();root.add(model);
   const mixer=new THREE.AnimationMixer(model),clips=clipsFor(gltf),actions={};
   for(const name of ['idle','run','kick']){
@@ -597,11 +597,11 @@ function recolorKit(actor,main,accent){
       const pixels=ctx.getImageData(0,0,canvas.width,canvas.height),data=pixels.data;
       for(let i=0;i<data.length;i+=4){
         const r=data[i],g=data[i+1],b=data[i+2],max=Math.max(r,g,b),min=Math.min(r,g,b),sat=(max-min)/Math.max(1,max);
-        const navy=b>70&&b>r*1.28&&b>g*1.08&&sat>.28;
+        const navy=b>12&&b>r*1.15&&b>g*1.03&&sat>.28;
         const yellow=r>145&&g>105&&b<115&&r>g*.92&&g>b*1.35&&sat>.28;
         if(!navy&&!yellow)continue;
         actor.userData.recoloredPixels=(actor.userData.recoloredPixels||0)+1;
-        const color=navy?mainRGB:accentRGB,luma=Math.max(.42,Math.min(1.08,max/215));
+        const color=navy?mainRGB:accentRGB,luma=Math.max(navy&&mainRGB[0]>mainRGB[1]*2?.72:.42,Math.min(1.08,max/215));
         data[i]=Math.min(255,Math.round(color[0]*luma));
         data[i+1]=Math.min(255,Math.round(color[1]*luma));
         data[i+2]=Math.min(255,Math.round(color[2]*luma));
