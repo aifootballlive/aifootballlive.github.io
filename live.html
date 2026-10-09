@@ -191,6 +191,7 @@ async function runLocalShotQueue(){
 }
 async function addShots(t,n){
   initAudio();
+  try{await window.AIFootballAudio?.enableSound?.()}catch(e){}
   if(!adminAuthed){
     n=Math.max(1,Math.floor(Number(n)||1));
     for(let i=0;i<n;i++)localShotQueue.push(t);
@@ -204,7 +205,7 @@ async function addShots(t,n){
   log(nameOf(t)+' için '+n+' şut gönderildi');
   if(realtimeStatus!=='SUBSCRIBED')setTimeout(()=>loadRemote(true),700)
 }
-async function addKeeper(t,n){initAudio();const {data,error}=await db.rpc('public_add_test_keeper',{p_team:t,p_amount:n});if(error){console.error(error);log('Kaleci gücü güncellenemedi');return}state.keeper[t]=Number(data)||state.keeper[t];render();log(nameOf(t)+' kalecisine +'+n+' güç');if(realtimeStatus!=='SUBSCRIBED')setTimeout(()=>loadRemote(true),700)}
+async function addKeeper(t,n){initAudio();try{await window.AIFootballAudio?.enableSound?.()}catch(e){}const {data,error}=await db.rpc('public_add_test_keeper',{p_team:t,p_amount:n});if(error){console.error(error);log('Kaleci gücü güncellenemedi');return}state.keeper[t]=Number(data)||state.keeper[t];render();log(nameOf(t)+' kalecisine +'+n+' güç');if(realtimeStatus!=='SUBSCRIBED')setTimeout(()=>loadRemote(true),700)}
 async function nextPending(){const {data,error}=await db.from('pending_shots').select('id,player_id,attacking_team_id,queue_order').eq('game_id',ids.game).eq('status','pending').order('queue_order',{ascending:true}).limit(100);if(error)throw error;const a=data.find(x=>x.attacking_team_id===ids.team.A)||null,b=data.find(x=>x.attacking_team_id===ids.team.B)||null;return{a,b}}
 async function insertGameEvent(payload){const {data,error}=await db.from('game_events').insert(payload).select('id,event_type,attacking_team_id,defending_team_id,created_at').single();if(error)throw error;handleEventRow(data,true)}
 async function resolveShot(t,shot){const defending=t==='A'?'B':'A';const {data:ks,error}=await db.from('goalkeeper_opponent_state').select('id,power,initial_power').eq('id',ids.keeperState[defending]).single();if(error)throw error;log(nameOf(t)+' şut çekiyor!');await sleep(700);const now=new Date().toISOString();if(Number(ks.power)<=0){const newScore=Number(state[t].score)+1,resetPower=Number(ks.initial_power)||state.startKeeper;await db.from('teams').update({score:newScore}).eq('id',ids.team[t]);await db.from('goalkeeper_opponent_state').update({power:resetPower}).eq('id',ks.id);await db.from('pending_shots').update({status:'goal',resolved_at:now}).eq('id',shot.id);state[t].score=newScore;state.keeper[defending]=resetPower;render();await insertGameEvent({game_id:ids.game,event_type:'goal',attacking_team_id:ids.team[t],defending_team_id:ids.team[defending],player_id:shot.player_id,goalkeeper_id:ids.goalkeeper[defending],value:1,details:{source:'test_queue'}})}else{const newPower=Math.max(0,Number(ks.power)-state.keeperCost);await db.from('goalkeeper_opponent_state').update({power:newPower}).eq('id',ks.id);await db.from('pending_shots').update({status:'saved',resolved_at:now}).eq('id',shot.id);state.keeper[defending]=newPower;render();await insertGameEvent({game_id:ids.game,event_type:'saved',attacking_team_id:ids.team[t],defending_team_id:ids.team[defending],player_id:shot.player_id,goalkeeper_id:ids.goalkeeper[defending],value:state.keeperCost,details:{source:'test_queue'}})}state.lastTeam=t}
@@ -244,7 +245,7 @@ async function boot(){await getAuth();await loadRemote(true);setupRealtime();db.
 render();boot();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=4"></script>
-<script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=30"></script>
+<script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=31"></script>
 <script id="game3dScript" src="./game-3d.js?v=36"></script>
 </body>
 </html>
