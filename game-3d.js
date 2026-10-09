@@ -418,12 +418,12 @@ function recolorKit(actor,main,accent){
   const primary=new THREE.Color(main),secondary=new THREE.Color(accent);
   const rgb=color=>{const hex=color.getHex();return [hex>>16&255,hex>>8&255,hex&255]};const mainRGB=rgb(primary),accentRGB=rgb(secondary);
   actor.traverse(o=>{if(!o.isMesh)return;for(const material of Array.isArray(o.material)?o.material:[o.material]){
-    if(skinMaterial(material)&&!material.map)continue;
+    if(skinMaterial(material))continue;
     if(material.map?.image){
       const source=material.map.image,canvas=document.createElement('canvas');canvas.width=source.width;canvas.height=source.height;const ctx=canvas.getContext('2d');ctx.drawImage(source,0,0);
       const pixels=ctx.getImageData(0,0,canvas.width,canvas.height),data=pixels.data;
       for(let i=0;i<data.length;i+=4){const r=data[i],g=data[i+1],b=data[i+2],max=Math.max(r,g,b),min=Math.min(r,g,b),sat=(max-min)/Math.max(1,max);
-        const navy=(b>r*1.18&&b>g*1.04)||(max<95&&b>=r*.85&&b>=g*.85),yellow=r>g*.95&&g>b*2&&sat>.5;
+        const navy=(b>r*1.18&&b>g*1.04)||(r>g*1.18&&r>b*1.1&&sat>.35)||(max<95&&max-min<40),yellow=r>g*.95&&g>b*2&&sat>.5;
         if(!navy&&!yellow)continue;actor.userData.recoloredPixels=(actor.userData.recoloredPixels||0)+1;const color=navy?mainRGB:accentRGB,luma=Math.max(.35,Math.min(1,max/230));
         data[i]=Math.round(color[0]*luma);data[i+1]=Math.round(color[1]*luma);data[i+2]=Math.round(color[2]*luma);
       }
@@ -477,9 +477,10 @@ function demoReactions(t){
   }
   if(!active||['turn','run','kick','return'].includes(active.phase)){
     keeper.rotation.x=0;keeper.position.y=-.075;
-    const readiness=.25+Math.sin(t*.0014)*.045;
+    const readiness=.38+Math.sin(t*.0014)*.045;
     idleBone(keeper,'mixamorigLeftUpLeg','X',-readiness);idleBone(keeper,'mixamorigRightUpLeg','X',-readiness);
     idleBone(keeper,'mixamorigLeftLeg','X',readiness*1.7);idleBone(keeper,'mixamorigRightLeg','X',readiness*1.7);
+    idleBone(keeper,'mixamorigLeftUpLeg','Z',.10);idleBone(keeper,'mixamorigRightUpLeg','Z',-.10);
     idleBone(keeper,'mixamorigSpine','X',.14);
     idleBone(keeper,'mixamorigLeftArm','Z',.28);idleBone(keeper,'mixamorigRightArm','Z',-.28);
     idleBone(keeper,'mixamorigLeftForeArm','X',-.55);idleBone(keeper,'mixamorigRightForeArm','X',-.55);
