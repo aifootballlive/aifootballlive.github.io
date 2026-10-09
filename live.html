@@ -169,7 +169,7 @@ function log(m){const el=$('event');el.dataset.matchMessage=m;el.replaceChildren
 function openAdmin(){if(adminAuthed){fillAdminSettings();$('adminOverlay').classList.add('show')}}function closeAdmin(){$('adminOverlay').classList.remove('show')}
 function initAudio(){try{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume()}catch(e){}}
 function playGoalSound(){try{initAudio();if(!audioCtx)return;const now=audioCtx.currentTime;[392,523,659,784].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=i<2?'square':'sawtooth';o.frequency.setValueAtTime(f,now+i*.11);g.gain.setValueAtTime(.0001,now+i*.11);g.gain.exponentialRampToValueAtTime(.16,now+i*.11+.02);g.gain.exponentialRampToValueAtTime(.0001,now+i*.11+.22);o.connect(g);g.connect(audioCtx.destination);o.start(now+i*.11);o.stop(now+i*.11+.24)})}catch(e){}}
-function celebrateGoal(team){playGoalSound();const fx=$('goalFx');fx.querySelectorAll('.confettiPiece').forEach(x=>x.remove());const colors=team==='A'?['#ffd21f','#173f9b','#fff']:['#ffd21f','#c91f2c','#fff'];for(let i=0;i<(state.goalFxEnabled?state.confettiAmount:0);i++){const p=document.createElement('i');p.className='confettiPiece';p.style.left=(Math.random()*100)+'vw';p.style.background=colors[i%colors.length];p.style.setProperty('--drift',((Math.random()-.5)*260)+'px');p.style.setProperty('--spin',((Math.random()*900-450))+'deg');p.style.animationDelay=(Math.random()*.22)+'s';p.style.animationDuration=(1.35+Math.random()*.8)+'s';fx.appendChild(p)}fx.classList.remove('show');void fx.offsetWidth;fx.classList.add('show');setTimeout(()=>fx.classList.remove('show'),2200)}
+function celebrateGoal(team){window.AIFootballAudio?.speakGoal?.();playGoalSound();const fx=$('goalFx');fx.querySelectorAll('.confettiPiece').forEach(x=>x.remove());const colors=team==='A'?['#ffd21f','#173f9b','#fff']:['#ffd21f','#c91f2c','#fff'];for(let i=0;i<(state.goalFxEnabled?state.confettiAmount:0);i++){const p=document.createElement('i');p.className='confettiPiece';p.style.left=(Math.random()*100)+'vw';p.style.background=colors[i%colors.length];p.style.setProperty('--drift',((Math.random()-.5)*260)+'px');p.style.setProperty('--spin',((Math.random()*900-450))+'deg');p.style.animationDelay=(Math.random()*.22)+'s';p.style.animationDuration=(1.35+Math.random()*.8)+'s';fx.appendChild(p)}fx.classList.remove('show');void fx.offsetWidth;fx.classList.add('show');setTimeout(()=>fx.classList.remove('show'),2200)}
 document.addEventListener('pointerdown',initAudio,{once:true});
 function teamFromId(id){return id===ids.team.A?'A':id===ids.team.B?'B':null}
 function applyRules(r){
@@ -279,7 +279,7 @@ async function boot(){await getAuth();await loadRemote(true);setupRealtime();db.
 render();boot();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=6"></script>
-<script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=44"></script>
+<script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=45"></script>
 <script id="game3dScript" src="./game-3d.js?v=54"></script>
 </body>
 </html>

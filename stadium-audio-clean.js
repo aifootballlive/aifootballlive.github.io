@@ -28,9 +28,9 @@ function syncSoundState(){
   enabled=!userMuted&&settings.soundEnabled&&ctx?.state==='running';
   window.__aiFootballSoundEnabled=enabled;
   const b=ensureButton();
-  b.textContent=userMuted||!settings.soundEnabled?'SESİ AÇ':'SESİ KAPAT';
+  b.textContent=userMuted||!settings.soundEnabled?'SES KAPALI':enabled?'SES AÇIK':'SES İÇİN TIKLA';
   b.style.background=userMuted||!settings.soundEnabled?'#1f315c':'#8e2f44';
-  b.setAttribute('aria-pressed',String(!userMuted&&settings.soundEnabled));
+  b.setAttribute('aria-pressed',String(enabled));
   if(enabled){refreshVolumes();if(settings.crowdEnabled)startCrowd()}else if(userMuted||!settings.soundEnabled){stopTeamMusic();stopCrowd();}
 }
 function patchNativeGoalSound(){
