@@ -459,7 +459,7 @@ function finishShot(team,result){
   // Store the real result without cutting short the turn or run animation.
   animation.result=result;
 }
-function enterKick(a,t){a.phase='kick';a.start=t;if(a.player.userData.real)playAction(a.player,'kick');}
+function enterKick(a,t){a.phase='kick';a.start=t;if(a.player.userData.real)playAction(a.player,'kick');setTimeout(()=>{try{window.AIFootballAudio?.kick?.(0)}catch(e){}},Math.max(0,(a.timing?.contact||KICK_CONTACT_MS)*.72));}
 function runAnimation(t){
   const a=animation,p=a.player;if(!p)return;let u;const side=shotSide(a.team),targetZ=shotTarget(a.team);
   if(a.phase==='turn'){
