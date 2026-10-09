@@ -14,7 +14,7 @@ function patchRender(){if(originalRender||typeof render!=='function')return;orig
 function setQueues(a,b,broadcast=false,holdMs=0){queueTruth.a=Math.max(0,Number(a)||0);queueTruth.b=Math.max(0,Number(b)||0);if(holdMs>0)processingHoldUntil=Math.max(processingHoldUntil,now()+holdMs);if(typeof state!=='undefined'){state.A.queue=queueTruth.a;state.B.queue=queueTruth.b;}if(typeof render==='function')render();else paintQueueTruth();if(broadcast)send('queues',{a:queueTruth.a,b:queueTruth.b,holdMs});}
 async function syncQueuesFromDb(broadcast=false,holdMs=0){if(!canUse()||syncing)return;syncing=true;try{const {data,error}=await db.from('pending_shots').select('attacking_team_id').eq('game_id',ids.game).eq('status','pending');if(error)throw error;const a=data.filter(x=>x.attacking_team_id===ids.team.A).length;const b=data.filter(x=>x.attacking_team_id===ids.team.B).length;setQueues(a,b,broadcast,holdMs);}catch(e){console.warn('Bekleyen şut eşitleme hatası',e)}finally{syncing=false;}}
 function send(event,payload){if(!ready||!channel)return;try{channel.send({type:'broadcast',event,payload:{...payload}})}catch(e){}}
-function sendState(goalTeam=null){if(!canUse())return;send('state',{scoreA:Number(state.A.score)||0,scoreB:Number(state.B.score)||0,keeperA:Number.isFinite(Number(state.keeper.A))?Number(state.keeper.A):0,keeperB:Number.isFinite(Number(state.keeper.B))?Number(state.keeper.B):0,eventText:(document.getElementById('event')?.textContent||'').trim(),goalTeam});}
+function sendState(goalTeam=null){if(!canUse())return;send('state',{scoreA:Number(state.A.score)||0,scoreB:Number(state.B.score)||0,keeperA:Number.isFinite(Number(state.keeper.A))?Number(state.keeper.A):0,keeperB:Number.isFinite(Number(state.keeper.B))?Number(state.keeper.B):0,eventText:(document.getElementById('event')?.dataset.matchMessage||document.getElementById('event')?.textContent||'').trim(),goalTeam});}
 function applyQueues(p){if(!p||!canUse())return;setQueues(p.a,p.b,false,Math.max(0,Number(p.holdMs)||0));}
 function applyState(p){if(!p||!canUse())return;state.A.score=Number(p.scoreA)||0;state.B.score=Number(p.scoreB)||0;state.keeper.A=Number.isFinite(Number(p.keeperA))?Number(p.keeperA):state.keeper.A;state.keeper.B=Number.isFinite(Number(p.keeperB))?Number(p.keeperB):state.keeper.B;if(typeof render==='function')render();if(p.eventText&&typeof log==='function')log(p.eventText);if(p.goalTeam&&typeof celebrateGoal==='function')celebrateGoal(p.goalTeam);}
 function scheduleProcessQueue(minDelay=650){if(!originalProcessQueue||!isWorkerLeader)return;if(processTimer)clearTimeout(processTimer);const wait=Math.max(minDelay,processingHoldUntil-now(),0);processTimer=setTimeout(()=>{processTimer=null;if(isWorkerLeader)originalProcessQueue();},wait);}
@@ -32,7 +32,7 @@ function patchFunctions(){if(started)return;if(typeof addShots!=='function'||typ
     try{if(window.AIFootball3D)window.AIFootball3D.beginShot(t)}catch(e){}
     const r=await oldResolveShot.apply(this,arguments);
     await syncQueuesFromDb(true,0);
-    const txt=(document.getElementById('event')?.textContent||'').trim();
+    const txt=(document.getElementById('event')?.dataset.matchMessage||document.getElementById('event')?.textContent||'').trim();
     const result=/^GOL!/i.test(txt)?'goal':'save';
     send('shot_result',{team:t,result});
     try{if(window.AIFootball3D)window.AIFootball3D.finishShot(t,result)}catch(e){}

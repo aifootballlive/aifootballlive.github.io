@@ -168,12 +168,12 @@ function addStadium(){
   const led=(x,z,w,label,bg,fg='#ffffff')=>{
     const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=220;
     const ctx=canvas.getContext('2d');ctx.fillStyle=bg;ctx.fillRect(0,0,1024,220);
-    ctx.fillStyle=fg;ctx.font='900 82px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,512,112);
+    ctx.fillStyle=fg;ctx.font='900 82px Arial';ctx.textAlign='center';ctx.textBaseline='middle';if(label==='jersey'){ctx.save();ctx.translate(412,20);ctx.beginPath();ctx.moveTo(35,0);ctx.lineTo(75,15);ctx.lineTo(125,15);ctx.lineTo(165,0);ctx.lineTo(200,45);ctx.lineTo(170,75);ctx.lineTo(155,60);ctx.lineTo(155,180);ctx.lineTo(45,180);ctx.lineTo(45,60);ctx.lineTo(30,75);ctx.lineTo(0,45);ctx.closePath();ctx.clip();for(let i=0;i<200;i+=25){ctx.fillStyle=i%50===0?fg:bg;ctx.fillRect(i,0,25,180)}ctx.restore()}else ctx.fillText(label,512,112);
     const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;
     const board=mesh(new THREE.BoxGeometry(w,.62,.10),new THREE.MeshStandardMaterial({map:tex,emissiveMap:tex,emissive:0xffffff,emissiveIntensity:.18,roughness:.55}));
     board.position.set(x,.34,z);back.add(board);
   };
-  led(.0,-3.62,4.0,'SARI-LACİVERT','#102f73','#f8d437');
+  led(.0,-3.62,4.0,'jersey','#102f73','#f8d437');
   led(3.15,-3.62,2.1,'AI FOOTBALL','#1f2945','#ffffff');
   led(5.50,-2.10,.10,' ','#202631');
   const sideA=mesh(new THREE.BoxGeometry(.11,.62,3.0),new THREE.MeshStandardMaterial({color:0x143b86,emissive:0x0d2453,emissiveIntensity:.25,roughness:.55}));sideA.position.set(5.58,.34,-2.25);back.add(sideA);

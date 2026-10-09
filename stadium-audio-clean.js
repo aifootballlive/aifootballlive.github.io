@@ -205,9 +205,9 @@ function bind(){
   window.addEventListener('ai-football-settings',e=>applySettings(e.detail||{}));
   const ev=$('event'),qa=$('queueA'),qb=$('queueB');
   if(ev){
-    let last=(ev.textContent||'').trim();
+    let last=(ev.dataset.matchMessage||ev.textContent||'').trim();
     new MutationObserver(()=>{
-      const t=(ev.textContent||'').trim();if(!t||t===last)return;last=t;
+      const t=(ev.dataset.matchMessage||ev.textContent||'').trim();if(!t||t===last)return;last=t;
       if(!has3d()){
         if(/şut çekiyor!/i.test(t))kick(0);
         if(/kalecisi kurtardı!/i.test(t))saveSound();

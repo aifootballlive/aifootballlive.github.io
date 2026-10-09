@@ -22,6 +22,20 @@ html,body{background:#050a12}
 #soundEnable{position:absolute!important;z-index:6!important;right:13%!important;bottom:8%!important;padding:7px 9px!important;font-size:10px!important}
 .goalFx{width:min(100%,56.25dvh);max-width:540px;left:50%;right:auto;transform:translateX(-50%)}
 @media(max-width:360px){.headRight{gap:3px}.headRight a{font-size:8px!important}.queueLeft{font-size:6px}.miniJersey{width:30px;height:23px}}
+
+/* Compact gifts stay inside the phone broadcast frame. */
+.broadcastControls{top:auto;bottom:3%;left:4%;right:4%;padding:0;gap:5px;z-index:5}
+.broadcastControls .panel{padding:4px;border-radius:8px;background:rgba(9,16,29,.88)}
+.broadcastControls .panelHead{height:20px;justify-content:center}.broadcastControls .panelHead .jersey{width:29px;height:20px}
+.broadcastControls .sectionLabel{font-size:6px;margin:2px 0;text-align:center}
+.broadcastControls .buttons{grid-template-columns:repeat(4,minmax(0,1fr));gap:2px}
+.broadcastControls .giftbtn{min-height:36px;height:36px;padding:1px;gap:0;border-radius:5px}
+.broadcastControls .giftVisual,.broadcastControls .powerVisual{height:15px;width:25px}.broadcastControls .giftVisual svg,.broadcastControls .shieldSvg{width:14px;height:14px}
+.broadcastControls .giftEffect{font-size:6px;white-space:nowrap}.broadcastControls .coin{font-size:5px;white-space:nowrap}
+.broadcastControls .powerStars{left:12px;top:1px;gap:0}.broadcastControls .powerStars span,.broadcastControls .powerStars.s2 span,.broadcastControls .powerStars.s3 span{width:4px;height:4px}.broadcastControls .powerStars.max span{width:9px;height:9px}
+.wrap>.queues{bottom:28%;left:4%;right:12%}.wrap>.status{bottom:23%;gap:6px;left:4%;right:12%;font-size:9px}
+#soundEnable{bottom:23%!important;right:3%!important;font-size:7px!important;padding:6px 5px!important;max-width:70px}
+.wrap>.status{right:24%}
 </style>
 </head>
 <body>
@@ -29,31 +43,31 @@ html,body{background:#050a12}
   <div class="head"><div class="title">AI Football Live</div><div class="headRight"><a href="./admin-edm2026.html" target="_top" style="color:#aab2c8;font-size:10px;white-space:nowrap">Hesabım</a><div class="sub" id="connectionStatus">Bağlanıyor...</div><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN</button></div></div>
   <div class="score"><div class="scoreTeam"><span class="jersey miniJersey jA"></span><div class="num" id="scoreA">0</div></div><div class="vs">VS</div><div class="scoreTeam"><span class="jersey miniJersey jB"></span><div class="num" id="scoreB">0</div></div></div>
   <div class="adminFrontKeeper" id="adminFrontKeeper">
-    <div class="frontKeeperCard"><div class="frontKeeperTop"><span>SARI-LACİVERT KALECİ GÜCÜ</span><strong id="frontKeeperA">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillA"></div></div></div>
-    <div class="frontKeeperCard"><div class="frontKeeperTop"><span>SARI-KIRMIZI KALECİ GÜCÜ</span><strong id="frontKeeperB">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillB"></div></div></div>
+    <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jersey miniJersey jA"></span><strong id="frontKeeperA">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillA"></div></div></div>
+    <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jersey miniJersey jB"></span><strong id="frontKeeperB">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillB"></div></div></div>
   </div>
   <div class="broadcastControls">
-  <section class="panel"><div class="panelHead"><span class="jersey jA"></span><span>SARI-LACİVERT</span></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
+  <section class="panel"><div class="panelHead"><span class="jersey jA"></span></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
     <button class="giftbtn shot" onclick="addShots('A',1)"><span class="giftVisual"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M12 6l3 2-1 4h-4L9 8l3-2zm-6 5l3 1 1 4-2 2c-1-2-2-4-2-7zm12 0c0 3-1 5-2 7l-2-2 1-4 3-1zM9 18l3-2 3 2-1 1H10l-1-1z" fill="#10182b"/></svg></span><span class="giftEffect">1 şut</span><span class="coin">10 jeton</span></button>
     <button class="giftbtn shot" onclick="addShots('A',5)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M5 8h11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8z" fill="#d8ff68"/><path d="M16 10h2a3 3 0 0 1 0 6h-2" fill="none" stroke="#d8ff68" stroke-width="2"/><path d="M8 5c0-1 1-1 1-2M12 5c0-1 1-1 1-2" stroke="#fff" stroke-width="1.3"/></svg></span><span class="giftEffect">5 şut</span><span class="coin">50 jeton</span></button>
     <button class="giftbtn shot" onclick="addShots('A',10)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M12 20S4.5 15.4 4.5 9.7A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.7C19.5 15.4 12 20 12 20z" fill="#ff6b8b" stroke="#fff" stroke-width="1.2"/></svg></span><span class="giftEffect">10 şut</span><span class="coin">100 jeton</span></button>
     <button class="giftbtn shot" onclick="addShots('A',50)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M6 7h12v10H6z" fill="#a9f0c8" stroke="#fff" stroke-width="1.2"/><circle cx="12" cy="12" r="2.4" fill="#1a8f65"/></svg></span><span class="giftEffect">50 şut</span><span class="coin">500 jeton</span></button>
   </div><div class="sectionLabel">KALECİ SAVUNMA HEDİYELERİ</div><div class="buttons">
     <button class="giftbtn def" onclick="addKeeper('A',1)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars"><span></span></span></span><span class="giftEffect">+1 güç</span><span class="coin">10 jeton</span></button>
-    <button class="giftbtn def" onclick="addKeeper('A',5)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s2"><span></span><span></span></span><span class="giftEffect">+5 güç</span><span class="coin">50 jeton</span></button>
-    <button class="giftbtn def" onclick="addKeeper('A',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
-    <button class="giftbtn def" onclick="addKeeper('A',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('A',5)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s2"><span></span><span></span></span></span></span><span class="giftEffect">+5 güç</span><span class="coin">50 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('A',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('A',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
   </div></section>
-  <section class="panel"><div class="panelHead"><span class="jersey jB"></span><span>SARI-KIRMIZI</span></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
+  <section class="panel"><div class="panelHead"><span class="jersey jB"></span></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
     <button class="giftbtn shot" onclick="addShots('B',1)"><span class="giftVisual"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M12 6l3 2-1 4h-4L9 8l3-2zm-6 5l3 1 1 4-2 2c-1-2-2-4-2-7zm12 0c0 3-1 5-2 7l-2-2 1-4 3-1zM9 18l3-2 3 2-1 1H10l-1-1z" fill="#10182b"/></svg></span><span class="giftEffect">1 şut</span><span class="coin">10 jeton</span></button>
     <button class="giftbtn shot" onclick="addShots('B',5)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M5 8h11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8z" fill="#d8ff68"/><path d="M16 10h2a3 3 0 0 1 0 6h-2" fill="none" stroke="#d8ff68" stroke-width="2"/></svg></span><span class="giftEffect">5 şut</span><span class="coin">50 jeton</span></button>
     <button class="giftbtn shot" onclick="addShots('B',10)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M12 20S4.5 15.4 4.5 9.7A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.7C19.5 15.4 12 20 12 20z" fill="#ff6b8b" stroke="#fff" stroke-width="1.2"/></svg></span><span class="giftEffect">10 şut</span><span class="coin">100 jeton</span></button>
     <button class="giftbtn shot" onclick="addShots('B',50)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M6 7h12v10H6z" fill="#a9f0c8" stroke="#fff" stroke-width="1.2"/><circle cx="12" cy="12" r="2.4" fill="#1a8f65"/></svg></span><span class="giftEffect">50 şut</span><span class="coin">500 jeton</span></button>
   </div><div class="sectionLabel">KALECİ SAVUNMA HEDİYELERİ</div><div class="buttons">
     <button class="giftbtn def" onclick="addKeeper('B',1)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars"><span></span></span><span class="giftEffect">+1 güç</span><span class="coin">10 jeton</span></button>
-    <button class="giftbtn def" onclick="addKeeper('B',5)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s2"><span></span><span></span></span><span class="giftEffect">+5 güç</span><span class="coin">50 jeton</span></button>
-    <button class="giftbtn def" onclick="addKeeper('B',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
-    <button class="giftbtn def" onclick="addKeeper('B',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('B',5)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s2"><span></span><span></span></span></span></span><span class="giftEffect">+5 güç</span><span class="coin">50 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('B',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('B',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
   </div></section>
   </div>
   <div class="queues"><div class="queueBox"><div class="queueLeft"><span class="jersey queueJersey jA"></span><span>BEKLEYEN ŞUT</span></div><div class="queueNum" id="queueA">0</div></div><div class="queueBox"><div class="queueLeft"><span class="jersey queueJersey jB"></span><span>BEKLEYEN ŞUT</span></div><div class="queueNum" id="queueB">0</div></div></div>
@@ -148,7 +162,7 @@ function render(){
   if($('frontKeeperFillB'))$('frontKeeperFillB').style.width=Math.max(0,Math.min(100,(Number(state.keeper.B)||0)/max*100))+'%';
   if(!$('adminOverlay').classList.contains('show'))fillAdminSettings();
 }
-function log(m){$('event').textContent=m}function setConn(){const live=realtimeStatus==='SUBSCRIBED';$('connectionStatus').textContent=(live?'Canlı bağlı':'Bağlı')+(adminAuthed?' • Admin':'')}
+function log(m){const el=$('event');el.dataset.matchMessage=m;el.replaceChildren();const team=/Sarı-Lacivert/i.test(m)?'A':/Sarı-Kırmızı/i.test(m)?'B':null;if(team){const icon=document.createElement('span');icon.className='jersey queueJersey j'+team;el.appendChild(icon);}el.appendChild(document.createTextNode(m.replace(/Sarı-Lacivert|Sarı-Kırmızı/gi,'').trim()));}function setConn(){const live=realtimeStatus==='SUBSCRIBED';$('connectionStatus').textContent=(live?'Canlı bağlı':'Bağlı')+(adminAuthed?' • Admin':'')}
 function openAdmin(){if(adminAuthed){fillAdminSettings();$('adminOverlay').classList.add('show')}}function closeAdmin(){$('adminOverlay').classList.remove('show')}
 function initAudio(){try{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume()}catch(e){}}
 function playGoalSound(){try{initAudio();if(!audioCtx)return;const now=audioCtx.currentTime;[392,523,659,784].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=i<2?'square':'sawtooth';o.frequency.setValueAtTime(f,now+i*.11);g.gain.setValueAtTime(.0001,now+i*.11);g.gain.exponentialRampToValueAtTime(.16,now+i*.11+.02);g.gain.exponentialRampToValueAtTime(.0001,now+i*.11+.22);o.connect(g);g.connect(audioCtx.destination);o.start(now+i*.11);o.stop(now+i*.11+.24)})}catch(e){}}
@@ -261,8 +275,8 @@ async function refreshAndResume(){if(document.hidden||(typeof localShotBusy!=='u
 async function boot(){await getAuth();await loadRemote(true);setupRealtime();db.auth.onAuthStateChange((_event,session)=>{adminAuthed=!!(session&&session.user&&session.user.id===ADMIN_UID);render();setConn();});setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
 render();boot();
 </script>
-<script id="instantSyncFix" src="./instant-sync.js?v=5"></script>
-<script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=40"></script>
-<script id="game3dScript" src="./game-3d.js?v=46"></script>
+<script id="instantSyncFix" src="./instant-sync.js?v=6"></script>
+<script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=41"></script>
+<script id="game3dScript" src="./game-3d.js?v=47"></script>
 </body>
 </html>
