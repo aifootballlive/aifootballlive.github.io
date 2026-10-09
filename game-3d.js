@@ -18,7 +18,10 @@ const ASSETS={
 
 const HOME={A:{x:-3.25,z:1.75},B:{x:-2.9,z:2.65}};
 const VIEW={idle:{position:[-4.5,2.05,6.0],target:[.8,1.10,0]},shot:{position:[-4.3,2.05,5.8],target:[1.0,1.05,0]}};
-if(DEMO){VIEW.idle={position:[-8,2.45,8.5],target:[1,1.2,0]};VIEW.shot={position:[-8,2.45,8.5],target:[1,1.2,0]};}
+if(DEMO){VIEW.idle={position:[-12,4.6,0],target:[1,1.05,0]};VIEW.shot=VIEW.idle;}
+const GOAL_Z=DEMO?2.35:0,SHOT_Z=DEMO?.25:0;
+const shotSide=team=>team==='A'?1:team==='B'?-1:.35;
+const shotTarget=team=>GOAL_Z+shotSide(team)*(DEMO?.60:.78);
 const RUN_MS=1100,TURN_MS=190,KICK_CONTACT_MS=180;
 const PLAYER_A_TIMING={turn:300,run:1350,contact:300};
 const cameraTarget={x:VIEW.idle.target[0],y:VIEW.idle.target[1],z:VIEW.idle.target[2]};
@@ -84,6 +87,7 @@ function createGoal(){
   for(let y=.15;y<=2.43;y+=.20){line([5.15,y,-2.4],[5.15,y,2.4]);for(const z of [-2.4,2.4])line([4.42,y,z],[5.15,y,z]);}
   for(let z=-2.4;z<=2.4;z+=.20){line([5.15,.15,z],[5.15,2.43,z]);line([4.42,2.43,z],[5.15,2.43,z]);}
   for(let x=4.42;x<=5.15;x+=.18){for(const z of [-2.4,2.4])line([x,.15,z],[x,2.43,z]);line([x,2.43,-2.4],[x,2.43,2.4]);}
+  if(DEMO){g.scale.z=.50;g.position.z=GOAL_Z;}
   return g;
 }
 function addStadium(){
@@ -124,10 +128,12 @@ function setupScene(){
   holder.appendChild(renderer.domElement);renderer.domElement.style.cssText='display:block;width:100%;height:100%';holder.style.cssText='width:100%;height:100%';
   if(DEMO)holder.style.background='url("assets/backgrounds/stadium-v1.png") center center / cover no-repeat';
   scene.add(new THREE.HemisphereLight(0xdcecff,0x18331d,1.1));const sun=new THREE.DirectionalLight(0xffffff,2.8);sun.position.set(-3,8,4);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-10;sun.shadow.camera.right=10;sun.shadow.camera.top=10;sun.shadow.camera.bottom=-10;sun.shadow.bias=-.0003;sun.shadow.normalBias=.015;scene.add(sun);const fill=new THREE.DirectionalLight(0x86a7ff,1.1);fill.position.set(4,4,5);scene.add(fill);
-  const pitch=mesh(new THREE.PlaneGeometry(36,24),DEMO?new THREE.ShadowMaterial({opacity:.24}):grassMaterial());pitch.rotation.x=-Math.PI/2;pitch.receiveShadow=true;scene.add(pitch);
+  const pitch=mesh(new THREE.PlaneGeometry(36,24),grassMaterial());pitch.rotation.x=-Math.PI/2;pitch.receiveShadow=true;scene.add(pitch);
   const lineMat=new THREE.LineBasicMaterial({color:0xf5f7fa,transparent:true,opacity:.7});const pts=[new THREE.Vector3(-5.7,.012,-2.8),new THREE.Vector3(5.7,.012,-2.8),new THREE.Vector3(5.7,.012,2.8),new THREE.Vector3(-5.7,.012,2.8),new THREE.Vector3(-5.7,.012,-2.8)];scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),lineMat));
-  if(!DEMO)addStadium();scene.add(createGoal());keeper=createKeeper();playerA=createPlayer('A');playerB=createPlayer('B');scene.add(keeper,playerA,playerB);
-  ball=mesh(new THREE.SphereGeometry(.14,24,18),mat(0xf7f7f7,.45,.02));ball.position.set(-1.0,.14,0);
+  if(!DEMO)addStadium();
+  if(DEMO){const points=[[-3.25,.014,-5],[-3.25,.014,5]],line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points.map(p=>new THREE.Vector3(...p))),lineMat);scene.add(line);}
+  scene.add(createGoal());keeper=createKeeper();keeper.userData.homeZ=GOAL_Z;keeper.position.z=GOAL_Z;playerA=createPlayer('A');playerB=createPlayer('B');scene.add(keeper,playerA,playerB);
+  ball=mesh(new THREE.SphereGeometry(.14,24,18),mat(0xf7f7f7,.45,.02));ball.position.set(-1.0,.14,SHOT_Z);
   const directions=new THREE.IcosahedronGeometry(1,0).getAttribute('position'),seen=new Set();
   for(let i=0;i<directions.count;i++){const v=new THREE.Vector3().fromBufferAttribute(directions,i).normalize(),key=v.toArray().map(x=>x.toFixed(3)).join(',');if(seen.has(key))continue;seen.add(key);const patch=mesh(new THREE.CircleGeometry(.043,5),mat(0x101621,.7,0));patch.position.copy(v).multiplyScalar(.1405);patch.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),v);ball.add(patch);}
   scene.add(ball);const spot=mesh(new THREE.CircleGeometry(.04,16),mat(0xffffff,.8,0));spot.rotation.x=-Math.PI/2;spot.position.set(-1,.013,0);scene.add(spot);
@@ -209,13 +215,13 @@ async function tryLoadRealModels(){
   })();
   return playerALoad;
 }
-function resize(){if(!renderer||!camera)return;const box=document.getElementById('game3dCanvas')?.getBoundingClientRect();if(!box||!box.width)return;renderer.setSize(box.width,box.height,false);camera.aspect=box.width/box.height;camera.fov=DEMO?60:(camera.aspect<1.25?55:40);camera.updateProjectionMatrix()}
+function resize(){if(!renderer||!camera)return;const box=document.getElementById('game3dCanvas')?.getBoundingClientRect();if(!box||!box.width)return;renderer.setSize(box.width,box.height,false);camera.aspect=box.width/box.height;camera.fov=DEMO?49:(camera.aspect<1.25?55:40);camera.updateProjectionMatrix()}
 function resetPose(){if(DEMO){resetDemoPose();return;}if(!playerA||!playerB||!keeper||!ball)return;for(const p of [playerA,playerB]){p.visible=true;p.position.set(p.userData.homeX,0,p.userData.homeZ);p.rotation.set(0,p.userData.baseRotationY??Math.PI/2,0);if(p.userData.real)playAction(p,'idle');else{p.userData.ll.rotation.set(0,0,0);p.userData.rl.rotation.set(0,0,0);p.userData.la.rotation.set(0,0,-.18);p.userData.ra.rotation.set(0,0,.18)}}keeper.position.set(keeper.userData.homeX??3.75,0,keeper.userData.homeZ??0);keeper.rotation.set(0,keeper.userData.baseRotationY??-Math.PI/2,0);if(keeper.userData.real)playAction(keeper,'idle');else{keeper.userData.la.rotation.set(0,0,-.4);keeper.userData.ra.rotation.set(0,0,.4)}ball.position.set(-1,.14,0);}
 function idleActor(actor,t,phase=0){
   if(!actor||(animation&&(!DEMO||animation.player===actor)))return;
   const s=Math.sin(t*.0024+phase),s2=Math.sin(t*.00125+phase*.7);
   actor.position.y=.018+s*.018;
-  if(DEMO&&actor.userData.real){actor.position.y=0;const neck=actor.getObjectByName('mixamorigNeck');if(neck)neck.rotateY(Math.sin(t*.0006+phase)*.10);}
+  if(DEMO&&actor.userData.real){demoIdle(actor,t,phase);}
   actor.rotation.z=actor.userData.real&&actor.userData.team==='A'?0:s2*.022;
   if(actor.userData.real){
     const hasIdle=!!actor.userData.actions?.idle;
@@ -230,6 +236,27 @@ function idleActor(actor,t,phase=0){
     actor.userData.ll.rotation.x=s2*.035;
     actor.userData.rl.rotation.x=-s2*.035;
   }
+}
+function restoreIdleBones(actor){
+  for(const entry of actor?.userData.idleOffsets||[])entry.bone.quaternion.copy(entry.base);
+  if(actor)actor.userData.idleOffsets=[];
+}
+function idleBone(actor,name,axis,angle){
+  const bone=actor.getObjectByName(name);if(!bone)return;
+  (actor.userData.idleOffsets ||= []).push({bone,base:bone.quaternion.clone()});bone['rotate'+axis](angle);
+}
+function demoIdle(actor,t,phase){
+  const i=actor.userData.idleIndex||0,cycle=(t/1000+i*4.1)%(13+i*2.7);
+  const shift=Math.sin(t*(.00065+i*.00013)+phase),glance=Math.sin(Math.max(0,Math.min(1,(cycle-5)/3))*Math.PI);
+  actor.position.y=0;actor.position.x=actor.userData.homeX+shift*.035;
+  actor.rotation.y=actor.userData.baseRotationY+Math.sin(t*.0004+phase)*.045;
+  idleBone(actor,'mixamorigHips','Z',shift*.026);
+  idleBone(actor,'mixamorigSpine','Z',-shift*.025);
+  idleBone(actor,'mixamorigNeck','Y',glance*(i%2?-.36:.36));
+  idleBone(actor,'mixamorigLeftUpLeg','X',Math.max(0,shift)*.07);
+  idleBone(actor,'mixamorigRightUpLeg','X',Math.max(0,-shift)*.07);
+  if(i%3===1){idleBone(actor,'mixamorigRightForeArm','X',-glance*.22);}
+  else if(i%3===2){idleBone(actor,'mixamorigLeftArm','Z',glance*.12);}
 }
 function idleKeeper(t){
   if(!keeper||animation)return;
@@ -246,6 +273,7 @@ function animate(){
   requestAnimationFrame(animate);
   if(!renderer||!scene||!camera)return;
   const dt=Math.min(clock?.getDelta?.()||.016,.05),t=performance.now();
+  if(DEMO)for(const actor of [...demoActors.values(),keeper])restoreIdleBones(actor);
   for(const m of mixers)m.update(dt);updateCamera(dt);
   installPlayerA();
   if(animation)runAnimation(t);
@@ -296,7 +324,7 @@ function groundKick(player,weight){
   const hipsWorld=rig.hips.getWorldPosition(new THREE.Vector3()),parentScale=rig.hips.parent.getWorldScale(new THREE.Vector3());
   // Adapt the drop-kick clip to a ball on the grass, keeping the support foot planted.
   rig.hips.position.y-=(Math.max(0,hipsWorld.y-.98)/parentScale.y)*weight;player.updateMatrixWorld(true);
-  solveLeg(rig.left,planted,weight);solveLeg(rig.right,new THREE.Vector3(-1.06,.19,0),weight);player.updateMatrixWorld(true);
+  solveLeg(rig.left,planted,weight);solveLeg(rig.right,new THREE.Vector3(-1.06,.19,SHOT_Z),weight);player.updateMatrixWorld(true);
 }
 function beginShot(team){
   if(!playerA||!playerB||!keeper||!ball)return;
@@ -312,56 +340,54 @@ function finishShot(team,result){
 }
 function enterKick(a,t){a.phase='kick';a.start=t;if(a.player.userData.real)playAction(a.player,'kick');}
 function runAnimation(t){
-  const a=animation,p=a.player;if(!p)return;let u;
+  const a=animation,p=a.player;if(!p)return;let u;const side=shotSide(a.team),targetZ=shotTarget(a.team);
   if(a.phase==='turn'){
     u=clamp((t-a.start)/a.timing.turn,0,1);p.rotation.y=angleLerp(p.userData.baseRotationY,a.runYaw,smooth(u));
     if(u>=1){a.phase='run';a.start=t;if(!DEMO)(a.team==='A'?playerB:playerA).visible=false;if(p.userData.real)playAction(p,'run');}
   }else if(a.phase==='run'){
     u=clamp((t-a.start)/a.timing.run,0,1);
     // A curved approach brings the player into the shot without an idle pause.
-    const v=1-u;p.position.x=v*v*p.userData.homeX+2*v*u*(-2.45)+u*u*(-1.9);p.position.z=v*v*p.userData.homeZ+2*v*u*.12;
-    const dx=2*v*(-2.45-p.userData.homeX)+2*u*.55,dz=2*v*(.12-p.userData.homeZ)-2*u*.12;
+    const v=1-u;p.position.x=v*v*p.userData.homeX+2*v*u*(-2.45)+u*u*(-1.9);p.position.z=v*v*p.userData.homeZ+2*v*u*(SHOT_Z+.12)+u*u*SHOT_Z;
+    const dx=2*v*(-2.45-p.userData.homeX)+2*u*.55,dz=2*v*(SHOT_Z+.12-p.userData.homeZ)-2*u*.12;
     p.rotation.y=Math.atan2(dx,dz);
     if(!p.userData.real){p.userData.ll.rotation.x=Math.sin(u*Math.PI*8)*.55;p.userData.rl.rotation.x=-p.userData.ll.rotation.x;p.userData.la.rotation.x=-p.userData.ll.rotation.x*.7;p.userData.ra.rotation.x=p.userData.ll.rotation.x*.7;}
     if(u>=1)enterKick(a,t);
   }else if(a.phase==='kick'){
-    u=clamp((t-a.start)/a.timing.contact,0,1);p.position.x=lerp(-1.9,-1.65,u);p.position.z=0;p.rotation.y=Math.PI/2;
+    u=clamp((t-a.start)/a.timing.contact,0,1);p.position.x=lerp(-1.9,-1.65,u);p.position.z=SHOT_Z;p.rotation.y=Math.PI/2;
     if(!p.userData.real){p.userData.rl.rotation.x=-1.0*Math.sin(u*Math.PI*.5);p.userData.la.rotation.z=-.18-.45*Math.sin(u*Math.PI*.5);}
     groundKick(p,smooth(u));if(u>=1){a.phase='ball';a.start=t;phaseEvent('ball');}
   }else if(a.phase==='ball'){
     if(t-a.start<170)groundKick(p,1-smooth(clamp((t-a.start)/170,0,1)));
     u=clamp((t-a.start)/650,0,1);
-    const targetZ=a.team==='A'?.78:-.78;
     // Both outcomes share the approach. Never cross the goal before its result arrives.
-    ball.position.set(lerp(-1,3.45,u),lerp(.14,.90,u)+Math.sin(u*Math.PI)*.55,lerp(0,targetZ,u));
+    ball.position.set(lerp(-1,3.45,u),lerp(.14,.90,u)+Math.sin(u*Math.PI)*.55,lerp(SHOT_Z,targetZ,u));
     ball.rotation.x+=.25;ball.rotation.z+=.18;
     if(a.result==='save'){
-      keeper.position.z=lerp(0,targetZ-Math.sign(targetZ)*Math.sin(.85)*1.3,smooth(u));
-      if(!keeper.userData.real)keeper.rotation.x=lerp(0,.85*(targetZ>0?1:-1),smooth(u));
+      keeper.position.z=lerp(GOAL_Z,targetZ-side*Math.sin(.85)*(DEMO?.65:1.3),smooth(u));
+      if(!keeper.userData.real)keeper.rotation.x=lerp(0,.85*(side>0?1:-1),smooth(u));
     }
     if(u>=1){a.phase=a.result?'outcome':'awaitResult';a.start=t;}
   }else if(a.phase==='awaitResult'){
     if(a.result){a.phase='outcome';a.start=t;}
   }else if(a.phase==='outcome'){
     u=clamp((t-a.start)/350,0,1);
-    const targetZ=a.team==='A'?.78:-.78;
     if(a.result==='goal'){
       // The goal plane is x=4.42; only a confirmed goal may travel beyond it.
       ball.position.set(lerp(3.45,5.01,u),lerp(.90,.70,u)+Math.sin(u*Math.PI)*.12,targetZ);
-      keeper.position.z=lerp(0,-targetZ*.25,smooth(u));
+      keeper.position.z=lerp(GOAL_Z,GOAL_Z-side*.2,smooth(u));
     }else{
       // A save rebounds away from the net and outside the central shooting lane.
-      ball.position.set(lerp(3.45,2.35,u),lerp(.90,.14,u)+Math.sin(u*Math.PI)*.30,lerp(targetZ,Math.sign(targetZ)*1.85,u));
-      keeper.position.z=targetZ-Math.sign(targetZ)*Math.sin(.85)*1.3;
-      if(!keeper.userData.real)keeper.rotation.x=.85*(targetZ>0?1:-1);
-      else if(!a.savePlayed){playAction(keeper,targetZ>0?'saveRight':'saveLeft');a.savePlayed=true;}
+      ball.position.set(lerp(3.45,2.35,u),lerp(.90,.14,u)+Math.sin(u*Math.PI)*.30,lerp(targetZ,GOAL_Z+side*1.4,u));
+      keeper.position.z=targetZ-side*Math.sin(.85)*(DEMO?.65:1.3);
+      if(!keeper.userData.real)keeper.rotation.x=.85*(side>0?1:-1);
+      else if(!a.savePlayed){playAction(keeper,side>0?'saveRight':'saveLeft');a.savePlayed=true;}
     }
     ball.rotation.x+=.25;ball.rotation.z+=.18;
     if(u>=1){a.phase=a.result==='goal'?'net':'result';a.start=t;if(a.phase==='net')phaseEvent('net');}
   }else if(a.phase==='net'){
     u=clamp((t-a.start)/420,0,1);
     // Contact with the rear net reverses the ball and drops it inside the goal.
-    ball.position.set(lerp(5.01,4.68,smooth(u)),lerp(.70,.14,u)+Math.sin(u*Math.PI)*.08,a.team==='A'?.78:-.78);
+    ball.position.set(lerp(5.01,4.68,smooth(u)),lerp(.70,.14,u)+Math.sin(u*Math.PI)*.08,targetZ);
     ball.rotation.x+=.08;
     if(u>=1){a.phase='result';a.start=t;}
   }else if(a.phase==='result'){
@@ -369,7 +395,7 @@ function runAnimation(t){
     if(a.result==='goal'){p.rotation.y=angleLerp(Math.PI/2,p.userData.baseRotationY,smooth(u));if(!p.userData.real)p.position.y=Math.sin(u*Math.PI)*.18;}
     if(u>=1){if(DEMO){a.phase='return';a.start=t;p.userData.reactionWeight=0;if(p.userData.real)playAction(p,'run');}else{resetPose();animation=null;}}
   }else if(DEMO&&a.phase==='return'){
-    u=clamp((t-a.start)/1350,0,1);p.position.x=lerp(-1.65,p.userData.homeX,u);p.position.z=lerp(0,p.userData.homeZ,u);p.rotation.y=Math.atan2(p.userData.homeX+1.65,p.userData.homeZ);
+    u=clamp((t-a.start)/1350,0,1);p.position.x=lerp(-1.65,p.userData.homeX,u);p.position.z=lerp(SHOT_Z,p.userData.homeZ,u);p.rotation.y=Math.atan2(p.userData.homeX+1.65,p.userData.homeZ-SHOT_Z);
     if(!p.userData.real){p.userData.ll.rotation.x=Math.sin(u*Math.PI*6)*.5;p.userData.rl.rotation.x=-p.userData.ll.rotation.x;}
     if(u>=1){animation=null;resetPose();}
   }
@@ -378,10 +404,10 @@ function runAnimation(t){
 function removeActor(actor){if(!actor)return;scene.remove(actor);const i=mixers.indexOf(actor.userData.mixer);if(i>=0)mixers.splice(i,1);actor.userData.mixer?.stopAllAction();actor.traverse(o=>{if(o.isMesh){for(const material of Array.isArray(o.material)?o.material:[o.material]){if(material?.map?.userData.demoOwned)material.map.dispose();material?.dispose();}}});}
 function placeDemoActor(actor,index){
   const count=demoTeams.length;
-  const home={x:-3.85+(index%3)*.85,z:2.6+Math.floor(index/3)*.9};
-  actor.userData.homeX=home.x;actor.userData.homeZ=home.z;actor.userData.baseRotationY=facingCamera(home);actor.userData.idlePhase=index*1.7;
+  const home={x:-2.82,z:-1.85+index*Math.min(.95,2.8/Math.max(1,count-1))};
+  actor.userData.homeX=home.x;actor.userData.homeZ=home.z;actor.userData.baseRotationY=facingCamera(home);actor.userData.idlePhase=index*2.13;actor.userData.idleIndex=index;
   actor.position.set(home.x,0,home.z);actor.rotation.set(0,actor.userData.baseRotationY,0);
-  if(actor.userData.real)playAction(actor,'idle');
+  if(actor.userData.real){playAction(actor,'idle');const action=actor.userData.actions.idle;action.setEffectiveTimeScale(.78+index*.13);if(!actor.userData.idleStarted){action.time=(index*.83)%action.getClip().duration;actor.userData.idleStarted=true;}}
 }
 async function demoModel(url){
   if(!modelCache.has(url))modelCache.set(url,(async()=>{const {MeshoptDecoder}=await import('./assets/vendor/meshopt-decoder.mjs');await MeshoptDecoder.ready;const loader=new GLTFLoader();loader.setMeshoptDecoder(MeshoptDecoder);return loader.loadAsync(url);})().catch(error=>{modelCache.delete(url);throw error;}));
@@ -424,7 +450,7 @@ async function configureTeams(teams){
       if(animation?.player===demoActors.get(team.id)){await waitForDemoIdle(generation);if(generation!==teamGeneration){actor.userData.mixer.stopAllAction();return;}}
       placeDemoActor(actor,i);removeActor(demoActors.get(team.id));demoActors.set(team.id,actor);scene.add(actor);mixers.push(actor.userData.mixer);
       setLabel('');
-      if(!demoKeeperReady&&i===0){demoKeeperReady=true;const next=prepareActor({scene:SkeletonClone(source.scene),animations:source.animations},'keeper',team.id);next.userData.team='keeper';next.userData.homeX=3.75;next.userData.homeZ=0;next.userData.baseRotationY=-Math.PI/2;recolorKit(next,'#15583d','#21825b');removeActor(keeper);keeper=next;keeper.position.set(3.75,0,0);keeper.rotation.set(0,-Math.PI/2,0);scene.add(keeper);mixers.push(keeper.userData.mixer);if(!animation)resetDemoPose();}
+      if(!demoKeeperReady&&i===0){demoKeeperReady=true;const next=prepareActor({scene:SkeletonClone(source.scene),animations:source.animations},'keeper',team.id);next.userData.team='keeper';next.userData.homeX=3.75;next.userData.homeZ=GOAL_Z;next.userData.baseRotationY=-Math.PI/2;recolorKit(next,'#15583d','#21825b');removeActor(keeper);keeper=next;keeper.position.set(3.75,0,GOAL_Z);keeper.rotation.set(0,-Math.PI/2,0);scene.add(keeper);mixers.push(keeper.userData.mixer);if(!animation)resetDemoPose();}
     }catch(error){console.warn('Demo oyuncusu yüklenemedi; yedek model',error);setLabel('Bazı oyuncular yedek modelle gösteriliyor');}
   };
   await Promise.all(teams.map(load));
@@ -432,12 +458,12 @@ async function configureTeams(teams){
 async function waitForDemoIdle(generation){while(animation&&generation===teamGeneration)await sleep(150);}
 function resetDemoPose(){
   animation=null;let i=0;for(const actor of demoActors.values()){actor.visible=true;placeDemoActor(actor,i++);actor.userData.reactionWeight=0;}
-  if(keeper){keeper.position.set(3.75,0,0);keeper.rotation.set(0,-Math.PI/2,0);if(keeper.userData.real)playAction(keeper,'idle');}
-  ball?.position.set(-1,.14,0);
+  if(keeper){keeper.position.set(3.75,0,GOAL_Z);keeper.rotation.set(0,-Math.PI/2,0);if(keeper.userData.real)playAction(keeper,'idle');}
+  ball?.position.set(-1,.14,SHOT_Z);
 }
 function playDemoShot(shot){
   if(!DEMO||!scene)return;const player=demoActors.get(shot.teamId);if(!player)return;
-  resetDemoPose();animation={phase:'turn',team:shot.teamId,start:performance.now(),player,result:shot.result,timing:PLAYER_A_TIMING,runYaw:Math.atan2(-1.9-player.userData.homeX,-player.userData.homeZ)};
+  resetDemoPose();animation={phase:'turn',team:shot.teamId,start:performance.now(),player,result:shot.result,timing:PLAYER_A_TIMING,runYaw:Math.atan2(-1.9-player.userData.homeX,SHOT_Z-player.userData.homeZ)};
   // Catch up a viewer opened mid-shot without replaying the complete shot from the start.
   const elapsed=Math.max(0,Date.now()-shot.startedAt),start=animation.start;
   for(let delta=16;delta<=Math.min(elapsed,7000)&&animation;delta+=16){runAnimation(start+delta);}
@@ -450,10 +476,14 @@ function demoReactions(t){
     for(const [name,sign]of [['mixamorigLeftArm',1],['mixamorigRightArm',-1]]){const bone=active.player.getObjectByName(name);if(bone)bone.rotateZ(sign*weight*.9);}
   }
   if(!active||['turn','run','kick','return'].includes(active.phase)){
-    keeper.rotation.x=lerp(keeper.rotation.x,0,.12);keeper.position.y=lerp(keeper.position.y,0,.12);
-    const left=keeper.getObjectByName('mixamorigLeftUpLeg'),right=keeper.getObjectByName('mixamorigRightUpLeg');
-    if(left)left.rotateX(-.10);if(right)right.rotateX(-.10);
-    for(const name of ['mixamorigLeftLeg','mixamorigRightLeg']){const bone=keeper.getObjectByName(name);if(bone)bone.rotateX(.18);}
+    keeper.rotation.x=0;keeper.position.y=-.075;
+    const readiness=.25+Math.sin(t*.0014)*.045;
+    idleBone(keeper,'mixamorigLeftUpLeg','X',-readiness);idleBone(keeper,'mixamorigRightUpLeg','X',-readiness);
+    idleBone(keeper,'mixamorigLeftLeg','X',readiness*1.7);idleBone(keeper,'mixamorigRightLeg','X',readiness*1.7);
+    idleBone(keeper,'mixamorigSpine','X',.14);
+    idleBone(keeper,'mixamorigLeftArm','Z',.28);idleBone(keeper,'mixamorigRightArm','Z',-.28);
+    idleBone(keeper,'mixamorigLeftForeArm','X',-.55);idleBone(keeper,'mixamorigRightForeArm','X',-.55);
+    idleBone(keeper,'mixamorigNeck','Y',Math.sin(t*.0009)*.17);
   }else if(active.result==='save'){
     const direction=active.team==='A'?1:-1;
     const progress=active.phase==='ball'?smooth(clamp((t-active.start)/650,0,1)):1;

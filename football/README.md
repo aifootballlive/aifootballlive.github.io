@@ -4,11 +4,13 @@ This extends the existing Three.js scene in `game-3d.js`. The original `live-v13
 
 ## Run
 
-For OBS, run `npm install` then `npm start` in the repository, or use `football/start-demo.cmd` on Windows. Open `http://127.0.0.1:8890/admin/`; set OBS Browser Source to `http://127.0.0.1:8890/live/` at **1080×1920**. This local server owns the queue and synchronizes independent browser profiles over WebSocket. It only listens on localhost and checks the WebSocket Origin. It does not expose an admin server to the internet. Scores/config persist in ignored `football/.runtime/state.json`; waiting jobs are discarded on server restart. Click “Yayın sesini aç” once through OBS's Interact window to grant browser audio permission. Admin then controls mute, ambience and volume.
+For OBS, run `npm install` then `npm start`. The default host is loopback, port 8890. For a paired phone on the same private Wi-Fi, use `FOOTBALL_HOST=0.0.0.0` and open the PC admin at `http://127.0.0.1:8890/admin/`. The first PC browser gets an HttpOnly device cookie. From that PC, generate a 10-minute single-use pairing code, then open the displayed LAN admin URL on the phone. Only one PC browser and one phone browser can control settings. Revoke a phone from the PC before pairing a replacement. Device cookies are bearer credentials, not hardware attestation; copying a browser profile or cookie also copies its access. LAN HTTP assumes a trusted private network. Do not forward the server port onto the internet.
 
-GitHub Pages also serves `/live/` and `/admin/` without a build. In this static-only mode open both in the **same browser profile on the same computer**: Web Locks elect one controller, and BroadcastChannel carries snapshots. When that controller closes another tab continues. Scores/config persist locally; queued gifts do not survive closing every tab. Queue capacity: 200 waiting shots; one gift yields at most 20 shots. Static mode requires Web Locks/BroadcastChannel support.
+The email account label can be set with `FOOTBALL_ADMIN_EMAIL` or ignored `football/.runtime/owner.txt`. This is a device-paired local admin, not an email-password or email-delivery service. It performs no email transmission. Lost PC cookies require stopping the server and removing ignored `football/.runtime/devices.json` to pair again. Never publish runtime files. Unauthorized WebSocket clients can read the match and use the explicitly temporary shot/gift/audio controls, but cannot change teams, mappings, scores or bridge configuration. Set `FOOTBALL_TEST_BUTTONS=0` to deny unauthenticated test controls.
 
-Use the local server URLs for an independent OBS Browser Source, or window capture for the static Pages demo. Mobile admins and multiple computers would need a separately hosted, authenticated controller. No real TikTok account connection is provisioned by this demo.
+GitHub Pages serves `/live/` as a browser-local demo. Its public `/admin/` displays setup instructions only. Private LAN admin controls the local `/live/` and OBS source; it cannot change the public GitHub Pages match across phones/computers. An authenticated public controller deployment is needed for that, and is not provisioned here. Likewise a real TikTok gift bridge must be connected before incoming gifts are automatic. Hiding the test buttons does not disable the gift listener or queue.
+
+The new portrait scene aligns the goal toward the camera on the right and lines up players facing the viewer at the near pitch line. Idle playback rates, offsets, weight shifts, glances and gestures differ per player. Keeper readiness is a procedural knee/arm pose over the supplied idle clip. It is not a new professionally authored animation clip. Audio starts only after the viewer presses the sound control and the same button can mute it again.
 
 ## Modules
 
@@ -34,4 +36,4 @@ Enter a `wss://` bridge endpoint in admin (or `ws://localhost` while developing)
 
 ## Verification
 
-Run `node --test football/tests/engine.test.mjs` for burst gifts, streak filtering, duplicate handling, forced goal/save scoring, sequential queue processing, config validation and bridge parsing. Existing scene/head/ball checks are retained in the local model review workspace.
+Run `node --test --test-isolation=none football/tests/*.test.mjs` for burst gifts, streak filtering, duplicate handling, forced goal/save scoring, sequential queue processing, config validation and bridge parsing. Existing scene/head/ball checks are retained in the local model review workspace.

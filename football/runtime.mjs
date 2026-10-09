@@ -1,6 +1,6 @@
 import {loadState} from './config.mjs';
 import {FootballEngine} from './engine.mjs';
-import {EventController} from './controller.mjs';
+import {EventController} from './controller.mjs?v=22';
 const CHANNEL='aifootball-live-demo-v1',LOCK='aifootball-demo-controller';
 export class Runtime extends EventTarget {
   constructor(){

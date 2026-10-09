@@ -11,7 +11,7 @@ export class EventController {
     await this.adapter.connect();
   }
   async execute(command,p={}){
-    if(command==='shot')this.engine.enqueue(p.teamId,{forcedResult:p.result});
+    if(command==='shot')this.engine.enqueue(p.teamId,{forcedResult:p.result,count:Number(p.count??1)});
     else if(command==='gift'){if(!(this.adapter instanceof MockLiveEventAdapter))throw new Error('Mock bağlantısını açın.');this.adapter.gift(p.giftId,p.count||1);}
     else if(command==='connect')await this.connect();
     else if(command==='disconnect')this.disconnect();
