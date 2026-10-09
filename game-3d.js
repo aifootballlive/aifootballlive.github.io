@@ -21,7 +21,8 @@ const ASSETS={
 const HOME={A:{x:-4.50,z:1.50},B:{x:-4.20,z:2.50}};
 const VIEW={idle:{position:[-7.35,2.45,5.65],target:[.45,1.05,.05]},shot:{position:[-6.15,2.22,4.35],target:[1.15,.98,0]}};
 if(DEMO){VIEW.idle={position:[-12,4.6,0],target:[1,1.05,0]};VIEW.shot=VIEW.idle;}
-const GOAL_Z=DEMO?2.35:0,SHOT_Z=DEMO?.25:0;
+const GOAL_SHIFT_Z=DEMO?0:.65;
+const GOAL_Z=DEMO?2.35:GOAL_SHIFT_Z,SHOT_Z=DEMO?.25:0;
 const shotSide=team=>team==='A'?1:team==='B'?-1:.35;
 const shotTarget=team=>GOAL_Z+shotSide(team)*(DEMO?.60:.78);
 const RUN_MS=1100,TURN_MS=190,KICK_CONTACT_MS=180;
@@ -111,7 +112,7 @@ function createGoal(){
   for(let x=goalX;x<=backX;x+=.16){
     for(const z of [-halfW,halfW])line([x,.08,z],[x,height,z]);
   }
-  if(!DEMO){for(const child of g.children)child.position.x-=goalX;g.position.set(goalX-.75,0,.45);g.rotation.y=THREE.MathUtils.degToRad(12);}
+  if(!DEMO){for(const child of g.children)child.position.x-=goalX;g.position.set(goalX-.75,0,.45+GOAL_SHIFT_Z);g.rotation.y=THREE.MathUtils.degToRad(12);}
   return g;
 }
 function addStadium(){
@@ -197,10 +198,10 @@ function addStadium(){
     const board=mesh(new THREE.BoxGeometry(w,.62,.10),new THREE.MeshStandardMaterial({map:tex,emissiveMap:tex,emissive:0xffffff,emissiveIntensity:.18,roughness:.55}));
     board.position.set(x,.34,z);back.add(board);
   };
-  led(.0,-3.62,4.0,'jersey','#102f73','#f8d437');
-  led(3.15,-3.62,2.1,'AI FOOTBALL','#1f2945','#ffffff');
+  led(-2.75,-4.15,12.0,'jersey','#102f73','#f8d437');
+  led(4.05,-4.15,1.6,'AI FOOTBALL','#1f2945','#ffffff');
   led(5.50,-2.10,.10,' ','#202631');
-  const sideA=mesh(new THREE.BoxGeometry(.11,.62,3.0),new THREE.MeshStandardMaterial({color:0x143b86,emissive:0x0d2453,emissiveIntensity:.25,roughness:.55}));sideA.position.set(5.58,.34,-2.25);back.add(sideA);
+  const sideA=mesh(new THREE.BoxGeometry(.11,.62,3.5),new THREE.MeshStandardMaterial({color:0x143b86,emissive:0x0d2453,emissiveIntensity:.25,roughness:.55}));sideA.position.set(5.65,.34,-2.35);back.add(sideA);
   const sideB=mesh(new THREE.BoxGeometry(.11,.62,3.0),new THREE.MeshStandardMaterial({color:0xc72a35,emissive:0x5f1218,emissiveIntensity:.25,roughness:.55}));sideB.position.set(5.58,.34,2.25);back.add(sideB);
 
   // Stadium light wash.
