@@ -13,7 +13,7 @@
 
 /* Portrait broadcast frame: the same 9:16 composition on desktop and phone. */
 html,body{background:#050a12}
-.wrap{position:relative;width:min(100%,56.25dvh);max-width:540px;min-height:0;aspect-ratio:9/16;padding:0;margin:0 auto;background:#09101d;isolation:isolate}
+.wrap{position:relative;width:100%;max-width:540px;height:100dvh;min-height:0;aspect-ratio:auto;padding:0;margin:0 auto;background:#09101d;isolation:isolate}
 .wrap>.head{position:absolute;z-index:5;top:3%;left:5%;right:5%;margin:0}.title{font-size:clamp(11px,3vw,16px)}.sub{font-size:7px}
 .wrap>.score{position:absolute;z-index:5;top:8%;left:5%;right:9%;height:7%;margin:0;background:rgba(9,16,29,.88);border-color:#65708a;padding:4px 7px}.num{font-size:clamp(24px,6vw,36px)}
 .wrap>#game3dStage{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;border:0!important;border-radius:0!important}
@@ -23,7 +23,7 @@ html,body{background:#050a12}
 .wrap>.status{position:absolute;z-index:5;left:5%;right:13%;bottom:14%;height:auto;min-height:28px;margin:0;background:rgba(9,16,29,.8);font-size:10px}
 .wrap>.note{display:none}.broadcastControls{position:absolute;top:calc(100% + 12px);left:0;right:0;display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 6px 16px}.broadcastControls .panel{margin:0}.broadcastControls .buttons{grid-template-columns:repeat(2,1fr)}
 #soundEnable{position:absolute!important;z-index:6!important;right:13%!important;bottom:8%!important;padding:7px 9px!important;font-size:10px!important}
-.goalFx{width:min(100%,56.25dvh);max-width:540px;left:50%;right:auto;transform:translateX(-50%)}
+.goalFx{width:100%;max-width:540px;left:50%;right:auto;transform:translateX(-50%)}
 @media(max-width:360px){.headRight{gap:3px}.headRight a{font-size:8px!important}.queueLeft{font-size:6px}.miniJersey{width:30px;height:23px}}
 
 /* Compact gifts stay inside the phone broadcast frame. */
@@ -36,9 +36,31 @@ html,body{background:#050a12}
 .broadcastControls .giftVisual,.broadcastControls .powerVisual{height:15px;width:25px}.broadcastControls .giftVisual svg,.broadcastControls .shieldSvg{width:14px;height:14px}
 .broadcastControls .giftEffect{font-size:6px;white-space:nowrap}.broadcastControls .coin{font-size:5px;white-space:nowrap}
 .broadcastControls .powerStars{left:12px;top:1px;gap:0}.broadcastControls .powerStars span,.broadcastControls .powerStars.s2 span,.broadcastControls .powerStars.s3 span{width:4px;height:4px}.broadcastControls .powerStars.max span{width:9px;height:9px}
-.wrap>.queues{bottom:28%;left:4%;right:12%}.wrap>.status{bottom:23%;gap:6px;left:4%;right:12%;font-size:9px}
-#soundEnable{bottom:23%!important;right:3%!important;font-size:7px!important;padding:6px 5px!important;max-width:70px}
-.wrap>.status{right:24%}
+.wrap>.matchControls{position:absolute;z-index:6;left:4%;right:4%;bottom:23%;display:flex;align-items:stretch;gap:5px}
+.matchControls>.queues{flex:1;min-width:0;margin:0;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.matchControls .queueBox{min-width:0;min-height:30px;padding:4px 5px;gap:3px;background:rgba(9,16,29,.8)}
+.matchControls .queueLeft{min-width:0;gap:3px;font-size:7px;white-space:nowrap}.matchControls .queueJersey{width:20px!important;height:15px!important;flex-shrink:0}.matchControls .queueNum{font-size:16px;flex-shrink:0}
+.matchControls>#soundEnable{position:static!important;inset:auto!important;z-index:auto!important;flex:0 0 66px;width:66px;max-width:none;min-height:30px;padding:5px 4px!important;font-size:8px!important;white-space:nowrap;box-shadow:none!important;border-radius:9px!important}
+#event[hidden]{display:none!important}
+@media(max-width:360px){.matchControls .queueBox{padding:4px}.matchControls .queueLeft{font-size:5.5px;gap:2px}.matchControls .queueJersey{width:16px!important}.matchControls .queueNum{font-size:13px}}
+
+
+/* Keep broadcast controls above the stadium roof, with the pitch unobstructed. */
+.wrap>.head{top:2%;left:4%;right:4%}.title{font-size:clamp(12px,3.4vw,17px)}
+.wrap>.score{top:7%;left:4%;right:4%;height:6.5%;border-radius:10px}.num{font-size:clamp(25px,6.8vw,36px)}
+.wrap>.adminFrontKeeper{top:14.5%;left:4%;right:4%;margin:0}.frontKeeperCard{padding:4px 6px}.frontKeeperTop .jersey{width:29px;height:20px}.frontKeeperTop strong{font-size:17px}
+.broadcastControls{top:21%;bottom:auto;left:4%;right:4%;gap:5px;align-items:start}
+.broadcastControls .panel{height:114px;padding:4px;background:rgba(9,16,29,.94)}
+.broadcastControls .panelHead{height:17px}.broadcastControls .panelHead .jersey{width:25px;height:17px}
+.broadcastControls .sectionLabel{height:11px;line-height:11px;font-size:7px;margin:1px 0 2px}
+.broadcastControls .giftbtn{height:33px;min-height:33px}.broadcastControls .giftVisual,.broadcastControls .powerVisual{height:13px}
+.broadcastControls .giftEffect{font-size:7.5px;line-height:10px}.broadcastControls .coin{font-size:6px;line-height:8px}
+.wrap>.matchControls{top:calc(21% + 119px);bottom:auto}.matchControls .queueBox,.matchControls>#soundEnable{min-height:28px}
+.adminFrontKeeper:not(.show)~.broadcastControls{top:14.5%}.adminFrontKeeper:not(.show)~.matchControls{top:calc(14.5% + 119px)}
+@media(max-width:360px){.broadcastControls .sectionLabel{font-size:6px}.broadcastControls .giftEffect{font-size:6.5px}.broadcastControls .coin{font-size:5.5px}}
+
+.wrap>#game3dStage{top:calc(21% + 152px)!important;bottom:0!important;height:auto!important}
+.wrap:has(.adminFrontKeeper:not(.show))>#game3dStage{top:calc(14.5% + 152px)!important}
 
 /* Soft stadium light haze above the crowd. */
 #game3dCanvas::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse 40% 14% at 18% 24%,rgba(47,95,165,.20),transparent 75%),radial-gradient(ellipse 40% 13% at 86% 23%,rgba(181,147,65,.13),transparent 75%),linear-gradient(180deg,transparent 13%,rgba(16,28,47,.18) 24%,transparent 42%);filter:blur(12px)}
@@ -76,8 +98,8 @@ html,body{background:#050a12}
     <button class="giftbtn def" onclick="addKeeper('B',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
   </div></section>
   </div>
-  <div class="queues"><div class="queueBox"><div class="queueLeft"><span class="jersey queueJersey jA"></span><span>BEKLEYEN ŞUT</span></div><div class="queueNum" id="queueA">0</div></div><div class="queueBox"><div class="queueLeft"><span class="jersey queueJersey jB"></span><span>BEKLEYEN ŞUT</span></div><div class="queueNum" id="queueB">0</div></div></div>
-  <div class="status" id="event">Hazır</div><div class="note">Tüm cihazlar aynı canlı maç durumunu gösterir.</div>
+  <div class="matchControls" id="matchControls" aria-label="Bekleyen şutlar ve ses"><div class="queues"><div class="queueBox"><div class="queueLeft"><span class="jersey queueJersey jA"></span><span>BEKLEYEN ŞUT</span></div><div class="queueNum" id="queueA">0</div></div><div class="queueBox"><div class="queueLeft"><span class="jersey queueJersey jB"></span><span>BEKLEYEN ŞUT</span></div><div class="queueNum" id="queueB">0</div></div></div></div>
+  <div id="event" hidden aria-hidden="true">Hazır</div><div class="note">Tüm cihazlar aynı canlı maç durumunu gösterir.</div>
 </div>
 <div class="overlay" id="adminOverlay"><section class="admin"><div class="adminHead"><span>ADMIN AYARLARI</span><button class="closeBtn" onclick="closeAdmin()">KAPAT</button></div><div class="adminBody"><div class="adminStats">
   <div class="adminStat"><div class="statLabel"><span class="jersey adminMiniJersey jA"></span><span>KALECİ GÜCÜ</span></div><strong id="adminKeeperA">100</strong></div>
@@ -138,7 +160,7 @@ function applyRuntimeSettings(){
   const settings=runtimeSettings();window.__AI_FOOTBALL_SETTINGS=settings;
   window.dispatchEvent(new CustomEvent('ai-football-settings',{detail:settings}));
   const q=document.querySelector('.queues');if(q)q.style.display=state.showQueues?'grid':'none';
-  const ev=$('event');if(ev)ev.style.display=state.showStatus?'flex':'none';
+  const ev=$('event');if(ev)ev.style.display='none';
 }
 function fillAdminSettings(){
   const set=(id,v)=>{const e=$(id);if(e)e.value=v},check=(id,v)=>{const e=$(id);if(e)e.checked=!!v};
@@ -283,8 +305,8 @@ async function boot(){await getAuth();await loadRemote(true);setupRealtime();db.
 render();boot();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=6"></script>
-<script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=46"></script>
+<script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=47"></script>
 <script src="./player-video.js?v=3"></script>
-<script id="game3dScript" src="./game-3d.js?v=71"></script>
+<script id="game3dScript" src="./game-3d.js?v=74"></script>
 </body>
 </html>

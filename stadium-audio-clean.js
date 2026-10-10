@@ -22,13 +22,13 @@ function ensureButton(){
   let b=$('soundEnable');if(b)return b;
   b=document.createElement('button');b.id='soundEnable';b.textContent='SESİ KAPAT';
   Object.assign(b.style,{position:'fixed',right:'10px',bottom:'10px',zIndex:'500',border:'1px solid #6f84c5',background:'#1f315c',color:'#fff',borderRadius:'10px',padding:'10px 12px',fontWeight:'900',fontSize:'11px',boxShadow:'0 6px 22px rgba(0,0,0,.35)'});
-  b.onclick=async e=>{e.preventDefault();e.stopPropagation();await toggleSound();};document.body.appendChild(b);return b;
+  b.onclick=async e=>{e.preventDefault();e.stopPropagation();await toggleSound();};(document.getElementById('matchControls')||document.body).appendChild(b);return b;
 }
 function syncSoundState(){
   enabled=!userMuted&&settings.soundEnabled&&ctx?.state==='running';
   window.__aiFootballSoundEnabled=enabled;
   const b=ensureButton();
-  b.textContent=userMuted||!settings.soundEnabled?'SES KAPALI':enabled?'SES AÇIK':'SES İÇİN TIKLA';
+  b.textContent=userMuted||!settings.soundEnabled?'SES KAPALI':enabled?'SES AÇIK':'SESİ AÇ';
   b.style.background=userMuted||!settings.soundEnabled?'#1f315c':'#8e2f44';
   b.setAttribute('aria-pressed',String(enabled));
   if(enabled){refreshVolumes();if(settings.crowdEnabled)startCrowd()}else if(userMuted||!settings.soundEnabled){stopTeamMusic();stopCrowd();}
@@ -87,7 +87,7 @@ function disableSound(){
   syncSoundState();
 }
 async function toggleSound(){
-  if(!userMuted&&settings.soundEnabled){disableSound()}
+  if(enabled&&!userMuted&&settings.soundEnabled){disableSound()}
   else{userMuted=false;settings.soundEnabled=true;window.__AI_FOOTBALL_SETTINGS={...(window.__AI_FOOTBALL_SETTINGS||{}),soundEnabled:true};await enableSound()}
 }
 function tone(freq,at,dur=.16,vol=.045,type='sine',gainGroup='effects'){

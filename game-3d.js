@@ -19,8 +19,8 @@ const ASSETS={
   keeper:'./assets/models/player-a.glb?v=6'
 };
 
-const HOME={A:{x:-4.50,z:1.50},B:{x:-4.20,z:2.50}};
-const VIEW={idle:{position:[-7.35,2.45,5.65],target:[.45,1.05,.05]},shot:{position:[-6.15,2.22,4.35],target:[1.15,.98,0]}};
+const HOME={A:{x:-4.70,z:1.80},B:{x:-4.20,z:2.50}};
+const VIEW={idle:{position:[-7.54,1.35,4.20],target:[-.14,1.25,-.80]},shot:{position:[-6.15,2.22,4.35],target:[1.15,.98,0]}};
 if(DEMO){VIEW.idle={position:[-12,4.6,0],target:[1,1.05,0]};VIEW.shot=VIEW.idle;}
 const GOAL_SHIFT_Z=DEMO?0:.65;
 const GOAL_Z=DEMO?2.35:GOAL_SHIFT_Z,SHOT_Z=DEMO?.25:0;
@@ -46,7 +46,7 @@ function addStageShell(){
   wrap.style.cssText='position:relative;height:clamp(400px,54vw,620px);margin:5px 0;border:1px solid #2b3556;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#10192a,#112c1b);';
   const label=wrap.firstElementChild;
   label.style.cssText='position:absolute;z-index:3;left:8px;top:7px;padding:4px 7px;border-radius:7px;background:rgba(8,14,26,.72);color:#fff;font-size:8px;font-weight:900;letter-spacing:.4px;pointer-events:none';
-  if(DEMO)document.querySelector('.scene-anchor').replaceWith(wrap);else{score.insertAdjacentElement('afterend',wrap);const sound=document.getElementById('soundEnable');if(sound)score.parentElement.appendChild(sound);}
+  if(DEMO)document.querySelector('.scene-anchor').replaceWith(wrap);else{score.insertAdjacentElement('afterend',wrap);const sound=document.getElementById('soundEnable');if(sound)(document.getElementById('matchControls')||score.parentElement).appendChild(sound);}
   return wrap;
 }
 function setLabel(text){const el=document.getElementById('game3dLabel');if(el){el.textContent=text;el.style.display=runtimeSettings.sceneLabel?'block':'none'}}
@@ -228,7 +228,7 @@ function setupScene(){
   renderer=new THREE.WebGLRenderer({antialias:true,alpha:DEMO,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;if('outputColorSpace' in renderer)renderer.outputColorSpace=THREE.SRGBColorSpace;
   if(DEMO){scene.background=null;scene.fog=null;renderer.setClearColor(0x000000,0);holder.style.background='url("assets/backgrounds/stadium-v1.png") center center / cover no-repeat';}
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=Math.max(.7,Math.min(1.5,(Number(runtimeSettings.stadiumExposure)||116)/100));
-  holder.appendChild(renderer.domElement);renderer.domElement.style.cssText='display:block;width:100%;height:100%';holder.style.cssText='width:100%;height:100%';
+  holder.appendChild(renderer.domElement);renderer.domElement.style.cssText='display:block;width:100%;height:100%';holder.style.cssText='width:100%;height:100%';new ResizeObserver(resize).observe(holder);
   if(DEMO)holder.style.background='url("assets/backgrounds/stadium-v1.png") center center / cover no-repeat';
   scene.add(new THREE.HemisphereLight(0xdcecff,0x18331d,1.1));const sun=new THREE.DirectionalLight(0xffffff,2.8);sun.position.set(-3,8,4);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-10;sun.shadow.camera.right=10;sun.shadow.camera.top=10;sun.shadow.camera.bottom=-10;sun.shadow.bias=-.0003;sun.shadow.normalBias=.015;scene.add(sun);const fill=new THREE.DirectionalLight(0x86a7ff,1.1);fill.position.set(4,4,5);scene.add(fill);
   const pitch=mesh(new THREE.PlaneGeometry(36,24),grassMaterial());pitch.rotation.x=-Math.PI/2;pitch.receiveShadow=true;scene.add(pitch);
@@ -515,11 +515,29 @@ function stabilizeHead(actor,dt){
     bone.updateWorldMatrix(false,true);
   }
 }
+function idleCameraAngle(){return 36*Math.max(1,camera.aspect/.90)}
+let idleFrameCache=null;
+function closeIdleView(){
+  const zoom=clamp((Number(runtimeSettings.cameraZoom)||100)/100,.75,1.4),key=camera.aspect.toFixed(5)+":"+zoom;
+  if(idleFrameCache?.key===key)return idleFrameCache.view;
+  const fov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(idleCameraAngle())/2)/Math.min(1,camera.aspect)));
+  const probe=new THREE.PerspectiveCamera(fov,camera.aspect,.1,100);
+  let lo=-1,hi=5;
+  for(let i=0;i<16;i++){
+    const y=(lo+hi)/2,aim=new THREE.Vector3(VIEW.idle.target[0],y,VIEW.idle.target[2]);
+    probe.position.copy(aim).lerp(new THREE.Vector3(...VIEW.idle.position),zoom);probe.lookAt(aim);probe.updateMatrixWorld();
+    const lowest=Math.min(...Object.values(HOME).map(home=>new THREE.Vector3(home.x,-.12,home.z).project(probe).y));
+    if(lowest<-.94)hi=y;else lo=y;
+  }
+  const view={position:VIEW.idle.position,target:[VIEW.idle.target[0],(lo+hi)/2,VIEW.idle.target[2]]};
+  idleFrameCache={key,view};return view;
+}
+
 function updateCamera(dt){
-  let view=VIEW.idle;
+  let view=DEMO?VIEW.idle:closeIdleView();
   if(animation&&!DEMO){
     const phase=animation.phase;
-    if(['returnTurn','returnWalk','returnFace'].includes(phase))view=VIEW.idle;else if(['turn','run','kick'].includes(phase))view={position:[-6.8,2.6,2.6],target:[1.6,1,.35]};
+    if(['returnTurn','returnWalk','returnFace'].includes(phase))view=closeIdleView();else if(['turn','run','kick'].includes(phase))view={position:[-6.8,2.6,2.6],target:[1.6,1,.35]};
     else if(['ball','awaitResult','outcome','net','result'].includes(phase)){
       // Track the ball into the goal from a fixed position beside the shooter.
       const follow=animation.cameraFollow=Math.max(animation.cameraFollow||0,smooth(clamp((ball.position.x+1)/4.45,0,1)));
@@ -527,7 +545,8 @@ function updateCamera(dt){
     }else view=VIEW.shot;
   }else if(animation)view=VIEW.shot;
   const closeView=animation&&!DEMO&&['outcome','net','result'].includes(animation.phase);
-  const baseFov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(52)/2)/Math.min(1,camera.aspect)));
+  const idleFrame=!DEMO&&(!animation||['returnTurn','returnWalk','returnFace'].includes(animation.phase));
+  const baseFov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(idleFrame?idleCameraAngle():52)/2)/Math.min(1,camera.aspect)));
   camera.fov=lerp(camera.fov,DEMO?49:baseFov,1-Math.exp(-dt*3.1));camera.updateProjectionMatrix();
   const k=1-Math.exp(-dt*(3.1)),zoom=Math.max(.75,Math.min(1.4,(Number(runtimeSettings.cameraZoom)||100)/100));
   const [tx,ty,tz]=view.target;
