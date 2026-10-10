@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>AI Football Live • Önizleme</title>
+<link rel="modulepreload" href="./assets/vendor/three.module.mjs">
+<link rel="preload" as="image" href="./assets/players/a/idle-47bf-poster.webp?v=1" fetchpriority="high">
+<link rel="preload" as="image" href="./assets/players/player-b-loading.webp?v=1">
+<link rel="preload" as="image" href="./assets/players/keeper-loading.webp?v=1">
+<style>
+:root{--card:#151c31;--line:#2b3556;--text:#f7f8fc;--muted:#aab2c8;--green:#148b70;--red:#a43c50;--gold:#ffe36e}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#09101d,#11192b);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}body{overflow-x:hidden}.wrap{max-width:1180px;margin:auto;padding:6px 8px 10px;min-height:100dvh}.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}.title{font-size:18px;font-weight:900}.headRight{display:flex;align-items:center;gap:5px}.sub{font-size:8px;color:var(--muted);text-align:right}.adminOpen{display:none;border:1px solid #566ba6;background:#22345f;color:#fff;border-radius:8px;padding:6px 9px;font-size:9px;font-weight:900}.adminOpen.show{display:block}.score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:5px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px 8px;margin-bottom:5px;height:60px}.scoreTeam{display:flex;align-items:center;justify-content:center;gap:8px}.num{font-size:31px;font-weight:900}.vs{color:var(--muted);font-weight:900;font-size:16px}.adminFrontKeeper{display:none;grid-template-columns:1fr 1fr;gap:5px;margin:-1px 0 5px}.adminFrontKeeper.show{display:grid}.frontKeeperCard{background:#0d1425;border:1px solid #3a496f;border-radius:9px;padding:5px 7px}.frontKeeperTop{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:8px;color:var(--muted);font-weight:900}.frontKeeperTop strong{font-size:18px;color:#fff;line-height:1}.frontKeeperBar{height:5px;background:#202a45;border-radius:99px;overflow:hidden;margin-top:4px}.frontKeeperFill{height:100%;width:100%;background:#2fc48d;border-radius:99px;transition:width .2s ease}.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px;margin:5px 0}.panelHead{display:flex;align-items:center;gap:7px;height:28px}.panelHead span:last-child{font-size:10px;color:var(--muted);font-weight:800}.sectionLabel{font-size:8px;color:var(--muted);font-weight:900;margin:4px 0 3px}.buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.giftbtn{border:0;border-radius:9px;padding:4px 1px;color:#fff;font-weight:800;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.giftbtn:active{transform:scale(.98)}.shot{background:linear-gradient(180deg,#315fff,#2448c7);min-height:47px;padding:2px 1px;gap:1px}.shot .giftVisual{width:24px;height:20px}.shot .giftVisual svg{width:20px;height:20px}.shot .giftEffect{font-size:7.5px}.shot .coin{font-size:6.3px}.def{background:linear-gradient(180deg,#8458ff,#643ac8)}.giftVisual{width:28px;height:24px;display:flex;align-items:center;justify-content:center}.giftVisual svg{width:24px;height:24px;display:block}.giftEffect{font-size:8px}.coin{font-size:6.8px;color:#ffe78b}.powerVisual{position:relative;width:40px;height:25px;display:flex;align-items:center;justify-content:flex-start}.shieldSvg{width:22px;height:22px;display:block}.powerStars{position:absolute;left:19px;top:2px;display:flex;gap:1px;align-items:center}.powerStars span{display:block;width:7px;height:7px;background:var(--gold);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 94%,50% 72%,21% 94%,32% 57%,2% 35%,39% 35%);filter:drop-shadow(0 0 2px rgba(255,227,110,.75))}.powerStars.s2 span,.powerStars.s3 span{width:8px;height:8px}.powerStars.s3{top:0}.powerStars.s3 span:nth-child(2){transform:translateY(6px)}.powerStars.max span{width:15px;height:15px;animation:starPulse 1s ease-in-out infinite alternate}@keyframes starPulse{from{transform:scale(.9)}to{transform:scale(1.18)}}.queues{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:5px}.queueBox{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:5px 7px;display:flex;align-items:center;justify-content:space-between;min-height:34px}.queueLeft{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:8px;font-weight:800}.queueNum{font-size:19px;font-weight:900}.queueJersey{width:25px!important;height:17px!important}.status{height:30px;margin-top:5px;background:#0d1425;border:1px solid var(--line);border-radius:9px;padding:5px 7px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;text-align:center}.note{text-align:center;color:var(--muted);font-size:7.5px;margin-top:4px}.jersey{width:45px;height:29px;display:inline-block;clip-path:polygon(18% 0,37% 8%,63% 8%,82% 0,100% 22%,86% 40%,78% 30%,78% 90%,22% 90%,22% 30%,14% 40%,0 22%);border-radius:4px}.jA{background:repeating-linear-gradient(90deg,#ffd21f 0 9px,#173f9b 9px 18px)}.jB{background:repeating-linear-gradient(90deg,#ffd21f 0 9px,#c91f2c 9px 18px)}.miniJersey{width:38px;height:25px}.adminMiniJersey{width:24px;height:16px;vertical-align:middle}.statLabel{display:flex;align-items:center;justify-content:center;gap:5px;min-height:18px}.statLabel span:last-child{white-space:nowrap}.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:99;padding:16px;overflow:auto}.overlay.show{display:flex;align-items:flex-start;justify-content:center}.admin{width:min(760px,100%);margin-top:22px;background:#10182b;border:1px solid #4a5a87;border-radius:12px;overflow:hidden;max-height:92vh;overflow-y:auto}.adminHead{display:flex;align-items:center;justify-content:space-between;padding:10px;background:#192441;font-size:12px;font-weight:900}.closeBtn{border:0;background:#2b3857;color:#fff;border-radius:7px;padding:5px 9px;font-weight:900}.adminBody{padding:9px}.adminStats{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:8px}.adminStat{background:#0d1425;border:1px solid var(--line);border-radius:8px;padding:7px;text-align:center;color:var(--muted);font-size:8px}.adminStat strong{display:block;color:#fff;font-size:18px;margin-top:2px}.adminSection{border:1px solid var(--line);background:#0c1425;border-radius:10px;padding:8px;margin-top:8px}.adminSectionTitle{font-size:10px;font-weight:900;color:#fff;margin-bottom:7px;letter-spacing:.4px}.adminGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.adminField label{display:flex;align-items:center;justify-content:space-between;gap:6px;color:var(--muted);font-size:8px;margin-bottom:3px}.adminField input[type=number],.adminField input[type=range]{width:100%;border:1px solid var(--line);background:#0d1425;color:#fff;border-radius:7px;padding:7px;font-size:12px;font-weight:800}.adminField input[type=range]{padding:0;height:28px}.adminToggle{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#0d1425;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:9px;font-weight:800}.adminToggle input{width:18px;height:18px;accent-color:#24b68a}.adminValue{color:#ffe36e;font-weight:900;min-width:34px;text-align:right}.adminActions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.adminBtn{border:0;border-radius:8px;padding:9px 5px;color:#fff;font-size:10px;font-weight:900}.applyBtn{background:var(--green)}.resetBtn{background:var(--red)}.defaultsBtn{background:#435783;grid-column:1/-1}.logoutBtn{margin-top:6px;width:100%;background:#26334f}.goalFx{pointer-events:none;position:fixed;inset:0;z-index:300;display:none;overflow:hidden}.goalFx.show{display:block}.goalWord{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) scale(.7);font-size:clamp(58px,12vw,120px);font-weight:1000;letter-spacing:4px;color:#fff;text-shadow:0 0 12px #fff,0 0 28px #ffd21f,0 0 55px #ff7a00;animation:goalPop 1.25s ease-out forwards}.confettiPiece{position:absolute;top:-20px;width:10px;height:18px;border-radius:2px;animation:confettiFall 1.8s ease-out forwards}@keyframes goalPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.55)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.18)}65%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.96)}}@keyframes confettiFall{0%{opacity:1;transform:translate3d(0,-10px,0) rotate(0deg)}100%{opacity:0;transform:translate3d(var(--drift),105vh,0) rotate(var(--spin))}}@media(max-width:520px){.giftbtn{min-height:55px}.giftVisual svg{width:22px;height:22px}.adminStat{padding:6px}.statLabel{font-size:7px}.status{font-size:10px}}
+
+/* Portrait broadcast frame: the same 9:16 composition on desktop and phone. */
+html,body{background:#050a12}
+.wrap{position:relative;width:100%;max-width:540px;height:100dvh;min-height:0;aspect-ratio:auto;padding:0;margin:0 auto;background:#09101d;isolation:isolate}
+.wrap>.head{position:absolute;z-index:5;top:3%;left:5%;right:5%;margin:0}.title{font-size:clamp(11px,3vw,16px)}.sub{font-size:7px}
+.wrap>.score{position:absolute;z-index:5;top:8%;left:5%;right:9%;height:7%;margin:0;background:rgba(9,16,29,.88);border-color:#65708a;padding:4px 7px}.num{font-size:clamp(24px,6vw,36px)}
+.wrap>#game3dStage{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;border:0!important;border-radius:0!important}
+#game3dCanvas{width:100%;height:100%}#game3dLabel{top:17%!important;left:5%!important}
+.wrap>.adminFrontKeeper{position:absolute;z-index:5;top:16%;left:5%;right:9%}
+.wrap>.queues{position:absolute;z-index:5;left:5%;right:13%;bottom:19%;margin:0}.queueBox{background:rgba(9,16,29,.8);padding:4px 6px;min-height:30px}.queueLeft{font-size:7px}.queueNum{font-size:17px}
+.wrap>.status{position:absolute;z-index:5;left:5%;right:13%;bottom:14%;height:auto;min-height:28px;margin:0;background:rgba(9,16,29,.8);font-size:10px}
+.wrap>.note{display:none}.broadcastControls{position:absolute;top:calc(100% + 12px);left:0;right:0;display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 6px 16px}.broadcastControls .panel{margin:0}.broadcastControls .buttons{grid-template-columns:repeat(2,1fr)}
+#soundEnable{position:absolute!important;z-index:6!important;right:13%!important;bottom:8%!important;padding:7px 9px!important;font-size:10px!important}
+.goalFx{width:100%;max-width:540px;left:50%;right:auto;transform:translateX(-50%)}
+@media(max-width:360px){.headRight{gap:3px}.headRight a{font-size:8px!important}.queueLeft{font-size:6px}.miniJersey{width:30px;height:23px}}
+
+/* Compact gifts stay inside the phone broadcast frame. */
+.broadcastControls{top:auto;bottom:3%;left:4%;right:4%;padding:0;gap:5px;z-index:5}
+.broadcastControls .panel{padding:4px;border-radius:8px;background:rgba(9,16,29,.88)}
+.broadcastControls .panelHead{height:20px;justify-content:center}.broadcastControls .panelHead .jersey{width:29px;height:20px}
+.broadcastControls .sectionLabel{font-size:6px;margin:2px 0;text-align:center}
+.broadcastControls .buttons{grid-template-columns:repeat(4,minmax(0,1fr));gap:2px}
+.broadcastControls .giftbtn{min-height:36px;height:36px;padding:1px;gap:0;border-radius:5px}
+.broadcastControls .giftVisual,.broadcastControls .powerVisual{height:15px;width:25px}.broadcastControls .giftVisual svg,.broadcastControls .shieldSvg{width:14px;height:14px}
+.broadcastControls .giftEffect{font-size:6px;white-space:nowrap}.broadcastControls .coin{font-size:5px;white-space:nowrap}
+.broadcastControls .powerStars{left:12px;top:1px;gap:0}.broadcastControls .powerStars span,.broadcastControls .powerStars.s2 span,.broadcastControls .powerStars.s3 span{width:4px;height:4px}.broadcastControls .powerStars.max span{width:9px;height:9px}
+.wrap>.matchControls{position:absolute;z-index:6;left:4%;right:4%;bottom:23%;display:flex;align-items:stretch;gap:5px}
+.matchControls>.queues{flex:1;min-width:0;margin:0;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.matchControls .queueBox{min-width:0;min-height:30px;padding:4px 5px;gap:3px;background:rgba(9,16,29,.8)}
+.matchControls .queueLeft{min-width:0;gap:3px;font-size:7px;white-space:nowrap}.matchControls .queueJersey{width:20px!important;height:15px!important;flex-shrink:0}.matchControls .queueNum{font-size:16px;flex-shrink:0}
+.matchControls>#soundEnable{position:static!important;inset:auto!important;z-index:auto!important;flex:0 0 66px;width:66px;max-width:none;min-height:30px;padding:5px 4px!important;font-size:8px!important;white-space:nowrap;box-shadow:none!important;border-radius:9px!important}
+#event[hidden]{display:none!important}
+@media(max-width:360px){.matchControls .queueBox{padding:4px}.matchControls .queueLeft{font-size:5.5px;gap:2px}.matchControls .queueJersey{width:16px!important}.matchControls .queueNum{font-size:13px}}
+
+
+/* Keep broadcast controls above the stadium roof, with the pitch unobstructed. */
+.wrap>.head{top:2%;left:4%;right:4%}.title{font-size:clamp(12px,3.4vw,17px)}
+.wrap>.score{top:7%;left:4%;right:4%;height:6.5%;border-radius:10px}.num{font-size:clamp(25px,6.8vw,36px)}
+.wrap>.adminFrontKeeper{top:14.5%;left:4%;right:4%;margin:0}.frontKeeperCard{padding:4px 6px}.frontKeeperTop .jersey{width:29px;height:20px}.frontKeeperTop strong{font-size:17px}
+.broadcastControls{top:21%;bottom:auto;left:4%;right:4%;gap:5px;align-items:start}
+.broadcastControls .panel{height:114px;padding:4px;background:rgba(9,16,29,.94)}
+.broadcastControls .panelHead{height:17px}.broadcastControls .panelHead .jersey{width:25px;height:17px}
+.broadcastControls .sectionLabel{height:11px;line-height:11px;font-size:7px;margin:1px 0 2px}
+.broadcastControls .giftbtn{height:33px;min-height:33px}.broadcastControls .giftVisual,.broadcastControls .powerVisual{height:13px}
+.broadcastControls .giftEffect{font-size:7.5px;line-height:10px}.broadcastControls .coin{font-size:6px;line-height:8px}
+.wrap>.matchControls{top:calc(21% + 119px);bottom:auto}.matchControls .queueBox,.matchControls>#soundEnable{min-height:28px}
+.adminFrontKeeper:not(.show)~.broadcastControls{top:14.5%}.adminFrontKeeper:not(.show)~.matchControls{top:calc(14.5% + 119px)}
+@media(max-width:360px){.broadcastControls .sectionLabel{font-size:6px}.broadcastControls .giftEffect{font-size:6.5px}.broadcastControls .coin{font-size:5.5px}}
+
+.wrap>#game3dStage{top:calc(21% + 152px)!important;bottom:0!important;height:auto!important}
+.wrap:has(.adminFrontKeeper:not(.show))>#game3dStage{top:calc(14.5% + 152px)!important}
+
+/* Soft stadium light haze above the crowd. */
+#game3dCanvas::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse 40% 14% at 18% 24%,rgba(47,95,165,.20),transparent 75%),radial-gradient(ellipse 40% 13% at 86% 23%,rgba(181,147,65,.13),transparent 75%),linear-gradient(180deg,transparent 13%,rgba(16,28,47,.18) 24%,transparent 42%);filter:blur(12px)}
+
+/* V78 preview only: fill the entire portrait viewport, including iPhone/WebView previews. */
+html,body{width:100%;max-width:100%;min-width:0;overflow-x:hidden!important;background:#050a12!important}
+@media (max-width:700px),(orientation:portrait){
+  html,body{width:100vw!important;max-width:100vw!important;margin:0!important;padding:0!important}
+  .wrap{width:100vw!important;max-width:100vw!important;margin:0!important;left:0!important;right:0!important}
+  .goalFx{width:100vw!important;max-width:100vw!important}
+}
+@supports (-webkit-touch-callout:none){
+  html,body,.wrap{width:100vw!important;max-width:100vw!important;margin-left:0!important;margin-right:0!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><div class="title">AI Football Live <span style="font-size:8px;color:#ffe36e">ÖNİZLEME</span></div><div class="headRight"><a href="./admin-edm2026.html" target="_top" style="color:#aab2c8;font-size:10px;white-space:nowrap">Hesabım</a><div class="sub" id="connectionStatus">Bağlanıyor...</div><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN</button></div></div>
+  <div class="score"><div class="scoreTeam"><span class="jersey miniJersey jA"></span><div class="num" id="scoreA">0</div></div><div class="vs">VS</div><div class="scoreTeam"><span class="jersey miniJersey jB"></span><div class="num" id="scoreB">0</div></div></div>
+  <div class="adminFrontKeeper" id="adminFrontKeeper">
+    <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jersey miniJersey jA"></span><strong id="frontKeeperA">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillA"></div></div></div>
+    <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jersey miniJersey jB"></span><strong id="frontKeeperB">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillB"></div></div></div>
+  </div>
+  <div class="broadcastControls">
+  <section class="panel"><div class="panelHead"><span class="jersey jA"></span></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
+    <button class="giftbtn shot" onclick="addShots('A',1)"><span class="giftVisual"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M12 6l3 2-1 4h-4L9 8l3-2zm-6 5l3 1 1 4-2 2c-1-2-2-4-2-7zm12 0c0 3-1 5-2 7l-2-2 1-4 3-1zM9 18l3-2 3 2-1 1H10l-1-1z" fill="#10182b"/></svg></span><span class="giftEffect">1 şut</span><span class="coin">10 jeton</span></button>
+    <button class="giftbtn shot" onclick="addShots('A',5)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M5 8h11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8z" fill="#d8ff68"/><path d="M16 10h2a3 3 0 0 1 0 6h-2" fill="none" stroke="#d8ff68" stroke-width="2"/><path d="M8 5c0-1 1-1 1-2M12 5c0-1 1-1 1-2" stroke="#fff" stroke-width="1.3"/></svg></span><span class="giftEffect">5 şut</span><span class="coin">50 jeton</span></button>
+    <button class="giftbtn shot" onclick="addShots('A',10)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M12 20S4.5 15.4 4.5 9.7A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.7C19.5 15.4 12 20 12 20z" fill="#ff6b8b" stroke="#fff" stroke-width="1.2"/></svg></span><span class="giftEffect">10 şut</span><span class="coin">100 jeton</span></button>
+    <button class="giftbtn shot" onclick="addShots('A',50)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M6 7h12v10H6z" fill="#a9f0c8" stroke="#fff" stroke-width="1.2"/><circle cx="12" cy="12" r="2.4" fill="#1a8f65"/></svg></span><span class="giftEffect">50 şut</span><span class="coin">500 jeton</span></button>
+  </div><div class="sectionLabel">KALECİ SAVUNMA HEDİYELERİ</div><div class="buttons">
+    <button class="giftbtn def" onclick="addKeeper('A',1)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars"><span></span></span></span><span class="giftEffect">+1 güç</span><span class="coin">10 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('A',5)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s2"><span></span><span></span></span></span></span><span class="giftEffect">+5 güç</span><span class="coin">50 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('A',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('A',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
+  </div></section>
+  <section class="panel"><div class="panelHead"><span class="jersey jB"></span></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
+    <button class="giftbtn shot" onclick="addShots('B',1)"><span class="giftVisual"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M12 6l3 2-1 4h-4L9 8l3-2zm-6 5l3 1 1 4-2 2c-1-2-2-4-2-7zm12 0c0 3-1 5-2 7l-2-2 1-4 3-1zM9 18l3-2 3 2-1 1H10l-1-1z" fill="#10182b"/></svg></span><span class="giftEffect">1 şut</span><span class="coin">10 jeton</span></button>
+    <button class="giftbtn shot" onclick="addShots('B',5)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M5 8h11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8z" fill="#d8ff68"/><path d="M16 10h2a3 3 0 0 1 0 6h-2" fill="none" stroke="#d8ff68" stroke-width="2"/></svg></span><span class="giftEffect">5 şut</span><span class="coin">50 jeton</span></button>
+    <button class="giftbtn shot" onclick="addShots('B',10)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M12 20S4.5 15.4 4.5 9.7A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.7C19.5 15.4 12 20 12 20z" fill="#ff6b8b" stroke="#fff" stroke-width="1.2"/></svg></span><span class="giftEffect">10 şut</span><span class="coin">100 jeton</span></button>
+    <button class="giftbtn shot" onclick="addShots('B',50)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M6 7h12v10H6z" fill="#a9f0c8" stroke="#fff" stroke-width="1.2"/><circle cx="12" cy="12" r="2.4" fill="#1a8f65"/></svg></span><span class="giftEffect">50 şut</span><span class="coin">500 jeton</span></button>
+  </div><div class="sectionLabel">KALECİ SAVUNMA HEDİYELERİ</div><div class="buttons">
+    <button class="giftbtn def" onclick="addKeeper('B',1)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars"><span></span></span><span class="giftEffect">+1 güç</span><span class="coin">10 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('B',5)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s2"><span></span><span></span></span></span></span><span class="giftEffect">+5 güç</span><span class="coin">50 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('B',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('B',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
+  </div></section>
+  </div>
+  <div class="matchControls" id="matchControls" aria-label="Bekleyen şutlar ve ses"><div class="queues"><div class="queueBox"><div class="queueLeft"><span class="jersey queueJersey jA"></span><span>BEKLEYEN ŞUT</span></div><div class="queueNum" id="queueA">0</div></div><div class="queueBox"><div class="queueLeft"><span class="jersey queueJersey jB"></span><span>BEKLEYEN ŞUT</span></div><div class="queueNum" id="queueB">0</div></div></div></div>
+  <div id="event" hidden aria-hidden="true">Hazır</div><div class="note">Tüm cihazlar aynı canlı maç durumunu gösterir.</div>
+</div>
+<div class="overlay" id="adminOverlay"><section class="admin"><div class="adminHead"><span>ADMIN AYARLARI</span><button class="closeBtn" onclick="closeAdmin()">KAPAT</button></div><div class="adminBody"><div class="adminStats">
+  <div class="adminStat"><div class="statLabel"><span class="jersey adminMiniJersey jA"></span><span>KALECİ GÜCÜ</span></div><strong id="adminKeeperA">100</strong></div>
+  <div class="adminStat"><div class="statLabel"><span class="jersey adminMiniJersey jB"></span><span>KALECİ GÜCÜ</span></div><strong id="adminKeeperB">100</strong></div>
+  <div class="adminStat"><div class="statLabel"><span class="jersey adminMiniJersey jA"></span><span>BEKLEYEN ŞUT</span></div><strong id="adminQueueA">0</strong></div>
+  <div class="adminStat"><div class="statLabel"><span class="jersey adminMiniJersey jB"></span><span>BEKLEYEN ŞUT</span></div><strong id="adminQueueB">0</strong></div>
+</div>
+<div class="adminSection"><div class="adminSectionTitle">OYUN AYARLARI</div><div class="adminGrid">
+  <div class="adminField"><label>Başlangıç kaleci gücü</label><input id="setStartKeeper" type="number" min="1" step="10"></div>
+  <div class="adminField"><label>Şut başına kaleci kaybı</label><input id="setKeeperCost" type="number" min="1" step="1"></div>
+  <div class="adminField"><label>Şutlar arası süre (ms)</label><input id="setShotDelay" type="number" min="500" step="100"></div>
+  <div class="adminField"><label>1 şut için kredi</label><input id="setShotThreshold" type="number" min="1" step="1"></div>
+</div></div>
+<div class="adminSection"><div class="adminSectionTitle">SES AYARLARI</div><div class="adminGrid">
+  <div class="adminField"><label>Ana ses <span class="adminValue" id="valSoundMaster">88%</span></label><input id="setSoundMaster" type="range" min="0" max="100" value="88" oninput="syncAdminValue('SoundMaster',this.value,'%')"></div>
+  <div class="adminField"><label>Seyirci sesi <span class="adminValue" id="valSoundCrowd">72%</span></label><input id="setSoundCrowd" type="range" min="0" max="100" value="72" oninput="syncAdminValue('SoundCrowd',this.value,'%')"></div>
+  <div class="adminField"><label>Vuruş / top efektleri <span class="adminValue" id="valSoundEffects">92%</span></label><input id="setSoundEffects" type="range" min="0" max="100" value="92" oninput="syncAdminValue('SoundEffects',this.value,'%')"></div>
+  <div class="adminField"><label>Gol spikeri <span class="adminValue" id="valSoundGoal">100%</span></label><input id="setSoundGoal" type="range" min="0" max="100" value="100" oninput="syncAdminValue('SoundGoal',this.value,'%')"></div>
+  <label class="adminToggle"><span>Ses sistemi aktif</span><input id="setSoundEnabled" type="checkbox" checked></label>
+  <label class="adminToggle"><span>Seyirci ambiyansı</span><input id="setCrowdEnabled" type="checkbox" checked></label>
+  <label class="adminToggle"><span>Gol spikeri aktif</span><input id="setAnnouncerEnabled" type="checkbox" checked></label>
+  <label class="adminToggle"><span>Gol konfeti / efekt</span><input id="setGoalFxEnabled" type="checkbox" checked></label>
+</div></div>
+<div class="adminSection"><div class="adminSectionTitle">3D SAHNE AYARLARI</div><div class="adminGrid">
+  <div class="adminField"><label>Kamera uzaklığı <span class="adminValue" id="valCameraZoom">100%</span></label><input id="setCameraZoom" type="range" min="75" max="140" value="100" oninput="syncAdminValue('CameraZoom',this.value,'%')"></div>
+  <div class="adminField"><label>Stadyum parlaklığı <span class="adminValue" id="valStadiumExposure">116%</span></label><input id="setStadiumExposure" type="range" min="70" max="150" value="116" oninput="syncAdminValue('StadiumExposure',this.value,'%')"></div>
+  <div class="adminField"><label>Bekleme hareketi <span class="adminValue" id="valIdleMotion">100%</span></label><input id="setIdleMotion" type="range" min="0" max="150" value="100" oninput="syncAdminValue('IdleMotion',this.value,'%')"></div>
+  <div class="adminField"><label>Top büyüklüğü <span class="adminValue" id="valBallSize">100%</span></label><input id="setBallSize" type="range" min="70" max="160" value="100" oninput="syncAdminValue('BallSize',this.value,'%')"></div>
+  <div class="adminField"><label>Kale büyüklüğü <span class="adminValue" id="valGoalSize">100%</span></label><input id="setGoalSize" type="range" min="80" max="130" value="100" oninput="syncAdminValue('GoalSize',this.value,'%')"></div>
+  <div class="adminField"><label>Konfeti miktarı <span class="adminValue" id="valConfettiAmount">70</span></label><input id="setConfettiAmount" type="range" min="0" max="150" value="70" oninput="syncAdminValue('ConfettiAmount',this.value,'')"></div>
+  <label class="adminToggle"><span>3D sahne etiketi</span><input id="setSceneLabel" type="checkbox" checked></label>
+  <label class="adminToggle"><span>Bekleyen şut kutuları</span><input id="setShowQueues" type="checkbox" checked></label>
+  <label class="adminToggle"><span>Olay / durum satırı</span><input id="setShowStatus" type="checkbox" checked></label>
+</div></div>
+<div class="adminActions"><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
+<div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Oftm7DRbr0Vdt9gTLFGAaw_LQq4PCnP';
+const ADMIN_UID='6893f884-6b91-4224-abaa-43f87df0966f';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const $=id=>document.getElementById(id),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const nameOf=t=>t==='A'?'Sarı-Lacivert':'Sarı-Kırmızı';
+let adminAuthed=false,polling=false,gameRules={},audioCtx=null,realtimeStatus='';
+const DEFAULT_ADMIN_SETTINGS={shotThreshold:10,startKeeper:100,keeperCost:10,shotDelay:3000,soundMaster:88,soundCrowd:72,soundEffects:92,soundGoal:100,soundEnabled:true,crowdEnabled:true,announcerEnabled:true,goalFxEnabled:true,cameraZoom:100,stadiumExposure:116,idleMotion:100,ballSize:100,goalSize:100,confettiAmount:70,sceneLabel:true,showQueues:true,showStatus:true};
+let state={...DEFAULT_ADMIN_SETTINGS,A:{score:0,queue:0},B:{score:0,queue:0},keeper:{A:100,B:100},lastTeam:'B',busy:false};
+let ids={game:null,team:{A:null,B:null},goalkeeper:{A:null,B:null},keeperState:{A:null,B:null}};
+const terminalShots=new Set(),seenEvents=new Set();
+function syncAdminValue(key,value,suffix=''){const el=$('val'+key);if(el)el.textContent=String(value)+suffix}
+function runtimeSettings(){return{
+  soundMaster:state.soundMaster,soundCrowd:state.soundCrowd,soundEffects:state.soundEffects,soundGoal:state.soundGoal,
+  soundEnabled:state.soundEnabled,crowdEnabled:state.crowdEnabled,announcerEnabled:state.announcerEnabled,
+  cameraZoom:state.cameraZoom,stadiumExposure:state.stadiumExposure,idleMotion:state.idleMotion,
+  ballSize:state.ballSize,goalSize:state.goalSize,sceneLabel:state.sceneLabel
+}}
+function applyRuntimeSettings(){
+  const settings=runtimeSettings();window.__AI_FOOTBALL_SETTINGS=settings;
+  window.dispatchEvent(new CustomEvent('ai-football-settings',{detail:settings}));
+  const q=document.querySelector('.queues');if(q)q.style.display=state.showQueues?'grid':'none';
+  const ev=$('event');if(ev)ev.style.display='none';
+}
+function fillAdminSettings(){
+  const set=(id,v)=>{const e=$(id);if(e)e.value=v},check=(id,v)=>{const e=$(id);if(e)e.checked=!!v};
+  set('setStartKeeper',state.startKeeper);set('setKeeperCost',state.keeperCost);set('setShotDelay',state.shotDelay);set('setShotThreshold',state.shotThreshold);
+  set('setSoundMaster',state.soundMaster);set('setSoundCrowd',state.soundCrowd);set('setSoundEffects',state.soundEffects);set('setSoundGoal',state.soundGoal);
+  set('setCameraZoom',state.cameraZoom);set('setStadiumExposure',state.stadiumExposure);set('setIdleMotion',state.idleMotion);set('setBallSize',state.ballSize);set('setGoalSize',state.goalSize);set('setConfettiAmount',state.confettiAmount);
+  check('setSoundEnabled',state.soundEnabled);check('setCrowdEnabled',state.crowdEnabled);check('setAnnouncerEnabled',state.announcerEnabled);check('setGoalFxEnabled',state.goalFxEnabled);check('setSceneLabel',state.sceneLabel);check('setShowQueues',state.showQueues);check('setShowStatus',state.showStatus);
+  syncAdminValue('SoundMaster',state.soundMaster,'%');syncAdminValue('SoundCrowd',state.soundCrowd,'%');syncAdminValue('SoundEffects',state.soundEffects,'%');syncAdminValue('SoundGoal',state.soundGoal,'%');
+  syncAdminValue('CameraZoom',state.cameraZoom,'%');syncAdminValue('StadiumExposure',state.stadiumExposure,'%');syncAdminValue('IdleMotion',state.idleMotion,'%');syncAdminValue('BallSize',state.ballSize,'%');syncAdminValue('GoalSize',state.goalSize,'%');syncAdminValue('ConfettiAmount',state.confettiAmount,'');
+}
+function render(){
+  $('scoreA').textContent=state.A.score;
+  $('scoreB').textContent=state.B.score;
+  $('queueA').textContent=state.A.queue;
+  $('queueB').textContent=state.B.queue;
+  $('adminOpen').classList.toggle('show',adminAuthed);
+  $('adminKeeperA').textContent=state.keeper.A;
+  $('adminKeeperB').textContent=state.keeper.B;
+  $('adminQueueA').textContent=state.A.queue;
+  $('adminQueueB').textContent=state.B.queue;
+  const front=$('adminFrontKeeper');
+  if(front)front.classList.toggle('show',adminAuthed);
+  if($('frontKeeperA'))$('frontKeeperA').textContent=state.keeper.A;
+  if($('frontKeeperB'))$('frontKeeperB').textContent=state.keeper.B;
+  const max=Math.max(1,Number(state.startKeeper)||100);
+  if($('frontKeeperFillA'))$('frontKeeperFillA').style.width=Math.max(0,Math.min(100,(Number(state.keeper.A)||0)/max*100))+'%';
+  if($('frontKeeperFillB'))$('frontKeeperFillB').style.width=Math.max(0,Math.min(100,(Number(state.keeper.B)||0)/max*100))+'%';
+  if(!$('adminOverlay').classList.contains('show'))fillAdminSettings();
+}
+function log(m){const el=$('event');el.dataset.matchMessage=m;el.replaceChildren();const team=/Sarı-Lacivert/i.test(m)?'A':/Sarı-Kırmızı/i.test(m)?'B':null;if(team){const icon=document.createElement('span');icon.className='jersey queueJersey j'+team;el.appendChild(icon);}el.appendChild(document.createTextNode(m.replace(/Sarı-Lacivert|Sarı-Kırmızı/gi,'').trim()));}function setConn(){const live=realtimeStatus==='SUBSCRIBED';$('connectionStatus').textContent=(live?'Canlı bağlı':'Bağlı')+(adminAuthed?' • Admin':'')}
+function openAdmin(){if(adminAuthed){fillAdminSettings();$('adminOverlay').classList.add('show')}}function closeAdmin(){$('adminOverlay').classList.remove('show')}
+function initAudio(){try{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume()}catch(e){}}
+function playGoalSound(){try{initAudio();if(!audioCtx)return;const now=audioCtx.currentTime;[392,523,659,784].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=i<2?'square':'sawtooth';o.frequency.setValueAtTime(f,now+i*.11);g.gain.setValueAtTime(.0001,now+i*.11);g.gain.exponentialRampToValueAtTime(.16,now+i*.11+.02);g.gain.exponentialRampToValueAtTime(.0001,now+i*.11+.22);o.connect(g);g.connect(audioCtx.destination);o.start(now+i*.11);o.stop(now+i*.11+.24)})}catch(e){}}
+function celebrateGoal(team){if(!window.AIFootball3D?.ready)window.AIFootballAudio?.speakGoal?.();playGoalSound();const fx=$('goalFx');fx.querySelectorAll('.confettiPiece').forEach(x=>x.remove());const colors=team==='A'?['#ffd21f','#173f9b','#fff']:['#ffd21f','#c91f2c','#fff'];for(let i=0;i<(state.goalFxEnabled?state.confettiAmount:0);i++){const p=document.createElement('i');p.className='confettiPiece';p.style.left=(Math.random()*100)+'vw';p.style.background=colors[i%colors.length];p.style.setProperty('--drift',((Math.random()-.5)*260)+'px');p.style.setProperty('--spin',((Math.random()*900-450))+'deg');p.style.animationDelay=(Math.random()*.22)+'s';p.style.animationDuration=(1.35+Math.random()*.8)+'s';fx.appendChild(p)}fx.classList.remove('show');void fx.offsetWidth;fx.classList.add('show');setTimeout(()=>fx.classList.remove('show'),2200)}
+document.addEventListener('pointerdown',initAudio,{once:true});
+function teamFromId(id){return id===ids.team.A?'A':id===ids.team.B?'B':null}
+function applyRules(r){
+  gameRules=r||{};const numberOr=(value,fallback)=>value!=null&&Number.isFinite(Number(value))?Number(value):fallback;const boolOr=(value,fallback)=>value==null?fallback:!!value;
+  state.startKeeper=numberOr(gameRules.goalkeeper_initial_power??gameRules.start_keeper,100);
+  state.keeperCost=numberOr(gameRules.keeper_cost,10);state.shotDelay=numberOr(gameRules.shot_delay,3000);state.shotThreshold=numberOr(gameRules.shot_threshold,10);
+  state.soundMaster=numberOr(gameRules.sound_master,DEFAULT_ADMIN_SETTINGS.soundMaster);state.soundCrowd=numberOr(gameRules.sound_crowd,DEFAULT_ADMIN_SETTINGS.soundCrowd);state.soundEffects=numberOr(gameRules.sound_effects,DEFAULT_ADMIN_SETTINGS.soundEffects);state.soundGoal=numberOr(gameRules.sound_goal,DEFAULT_ADMIN_SETTINGS.soundGoal);
+  state.soundEnabled=true;state.crowdEnabled=boolOr(gameRules.crowd_enabled,true);state.announcerEnabled=boolOr(gameRules.announcer_enabled,true);state.goalFxEnabled=boolOr(gameRules.goal_fx_enabled,true);
+  state.cameraZoom=numberOr(gameRules.camera_zoom,100);state.stadiumExposure=numberOr(gameRules.stadium_exposure,116);state.idleMotion=numberOr(gameRules.idle_motion,100);state.ballSize=numberOr(gameRules.ball_size,100);state.goalSize=numberOr(gameRules.goal_size,100);state.confettiAmount=numberOr(gameRules.confetti_amount,70);
+  state.sceneLabel=boolOr(gameRules.scene_label,true);state.showQueues=boolOr(gameRules.show_queues,true);state.showStatus=boolOr(gameRules.show_status,true);
+  applyRuntimeSettings();render()
+}
+function handleEventRow(row,animate=true){if(!row||!row.id||seenEvents.has(row.id))return;seenEvents.add(row.id);const attack=teamFromId(row.attacking_team_id),defend=teamFromId(row.defending_team_id);if(row.event_type==='goal'){log('GOL! '+(attack?nameOf(attack):''));if(animate&&attack){window.AIFootball3D?.finishShot?.(attack,'goal');celebrateGoal(attack)}}else if(row.event_type==='saved'){log((defend?nameOf(defend)+' ':'')+'kalecisi kurtardı!')}else if(row.event_type==='reset'){log('Maç sıfırlandı')}}
+async function getAuth(){const {data}=await db.auth.getUser();adminAuthed=!!(data&&data.user&&data.user.id===ADMIN_UID);render();setConn()}
+async function loadRemote(force=false){if(polling||(!force&&state.busy)||document.hidden)return;polling=true;try{const {data:g,error:ge}=await db.from('games').select('id,rules').eq('name','AI Football Live').limit(1).single();if(ge)throw ge;ids.game=g.id;applyRules(g.rules);const {data:teams,error:te}=await db.from('teams').select('id,name,score').eq('game_id',ids.game);if(te)throw te;const a=teams.find(x=>x.name==='Sarı-Lacivert'),b=teams.find(x=>x.name==='Sarı-Kırmızı');if(!a||!b)throw new Error('Takımlar bulunamadı');ids.team.A=a.id;ids.team.B=b.id;state.A.score=a.score||0;state.B.score=b.score||0;const {data:gks,error:gke}=await db.from('goalkeepers').select('id,team_id').eq('game_id',ids.game);if(gke)throw gke;for(const gk of gks){if(gk.team_id===ids.team.A)ids.goalkeeper.A=gk.id;if(gk.team_id===ids.team.B)ids.goalkeeper.B=gk.id}const {data:kss,error:kse}=await db.from('goalkeeper_opponent_state').select('id,goalkeeper_id,power').eq('game_id',ids.game);if(kse)throw kse;for(const ks of kss){if(ks.goalkeeper_id===ids.goalkeeper.A){ids.keeperState.A=ks.id;state.keeper.A=Number(ks.power)}if(ks.goalkeeper_id===ids.goalkeeper.B){ids.keeperState.B=ks.id;state.keeper.B=Number(ks.power)}}const {data:pending,error:pe}=await db.from('pending_shots').select('attacking_team_id').eq('game_id',ids.game).eq('status','pending');if(pe)throw pe;state.A.queue=pending.filter(x=>x.attacking_team_id===ids.team.A).length;state.B.queue=pending.filter(x=>x.attacking_team_id===ids.team.B).length;const {data:last}=await db.from('game_events').select('id,event_type,attacking_team_id,defending_team_id,created_at').eq('game_id',ids.game).order('created_at',{ascending:false}).limit(1);render();if(last&&last[0])handleEventRow(last[0],false);setConn()}catch(e){console.error(e);$('connectionStatus').textContent='Bağlantı hatası'}finally{polling=false}}
+const localShotQueue=[];let localShotBusy=false;
+async function waitFor3D(){
+  const started=Date.now();
+  while(Date.now()-started<5000){
+    if(window.AIFootball3D?.ready)return true;
+    await sleep(100);
+  }
+  return false;
+}
+async function runLocalShotQueue(){
+  if(localShotBusy)return;
+  localShotBusy=true;
+  try{
+    while(localShotQueue.length){
+      const t=localShotQueue.shift(),defending=t==='A'?'B':'A';
+      state[t].queue=Math.max(0,state[t].queue-1);render();
+      log(nameOf(t)+' şut çekiyor!');
+      await waitFor3D();
+      try{window.AIFootball3D?.beginShot(t)}catch(e){}
+      // Let the run + kick reach the ball before announcing the outcome.
+      await sleep(1850);
+      let result='save';
+      if(Number(state.keeper[defending])<=0){
+        result='goal';
+        state[t].score=Number(state[t].score)+1;
+        state.keeper[defending]=Number(state.startKeeper)||100;
+        log('GOL! '+nameOf(t));
+        celebrateGoal(t);
+      }else{
+        state.keeper[defending]=Math.max(0,Number(state.keeper[defending])-Number(state.keeperCost||10));
+        log(nameOf(defending)+' kalecisi kurtardı!');
+      }
+      render();
+      try{window.AIFootball3D?.finishShot(t,result)}catch(e){}
+      await window.AIFootball3D?.waitForShot?.(t);
+      await sleep(Math.max(900,Number(state.shotDelay)||3000));
+    }
+  }finally{localShotBusy=false}
+}
+async function addShots(t,n){
+  initAudio();
+  try{await window.AIFootballAudio?.enableSound?.()}catch(e){}
+  if(!adminAuthed){
+    n=Math.max(1,Math.floor(Number(n)||1));
+    for(let i=0;i<n;i++)localShotQueue.push(t);
+    state[t].queue+=n;render();
+    log(nameOf(t)+' için '+n+' şut hazır');
+    runLocalShotQueue();
+    return;
+  }
+  const {error}=await db.rpc('public_add_test_shots',{p_team:t,p_count:n});
+  if(error){console.error(error);log('Şut eklenemedi');return}
+  log(nameOf(t)+' için '+n+' şut gönderildi');
+  if(realtimeStatus!=='SUBSCRIBED')setTimeout(()=>loadRemote(true),700)
+}
+async function addKeeper(t,n){initAudio();try{await window.AIFootballAudio?.enableSound?.()}catch(e){}const {data,error}=await db.rpc('public_add_test_keeper',{p_team:t,p_amount:n});if(error){console.error(error);log('Kaleci gücü güncellenemedi');return}state.keeper[t]=Number(data)||state.keeper[t];render();log(nameOf(t)+' kalecisine +'+n+' güç');if(realtimeStatus!=='SUBSCRIBED')setTimeout(()=>loadRemote(true),700)}
+async function nextPending(){const {data,error}=await db.from('pending_shots').select('id,player_id,attacking_team_id,queue_order').eq('game_id',ids.game).eq('status','pending').order('queue_order',{ascending:true}).limit(100);if(error)throw error;const a=data.find(x=>x.attacking_team_id===ids.team.A)||null,b=data.find(x=>x.attacking_team_id===ids.team.B)||null;return{a,b}}
+async function insertGameEvent(payload){const {data,error}=await db.from('game_events').insert(payload).select('id,event_type,attacking_team_id,defending_team_id,created_at').single();if(error)throw error;handleEventRow(data,true)}
+async function resolveShot(t,shot){const defending=t==='A'?'B':'A';const {data:ks,error}=await db.from('goalkeeper_opponent_state').select('id,power,initial_power').eq('id',ids.keeperState[defending]).single();if(error)throw error;log(nameOf(t)+' şut çekiyor!');await sleep(700);const now=new Date().toISOString();if(Number(ks.power)<=0){const newScore=Number(state[t].score)+1,resetPower=Number(ks.initial_power)||state.startKeeper;await db.from('teams').update({score:newScore}).eq('id',ids.team[t]);await db.from('goalkeeper_opponent_state').update({power:resetPower}).eq('id',ks.id);await db.from('pending_shots').update({status:'goal',resolved_at:now}).eq('id',shot.id);state[t].score=newScore;state.keeper[defending]=resetPower;render();await insertGameEvent({game_id:ids.game,event_type:'goal',attacking_team_id:ids.team[t],defending_team_id:ids.team[defending],player_id:shot.player_id,goalkeeper_id:ids.goalkeeper[defending],value:1,details:{source:'test_queue'}})}else{const newPower=Math.max(0,Number(ks.power)-state.keeperCost);await db.from('goalkeeper_opponent_state').update({power:newPower}).eq('id',ks.id);await db.from('pending_shots').update({status:'saved',resolved_at:now}).eq('id',shot.id);state.keeper[defending]=newPower;render();await insertGameEvent({game_id:ids.game,event_type:'saved',attacking_team_id:ids.team[t],defending_team_id:ids.team[defending],player_id:shot.player_id,goalkeeper_id:ids.goalkeeper[defending],value:state.keeperCost,details:{source:'test_queue'}})}state.lastTeam=t}
+async function processQueue(){if(!adminAuthed||state.busy||!ids.game)return;state.busy=true;try{while(adminAuthed){const {a,b}=await nextPending();let t=null,shot=null;if(a&&b){t=state.lastTeam==='A'?'B':'A';shot=t==='A'?a:b}else if(a){t='A';shot=a}else if(b){t='B';shot=b}else break;const {data:claimed,error:claimError}=await db.from('pending_shots').update({status:'processing'}).eq('id',shot.id).eq('status','pending').select('id');if(claimError)throw claimError;if(!claimed||!claimed.length)break;await resolveShot(t,shot);await sleep(state.shotDelay)}}catch(e){console.error(e);log('Şut kuyruğu işlenirken hata oluştu')}finally{state.busy=false;await loadRemote(true)}}
+async function applyAdminSettings(){
+  if(!adminAuthed)return;
+  const num=(id,fallback,min,max)=>{let v=Number($(id)?.value);if(!Number.isFinite(v))v=fallback;if(min!=null)v=Math.max(min,v);if(max!=null)v=Math.min(max,v);return v};
+  const chk=id=>!!$(id)?.checked;
+  state.startKeeper=num('setStartKeeper',100,1,10000);state.keeperCost=num('setKeeperCost',10,1,10000);state.shotDelay=num('setShotDelay',3000,500,30000);state.shotThreshold=num('setShotThreshold',10,1,10000);
+  state.soundMaster=num('setSoundMaster',DEFAULT_ADMIN_SETTINGS.soundMaster,0,100);state.soundCrowd=num('setSoundCrowd',DEFAULT_ADMIN_SETTINGS.soundCrowd,0,100);state.soundEffects=num('setSoundEffects',DEFAULT_ADMIN_SETTINGS.soundEffects,0,100);state.soundGoal=num('setSoundGoal',DEFAULT_ADMIN_SETTINGS.soundGoal,0,100);
+  state.soundEnabled=chk('setSoundEnabled');state.crowdEnabled=chk('setCrowdEnabled');state.announcerEnabled=chk('setAnnouncerEnabled');state.goalFxEnabled=chk('setGoalFxEnabled');
+  state.cameraZoom=num('setCameraZoom',100,75,140);state.stadiumExposure=num('setStadiumExposure',116,70,150);state.idleMotion=num('setIdleMotion',100,0,150);state.ballSize=num('setBallSize',100,70,160);state.goalSize=num('setGoalSize',100,80,130);state.confettiAmount=num('setConfettiAmount',70,0,150);
+  state.sceneLabel=chk('setSceneLabel');state.showQueues=chk('setShowQueues');state.showStatus=chk('setShowStatus');
+  gameRules={...gameRules,goalkeeper_initial_power:state.startKeeper,keeper_cost:state.keeperCost,shot_delay:state.shotDelay,shot_threshold:state.shotThreshold,last_team:state.lastTeam,
+    sound_master:state.soundMaster,sound_crowd:state.soundCrowd,sound_effects:state.soundEffects,sound_goal:state.soundGoal,sound_enabled:state.soundEnabled,crowd_enabled:state.crowdEnabled,announcer_enabled:state.announcerEnabled,goal_fx_enabled:state.goalFxEnabled,
+    camera_zoom:state.cameraZoom,stadium_exposure:state.stadiumExposure,idle_motion:state.idleMotion,ball_size:state.ballSize,goal_size:state.goalSize,confetti_amount:state.confettiAmount,scene_label:state.sceneLabel,show_queues:state.showQueues,show_status:state.showStatus};
+  const {error}=await db.from('games').update({rules:gameRules}).eq('id',ids.game);if(error){console.error(error);log('Ayarlar kaydedilemedi');return}
+  await db.from('goalkeepers').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
+  await db.from('goalkeeper_opponent_state').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
+  applyRuntimeSettings();render();closeAdmin();log('Tüm admin ayarları kaydedildi')
+}
+async function restoreDefaultSettings(){
+  if(!adminAuthed)return;
+  if(!confirm('Tüm admin ayarları varsayılan değerlere dönsün mü?'))return;
+  Object.assign(state,DEFAULT_ADMIN_SETTINGS);
+  fillAdminSettings();
+  applyRuntimeSettings();
+  await applyAdminSettings();
+  log('Tüm ayarlar varsayılana döndürüldü');
+}
+async function resetMatch(){if(!adminAuthed||!confirm('Maç tamamen sıfırlansın mı?'))return;await Promise.all([db.from('teams').update({score:0}).eq('id',ids.team.A),db.from('teams').update({score:0}).eq('id',ids.team.B),db.from('pending_shots').delete().eq('game_id',ids.game),db.from('goalkeeper_opponent_state').update({power:state.startKeeper,initial_power:state.startKeeper}).eq('game_id',ids.game)]);state.A.score=0;state.B.score=0;state.A.queue=0;state.B.queue=0;state.keeper.A=state.startKeeper;state.keeper.B=state.startKeeper;render();closeAdmin();log('Maç sıfırlandı')}
+async function logoutAdmin(){await db.auth.signOut();adminAuthed=false;render();location.replace('./admin-edm2026.html')}
+function onPending(payload){const row=payload.new||{};const t=teamFromId(row.attacking_team_id);if(payload.eventType==='INSERT'&&row.status==='pending'&&t){state[t].queue++;render();if(adminAuthed)processQueue();return}if(payload.eventType==='UPDATE'&&row.status==='processing'&&t&&!terminalShots.has(row.id)){terminalShots.add(row.id);state[t].queue=Math.max(0,state[t].queue-1);render();return}if(payload.eventType==='DELETE'){loadRemote(true)}}
+function setupRealtime(){if(!ids.game)return;const channel=db.channel('match-'+ids.game).on('postgres_changes',{event:'UPDATE',schema:'public',table:'teams',filter:'game_id=eq.'+ids.game},p=>{const t=teamFromId(p.new.id);if(t){state[t].score=Number(p.new.score)||0;render()}}).on('postgres_changes',{event:'UPDATE',schema:'public',table:'goalkeeper_opponent_state',filter:'game_id=eq.'+ids.game},p=>{if(p.new.id===ids.keeperState.A)state.keeper.A=Number(p.new.power);if(p.new.id===ids.keeperState.B)state.keeper.B=Number(p.new.power);render()}).on('postgres_changes',{event:'*',schema:'public',table:'pending_shots',filter:'game_id=eq.'+ids.game},onPending).on('postgres_changes',{event:'INSERT',schema:'public',table:'game_events',filter:'game_id=eq.'+ids.game},p=>handleEventRow(p.new,true)).on('postgres_changes',{event:'UPDATE',schema:'public',table:'games',filter:'id=eq.'+ids.game},p=>applyRules(p.new.rules)).subscribe(status=>{realtimeStatus=status;setConn();if(status==='SUBSCRIBED'){loadRemote(true)}})}
+async function refreshAndResume(){if(document.hidden||(typeof localShotBusy!=='undefined'&&localShotBusy))return;await loadRemote(true);}
+async function boot(){await getAuth();await loadRemote(true);setupRealtime();db.auth.onAuthStateChange((_event,session)=>{adminAuthed=!!(session&&session.user&&session.user.id===ADMIN_UID);render();setConn();});setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
+render();boot();
+</script>
+<script id="instantSyncFix" src="./instant-sync.js?v=6"></script>
+<script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=47"></script>
+<script src="./player-video-preview-v78.js?v=1"></script>
+<script id="game3dScript" src="./game-3d.js?v=76"></script>
+</body>
+</html>
