@@ -519,7 +519,7 @@ function animate(){
   }
   if(DEMO){for(const actor of demoActors.values()){if(actor!==animation?.player)idleActor(actor,t,actor.userData.idlePhase||0);stabilizeHead(actor,dt);}stabilizeHead(keeper,dt);demoReactions(t);}else{stabilizeHead(playerA,dt);stabilizeHead(playerB,dt);}
   updatePlayerASecondaryMotion(dt,t);
-  updateCamera(dt);if(animation&&!DEMO&&['outcome','net','result'].includes(animation.phase))fitWholeGoal();videoPlayerA?.update(playerA,camera,animation,t);updateWaitingPortraits();renderer.render(scene,camera);
+  updateCamera(dt);if(animation&&!DEMO&&!animation.returnNow&&['outcome','net','result'].includes(animation.phase))fitWholeGoal();videoPlayerA?.update(playerA,camera,animation,t);updateWaitingPortraits();renderer.render(scene,camera);
 }
 function updatePlayerASecondaryMotion(dt,t){
   if(DEMO||!playerA?.userData.real)return;
@@ -573,14 +573,14 @@ function updateCamera(dt){
   let view=DEMO?VIEW.idle:closeIdleView();
   if(animation&&!DEMO){
     const phase=animation.phase;
-    if(phase==='loading')view=closeIdleView();else if(animation.videoMotion&&['turn','run','kick','returnTurn','returnWalk','returnFace'].includes(phase))view={position:[-7.5,1.65,2.75],target:[.6,1.12,.65]};else if(['returnTurn','returnWalk','returnFace'].includes(phase))view=closeIdleView();else if(['turn','run','kick'].includes(phase))view={position:[-6.8,2.6,2.6],target:[1.6,1,.35]};
+    if(phase==='loading')view=closeIdleView();else if(animation.videoMotion&&animation.returnNow)view={position:[-7.5,1.65,2.75],target:[.6,1.12,.65]};else if(animation.videoMotion&&['turn','run','kick','returnTurn','returnWalk','returnFace'].includes(phase))view={position:[-7.5,1.65,2.75],target:[.6,1.12,.65]};else if(['returnTurn','returnWalk','returnFace'].includes(phase))view=closeIdleView();else if(['turn','run','kick'].includes(phase))view={position:[-6.8,2.6,2.6],target:[1.6,1,.35]};
     else if(['ball','awaitResult','outcome','net','result'].includes(phase)){
       // Track the ball into the goal from a fixed position beside the shooter.
       const follow=animation.cameraFollow=Math.max(animation.cameraFollow||0,smooth(clamp((ball.position.x-(animation.ballFrom?.x??-1))/(3.45-(animation.ballFrom?.x??-1)),0,1)));
       view={position:[lerp(-6,-4.45,follow),lerp(2.1,1.5,follow),2.02],target:[lerp(1.6,4.42,follow),lerp(1.0,1.12,follow),GOAL_Z+ball.position.z*.08]};
     }else view=VIEW.shot;
   }else if(animation)view=VIEW.shot;
-  const closeView=animation&&!DEMO&&['outcome','net','result'].includes(animation.phase);
+  const closeView=animation&&!DEMO&&!animation.returnNow&&['outcome','net','result'].includes(animation.phase);
   const idleFrame=!DEMO&&(!animation||animation.phase==='loading'||(!animation.videoMotion&&['returnTurn','returnWalk','returnFace'].includes(animation.phase)));
   const baseFov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(idleFrame?idleCameraAngle():52)/2)/Math.min(1,camera.aspect)));
   camera.fov=lerp(camera.fov,DEMO?49:baseFov,1-Math.exp(-dt*3.1));camera.updateProjectionMatrix();
@@ -662,9 +662,9 @@ function beginShot(team){
   animation.videoMotion=animation.video&&!!videoPlayerA.config.motion;
   if(animation.videoMotion){
     animation.timeline=videoPlayerA.config.motion.timeline;
-    animation.shotPosition=new THREE.Vector3(p.userData.homeX+1.2,0,p.userData.homeZ-.12);
+    animation.shotPosition=new THREE.Vector3(p.userData.homeX+1.62,0,p.userData.homeZ-.14);
     animation.ballFrom=animation.shotPosition.clone().add(new THREE.Vector3(.15,.14,.38));
-    animation.runYaw=Math.atan2(1.2,-.12);ball.position.copy(animation.ballFrom);
+    animation.runYaw=Math.atan2(1.62,-.14);ball.position.copy(animation.ballFrom);
   }
   const variation=saveSequence++;
   animation.saveStyle=['parry','catch','foot'][variation%3];
@@ -712,6 +712,26 @@ function keeperSavePose(a,u){
 function runAnimation(t){
   const a=animation,p=a.player;if(!p)return;let u;const side=a.saveSide??shotSide(a.team),targetZ=a.targetZ??shotTarget(a.team);
   if(a.team==='A'&&a.kickEnd&&t>=a.kickEnd&&!a.followThroughComplete){a.followThroughComplete=true;playAction(p,'idle');}
+  if(a.videoMotion&&a.returnNow&&!a.returnComplete&&['ball','awaitResult','outcome','net','result'].includes(a.phase)){
+    const rp=clamp(videoPlayerA.status.returnProgress||0,0,1),homeX=p.userData.homeX,homeZ=p.userData.homeZ;
+    if(rp<.10){
+      const ru=smooth(rp/.10);
+      p.rotation.y=angleLerp(a.returnStartYaw,a.returnYaw,ru);
+      p.position.set(lerp(a.returnFrom.x,homeX,.03*ru),0,lerp(a.returnFrom.z,homeZ,.03*ru));
+    }else if(rp<.90){
+      const wu=smooth((rp-.10)/.80);
+      p.position.set(lerp(a.returnFrom.x,homeX,wu),0,lerp(a.returnFrom.z,homeZ,wu));
+      p.rotation.y=a.returnYaw;
+    }else{
+      const fu=smooth((rp-.90)/.10);
+      p.position.set(homeX,0,homeZ);
+      p.rotation.y=angleLerp(a.returnYaw,p.userData.baseRotationY,fu);
+    }
+    if(videoPlayerA.status.returnDone||rp>=.999){
+      a.returnComplete=true;p.position.set(homeX,0,homeZ);p.rotation.y=p.userData.baseRotationY;
+      if(!DEMO)(a.team==='A'?playerB:playerA).visible=true;
+    }
+  }
   if(a.phase==='turn'){
     u=a.videoMotion?clamp((videoPlayerA.status.time-a.timeline.turn[0])/(a.timeline.turn[1]-a.timeline.turn[0]),0,1):clamp((t-a.start)/a.timing.turn,0,1);p.rotation.y=angleLerp(p.userData.baseRotationY,a.runYaw,smooth(u));
     if(u>=1){a.phase='run';a.start=t;if(!DEMO)(a.team==='A'?playerB:playerA).visible=false;if(p.userData.real)playAction(p,'run');}
@@ -730,12 +750,12 @@ function runAnimation(t){
     if(a.videoMotion){u=clamp((videoPlayerA.status.time-a.timeline.kick[0])/(a.timeline.kick[1]-a.timeline.kick[0]),0,1);p.position.copy(a.shotPosition);}
     if(!p.userData.real){p.userData.rl.rotation.x=-1.0*Math.sin(u*Math.PI*.5);p.userData.la.rotation.z=-.18-.45*Math.sin(u*Math.PI*.5);}
     groundKick(p,smooth(u));if(a.videoMotion&&u>=1){const foot=videoPlayerA.status.feet?.[1];if(foot){a.ballFrom.set(foot.position[0]+.12,.14,foot.position[2]);ball.position.copy(a.ballFrom);}}
-    if(!a.kickSoundPlayed&&u>=(a.team==='A'?1:.72)){a.kickSoundPlayed=true;try{window.AIFootballAudio?.kick?.(0)}catch(e){}phaseEvent('kick');}if(u>=1){a.phase='ball';a.start=t;phaseEvent('ball');}
+    if(!a.kickSoundPlayed&&u>=(a.team==='A'?1:.72)){a.kickSoundPlayed=true;try{window.AIFootballAudio?.kick?.(0)}catch(e){}phaseEvent('kick');}if(u>=1){a.phase='ball';a.start=t;if(a.videoMotion){a.returnNow=true;a.returnFrom=p.position.clone();a.returnStartYaw=p.rotation.y;a.returnYaw=Math.atan2(p.userData.homeX-p.position.x,p.userData.homeZ-p.position.z);}phaseEvent('ball');}
   }else if(a.phase==='ball'){
     if(t-a.start<(a.team==='A'?240:170))groundKick(p,1-smooth(clamp((t-a.start)/(a.team==='A'?240:170),0,1)));else if(a.team!=='A'&&t-a.start>=450&&!a.playerPoseLocked){a.playerPoseLocked=true;if(p.userData.activeAction)p.userData.activeAction.paused=true;}
-    u=clamp((t-a.start)/650,0,1);
+    u=clamp((t-a.start)/(a.videoMotion?430:650),0,1);
     // Both outcomes share the approach. Never cross the goal before its result arrives.
-    ball.position.set(lerp(a.ballFrom?.x??-1,3.45,u),lerp(.14,a.shotHeight||.90,u)+Math.sin(u*Math.PI)*(a.saveStyle==='foot'?.12:.55),lerp(a.ballFrom?.z??SHOT_Z,targetZ,u));
+    const shotArc=a.videoMotion?(a.saveStyle==='foot'?.08:.32):(a.saveStyle==='foot'?.12:.55);ball.position.set(lerp(a.ballFrom?.x??-1,3.45,u),lerp(.14,a.shotHeight||.90,u)+Math.sin(u*Math.PI)*shotArc,lerp(a.ballFrom?.z??SHOT_Z,targetZ,u));
     ball.rotation.x+=.25;ball.rotation.z+=.18;
     if(a.result==='goal'){const dive=smooth(u);keeper.position.z=GOAL_Z-side*1.05*dive;keeper.position.y=Math.sin(u*Math.PI)*.20;keeper.rotation.x=-side*.95*dive;}
     if(a.result==='save'){
@@ -766,12 +786,15 @@ function runAnimation(t){
     ball.rotation.x+=.08;
     if(u>=1){a.phase='result';a.start=t;}
   }else if(a.phase==='result'){
+    if(a.videoMotion&&a.returnComplete){p.position.set(p.userData.homeX,0,p.userData.homeZ);p.rotation.y=p.userData.baseRotationY;}
     u=clamp((t-a.start)/(a.videoMotion?850:a.video&&a.result==='goal'?5042:DEMO?1100:850),0,1);
     const bounce=Math.abs(Math.sin(u*Math.PI*4))*(1-u)*.10;
     if(a.result==='save'&&a.saveStyle==='catch'){keeperSavePose(a,1);ball.position.set(3.45,a.shotHeight,targetZ);}
     else ball.position.y=.14+bounce;
     if(a.result==='goal'){p.rotation.y=Math.PI/2;if(!p.userData.real&&!a.video)p.position.y=Math.sin(u*Math.PI)*.18;}
-    if(u>=1){if(!DEMO&&a.team==='A'){
+    if(u>=1){if(!DEMO&&a.team==='A'&&a.videoMotion&&a.returnNow){
+      if(a.returnComplete){resetPose();animation=null;}
+    }else if(!DEMO&&a.team==='A'){
       a.phase='returnTurn';a.start=t;a.returnFrom=p.position.clone();a.returnYaw=Math.atan2(p.userData.homeX-p.position.x,p.userData.homeZ-p.position.z);a.returnStartYaw=p.rotation.y;playAction(p,'idle');
     }else if(DEMO){a.phase='return';a.start=t;p.userData.reactionWeight=0;if(p.userData.real)playAction(p,'run');}else{resetPose();animation=null;}}
   }else if(a.phase==='returnTurn'){
@@ -780,7 +803,7 @@ function runAnimation(t){
   }else if(a.phase==='returnWalk'){
     u=clamp((t-a.start)/a.returnDuration,0,1);if(a.video)u=smooth(clamp((t-a.start-250)/2800,0,1));
     if(a.videoMotion)u=clamp((videoPlayerA.status.time-a.timeline.returnWalk[0])/(a.timeline.returnWalk[1]-a.timeline.returnWalk[0]),0,1);
-    p.position.set(lerp(a.returnFrom.x,p.userData.homeX,u),0,lerp(a.returnFrom.z,p.userData.homeZ,u));p.rotation.y=a.returnYaw;
+    const walkU=a.videoMotion?smooth(u):u;p.position.set(lerp(a.returnFrom.x,p.userData.homeX,walkU),0,lerp(a.returnFrom.z,p.userData.homeZ,walkU));p.rotation.y=a.returnYaw;
     if(u>.90&&!a.arriving){a.arriving=true;playAction(p,'idle');}
     if(a.videoMotion?u>=1:t-a.start>=a.returnDuration){a.phase='returnFace';a.start=t;}
   }else if(a.phase==='returnFace'){
