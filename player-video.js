@@ -2,7 +2,7 @@
 'use strict';
 // RGB and its matte share one H.264 frame: the alpha remains synchronized on Safari too.
 window.AIFootballPlayerVideo={async create(THREE,scene){
-  const response=await fetch('./assets/players/a/clips.json?v=2');
+  const response=await fetch('./assets/players/a/clips.json?v=3');
   if(!response.ok)throw new Error('Player video manifest unavailable');
   const config=await response.json(),clips={},media=[];
   const root=new THREE.Group();root.visible=false;scene.add(root);
@@ -58,7 +58,13 @@ window.AIFootballPlayerVideo={async create(THREE,scene){
       if(name===previous&&blend===1){c.video.pause();previous=null;}
       const frame=Math.min(c.anchors.length-1,c.video.currentTime*config.fps),lo=Math.floor(frame),hi=Math.min(lo+1,c.anchors.length-1);
       const anchor=c.anchors[lo]+(c.anchors[hi]-c.anchors[lo])*(frame-lo);
-      c.plane.position.set((.5-anchor)*config.height*1080/1440,config.height/2-(1800-config.floor)/1440*config.height,0);
+      const ground=c.groundSamples;
+      if(ground){
+        const at=Math.min(ground.length-1,c.video.currentTime*config.fps),i=Math.floor(at),j=Math.min(i+1,ground.length-1),fraction=at-i;
+        const x=ground[i][0]+(ground[j][0]-ground[i][0])*fraction;
+        const sole=ground[i][1]+(ground[j][1]-ground[i][1])*fraction;
+        c.plane.position.set((.5-x)*config.height*1080/1440+(c.plantedOffsetX||0),(sole-.5)*config.height+(c.groundHeight||0),0);
+      }else c.plane.position.set((.5-anchor)*config.height*1080/1440,config.height/2-(1800-config.floor)/1440*config.height,0);
     }
   },get status(){return{ready:true,clip:current,failed,time:current?clips[current].video.currentTime:0};}};
 }};
