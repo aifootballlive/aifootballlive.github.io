@@ -2,7 +2,7 @@
 'use strict';
 // RGB and its matte share one H.264 frame: the alpha remains synchronized on Safari too.
 window.AIFootballPlayerVideo={async create(THREE,scene){
-  const response=await fetch('./assets/players/a/clips.json?v=1');
+  const response=await fetch('./assets/players/a/clips.json?v=2');
   if(!response.ok)throw new Error('Player video manifest unavailable');
   const config=await response.json(),clips={},media=[];
   const root=new THREE.Group();root.visible=false;scene.add(root);
