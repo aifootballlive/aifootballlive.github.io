@@ -1,11 +1,12 @@
 (()=>{
 'use strict';
+let modelToolsLoad=null;
 let THREE=null,GLTFLoader=null,scene=null,camera=null,renderer=null,clock=null;
 let ball=null,keeper=null,playerA=null,playerB=null,goalObject=null;
 let runtimeSettings={cameraZoom:100,stadiumExposure:116,idleMotion:100,ballSize:100,goalSize:100,sceneLabel:true};
 let animation=null,installed=false,hooked=false,realMode=false;
 let saveSequence=0;
-let videoPlayerA=null,pendingVideoPlayerA=null;
+let videoPlayerA=null,pendingVideoPlayerA=null,videoPlayerLoad=null,videoPlayerLoading=false;
 let playerALoad=null,pendingPlayerA=null,pendingPlayerB=null;
 const mixers=[];
 const DEMO=!!window.AIFootballDemoMode;
@@ -60,9 +61,13 @@ function apply3DSettings(next={}){
 }
 async function loadThree(){
   if(THREE)return THREE;
-  const mod=await import('https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js');THREE=mod;
-  try{const loaderMod=await import('https://esm.sh/three@0.169.0/examples/jsm/loaders/GLTFLoader.js');GLTFLoader=loaderMod.GLTFLoader;}catch(e){console.warn('GLTFLoader yüklenemedi; basit 3D kullanılacak',e)}
+  const mod=await import('./assets/vendor/three.module.mjs');THREE=mod;
+  // Optional model tools do not block the pitch or the first player image.
   return THREE;
+}
+async function loadModelTools(){
+  if(!modelToolsLoad)modelToolsLoad=Promise.all([import('./assets/vendor/GLTFLoader.mjs'),import('./assets/vendor/SkeletonUtils.mjs')]).then(([loader,skeleton])=>{GLTFLoader=loader.GLTFLoader;SkeletonClone=skeleton.clone;}).catch(error=>{modelToolsLoad=null;throw error;});
+  return modelToolsLoad;
 }
 function mat(color,rough=.65,metal=.03){return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal})}
 function mesh(g,m){const x=new THREE.Mesh(g,m);x.castShadow=true;x.receiveShadow=true;return x}
@@ -225,7 +230,7 @@ function grassMaterial(){
 function setupScene(){
   const holder=document.getElementById('game3dCanvas');if(!holder)return;
   scene=new THREE.Scene();scene.background=new THREE.Color(0x09111f);camera=new THREE.PerspectiveCamera(40,1,.1,100);camera.position.set(...VIEW.idle.position);camera.lookAt(...VIEW.idle.target);scene.fog=new THREE.Fog(0x09111f,18,42);
-  renderer=new THREE.WebGLRenderer({antialias:true,alpha:DEMO,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;if('outputColorSpace' in renderer)renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer=new THREE.WebGLRenderer({antialias:true,alpha:DEMO,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;if('outputColorSpace' in renderer)renderer.outputColorSpace=THREE.SRGBColorSpace;
   if(DEMO){scene.background=null;scene.fog=null;renderer.setClearColor(0x000000,0);holder.style.background='url("assets/backgrounds/stadium-v1.png") center center / cover no-repeat';}
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=Math.max(.7,Math.min(1.5,(Number(runtimeSettings.stadiumExposure)||116)/100));
   holder.appendChild(renderer.domElement);renderer.domElement.style.cssText='display:block;width:100%;height:100%';holder.style.cssText='width:100%;height:100%';new ResizeObserver(resize).observe(holder);
@@ -246,8 +251,35 @@ function setupScene(){
   const directions=new THREE.IcosahedronGeometry(1,0).getAttribute('position'),seen=new Set();
   for(let i=0;i<directions.count;i++){const v=new THREE.Vector3().fromBufferAttribute(directions,i).normalize(),key=v.toArray().map(x=>x.toFixed(3)).join(',');if(seen.has(key))continue;seen.add(key);const patch=mesh(new THREE.CircleGeometry(.055,5),mat(0x101621,.7,0));patch.position.copy(v).multiplyScalar(.1805);patch.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),v);ball.add(patch);}
   scene.add(ball);apply3DSettings(window.__AI_FOOTBALL_SETTINGS||{});const spot=mesh(new THREE.CircleGeometry(.055,16),mat(0xffffff,.8,0));spot.rotation.x=-Math.PI/2;spot.position.set(-1,.013,0);scene.add(spot);
-  clock=new THREE.Clock();resize();window.addEventListener('resize',resize);animate();if(!DEMO){tryLoadRealModels();window.AIFootballPlayerVideo?.create(THREE,scene).then(actor=>{pendingVideoPlayerA=actor}).catch(error=>console.warn("Oyuncu videosu yüklenemedi; mevcut model devam ediyor",error));}
+  clock=new THREE.Clock();resize();window.addEventListener('resize',resize);animate();if(!DEMO){loadWaitingPortraits();
+    if(window.AIFootballPlayerVideo){videoPlayerLoading=true;videoPlayerLoad=window.AIFootballPlayerVideo.create(THREE,scene).then(actor=>{pendingVideoPlayerA=actor;tryLoadRealModels();return actor;}).catch(error=>{console.warn('Oyuncu videosu yüklenemedi',error);tryLoadRealModels();const afterModels=playerALoad||Promise.resolve();afterModels.finally(()=>setTimeout(()=>tryLoadRealModels(),0));return null;}).finally(()=>{videoPlayerLoading=false;});tryLoadRealModels();}
+    else tryLoadRealModels();
+  }
 }
+
+const loadingPortraits={};
+async function loadWaitingPortraits(){
+  try{
+    const response=await fetch('./assets/players/loading-portraits.json?v=1');if(!response.ok)return;
+    const portraits=await response.json();
+    await Promise.all(Object.entries(portraits).map(async([team,info])=>{
+      const texture=await new THREE.TextureLoader().loadAsync(info.src);texture.colorSpace=THREE.SRGBColorSpace;
+      const plane=new THREE.Mesh(new THREE.PlaneGeometry(info.height*info.aspect,info.height),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,toneMapped:false,side:THREE.DoubleSide}));
+      plane.visible=false;plane.renderOrder=2;scene.add(plane);loadingPortraits[team]={plane,height:info.height};
+    }));
+  }catch(error){console.warn('İlk oyuncu görüntüleri yüklenemedi',error);}
+}
+function updateWaitingPortraits(){
+  for(const [team,portrait]of Object.entries(loadingPortraits)){
+    const actor=team==='B'?playerB:keeper,show=!!actor&&!actor.userData.real;
+    portrait.plane.visible=show&&actor.visible;
+    if(!show)continue;
+    for(const child of actor.children)child.visible=false;
+    portrait.plane.position.copy(actor.position);portrait.plane.position.y+=portrait.height/2+.015;
+    portrait.plane.rotation.y=Math.atan2(camera.position.x-actor.position.x,camera.position.z-actor.position.z);
+  }
+}
+
 function normalizeModel(root,targetHeight=2.15){root.updateMatrixWorld(true);let box=new THREE.Box3().setFromObject(root);const size=new THREE.Vector3();box.getSize(size);if(size.y>0){const s=targetHeight/size.y;root.scale.multiplyScalar(s)}root.updateMatrixWorld(true);box=new THREE.Box3().setFromObject(root);root.position.y-=box.min.y;root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){if(Array.isArray(o.material))o.material=o.material.map(m=>m.clone());else o.material=o.material.clone()}}});}
 function tintTeamModel(root,team){const main=team==='A'?0x173f9b:0xc91f2c;const yellow=0xffd21f;const skirt=team==='A'?0x152b59:0x6d1821;root.traverse(o=>{if(!o.isMesh||!o.material)return;const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){const n=((o.name||'')+' '+(m.name||'')).toLowerCase();if(/skin|face|head|hair|eye|teeth|mouth/.test(n))continue;if(/sock/.test(n)){if(m.color)m.color.setHex(skirt);continue}if(/skirt|short|bottom|pants/.test(n)){if(m.color)m.color.setHex(skirt);continue}if(/stripe|trim|line|accent/.test(n)){if(m.color)m.color.setHex(yellow);continue}if(/shirt|jersey|top|cloth|uniform|body|torso/.test(n)){if(m.color)m.color.setHex(main);continue}if(/stripe|trim|line|accent/.test(n)){if(m.color)m.color.setHex(yellow)}}});}
 function clipsFor(gltf){const clips=gltf.animations||[];const pick=(...re)=>clips.find(c=>re.some(r=>r.test(c.name.toLowerCase())))||null;return{idle:pick(/idle/,/stand/,/breath/),run:pick(/run/,/jog/,/sprint/),walk:pick(/walk/),kick:pick(/kick/,/shoot/,/soccer/),celebrate:pick(/celebr/,/victory/,/cheer/),saveLeft:pick(/save.*left/,/dive.*left/,/left.*dive/),saveRight:pick(/save.*right/,/dive.*right/,/right.*dive/),miss:pick(/miss/,/defeat/,/fall/)}};
@@ -336,7 +368,7 @@ function playAction(actor,name){
   data.activeAction=next;
 }
 function installPlayerA(){
-  if(DEMO||animation)return;
+  if(DEMO||(animation&&animation.phase!=='loading'))return;
   for(const team of ['A','B']){
     const next=team==='A'?pendingPlayerA:pendingPlayerB;if(!next)continue;
     const old=team==='A'?playerA:playerB;scene.remove(old);
@@ -348,24 +380,27 @@ function installPlayerA(){
   if(realMode)setLabel('3D MAÇ SAHNESİ');
 }
 async function tryLoadRealModels(){
-  if(playerA?.userData?.real&&playerB?.userData?.real&&keeper?.userData?.real)return;
+  const needPlayerA=!(videoPlayerA||pendingVideoPlayerA||videoPlayerLoading)||!!videoPlayerA?.status.failed;
+  if((!needPlayerA||playerA?.userData?.real)&&playerB?.userData?.real&&keeper?.userData?.real)return;
   if(playerALoad)return playerALoad;
-  if(!GLTFLoader){setLabel('3D MAÇ SAHNESİ • MODEL BEKLENİYOR');return}
   playerALoad=(async()=>{
     setLabel('OYUNCULAR YÜKLENİYOR…');
     let loader;
     try{
-      loader=new GLTFLoader();
+      await loadModelTools();loader=new GLTFLoader();
       const {MeshoptDecoder}=await import('./assets/vendor/meshopt-decoder.mjs');await MeshoptDecoder.ready;
       loader.setMeshoptDecoder(MeshoptDecoder);
     }catch(e){
       console.warn('Model çözücü yüklenemedi; prosedürel model devam ediyor',e);
       setLabel('3D MAÇ SAHNESİ • BASİT MODEL');playerALoad=null;return
     }
+    // Share the original mesh/texture decode; each actor gets an independent skeleton and materials.
+    const sourceLoads=new Map();
+    const loadActorSource=async url=>{if(!sourceLoads.has(url))sourceLoads.set(url,loader.loadAsync(url));const source=await sourceLoads.get(url);return {scene:SkeletonClone(source.scene),animations:source.animations};};
     const loadPlayer=async team=>{
       if((team==='A'?playerA:playerB)?.userData?.real)return;
       try{
-        const gltf=await loader.loadAsync(team==='A'?ASSETS.playerA:ASSETS.playerB);
+        const gltf=await loadActorSource(team==='A'?ASSETS.playerA:ASSETS.playerB);
         const actor=prepareActor(gltf,'player',team);
         if(team==='B')recolorKit(actor,'#c91f2c','#ffd21f');
         if(team==='A')pendingPlayerA=actor;else pendingPlayerB=actor;
@@ -375,7 +410,7 @@ async function tryLoadRealModels(){
     const loadKeeper=async()=>{
       if(keeper?.userData?.real)return;
       try{
-        const gltf=await loader.loadAsync(ASSETS.keeper);
+        const gltf=await loadActorSource(ASSETS.keeper);
         const actor=prepareActor(gltf,'keeper','A');
         actor.userData.team='keeper';actor.userData.homeX=3.78;actor.userData.homeZ=GOAL_Z;actor.userData.baseRotationY=-Math.PI/2;
         recolorKit(actor,'#14633f','#2fa66c');
@@ -386,7 +421,7 @@ async function tryLoadRealModels(){
       }catch(e){console.warn('Kaleci modeli yüklenemedi; basit kaleci devam ediyor',e)}
     };
     try{
-      await Promise.all([loadPlayer('A'),loadPlayer('B'),loadKeeper()]);
+      await Promise.all([needPlayerA?loadPlayer('A'):Promise.resolve(),loadPlayer('B'),loadKeeper()]);
       if(playerA?.userData?.real||playerB?.userData?.real||keeper?.userData?.real)setLabel('');
       else setLabel('3D MAÇ SAHNESİ • BASİT MODEL');
     }finally{playerALoad=null}
@@ -415,6 +450,7 @@ function idleActor(actor,t,phase=0){
     naturalRealIdle(actor,t,actor.userData.idlePhase??phase);
     return;
   }
+  if(actor===playerA&&videoPlayerA){actor.position.y=0;actor.rotation.z=0;return;}
   const motion=Math.max(0,Math.min(1.5,(Number(runtimeSettings.idleMotion)||0)/100)),s=Math.sin(t*.00165+phase),s2=Math.sin(t*.00082+phase*.7);
   actor.position.y=.008+s*.006*motion;
   actor.rotation.z=s2*.008*motion;
@@ -474,7 +510,7 @@ function animate(){
   for(const actor of [playerA,playerB,keeper,...demoActors.values()])restoreIdleBones(actor);
   for(const m of mixers)m.update(dt);
   installPlayerA();
-  if(pendingVideoPlayerA&&!animation){videoPlayerA=pendingVideoPlayerA;pendingVideoPlayerA=null;}
+  if(pendingVideoPlayerA&&(!animation||animation.phase==='loading')){videoPlayerA=pendingVideoPlayerA;pendingVideoPlayerA=null;}
   if(animation)runAnimation(t);
   else{
     idleActor(playerA,t,0);
@@ -483,7 +519,7 @@ function animate(){
   }
   if(DEMO){for(const actor of demoActors.values()){if(actor!==animation?.player)idleActor(actor,t,actor.userData.idlePhase||0);stabilizeHead(actor,dt);}stabilizeHead(keeper,dt);demoReactions(t);}else{stabilizeHead(playerA,dt);stabilizeHead(playerB,dt);}
   updatePlayerASecondaryMotion(dt,t);
-  updateCamera(dt);if(animation&&!DEMO&&['outcome','net','result'].includes(animation.phase))fitWholeGoal();videoPlayerA?.update(playerA,camera,animation,t);renderer.render(scene,camera);
+  updateCamera(dt);if(animation&&!DEMO&&['outcome','net','result'].includes(animation.phase))fitWholeGoal();videoPlayerA?.update(playerA,camera,animation,t);updateWaitingPortraits();renderer.render(scene,camera);
 }
 function updatePlayerASecondaryMotion(dt,t){
   if(DEMO||!playerA?.userData.real)return;
@@ -537,7 +573,7 @@ function updateCamera(dt){
   let view=DEMO?VIEW.idle:closeIdleView();
   if(animation&&!DEMO){
     const phase=animation.phase;
-    if(animation.videoMotion&&['turn','run','kick','returnTurn','returnWalk','returnFace'].includes(phase))view={position:[-7.5,1.65,2.75],target:[.6,1.12,.65]};else if(['returnTurn','returnWalk','returnFace'].includes(phase))view=closeIdleView();else if(['turn','run','kick'].includes(phase))view={position:[-6.8,2.6,2.6],target:[1.6,1,.35]};
+    if(phase==='loading')view=closeIdleView();else if(animation.videoMotion&&['turn','run','kick','returnTurn','returnWalk','returnFace'].includes(phase))view={position:[-7.5,1.65,2.75],target:[.6,1.12,.65]};else if(['returnTurn','returnWalk','returnFace'].includes(phase))view=closeIdleView();else if(['turn','run','kick'].includes(phase))view={position:[-6.8,2.6,2.6],target:[1.6,1,.35]};
     else if(['ball','awaitResult','outcome','net','result'].includes(phase)){
       // Track the ball into the goal from a fixed position beside the shooter.
       const follow=animation.cameraFollow=Math.max(animation.cameraFollow||0,smooth(clamp((ball.position.x-(animation.ballFrom?.x??-1))/(3.45-(animation.ballFrom?.x??-1)),0,1)));
@@ -545,7 +581,7 @@ function updateCamera(dt){
     }else view=VIEW.shot;
   }else if(animation)view=VIEW.shot;
   const closeView=animation&&!DEMO&&['outcome','net','result'].includes(animation.phase);
-  const idleFrame=!DEMO&&(!animation||(!animation.videoMotion&&['returnTurn','returnWalk','returnFace'].includes(animation.phase)));
+  const idleFrame=!DEMO&&(!animation||animation.phase==='loading'||(!animation.videoMotion&&['returnTurn','returnWalk','returnFace'].includes(animation.phase)));
   const baseFov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(idleFrame?idleCameraAngle():52)/2)/Math.min(1,camera.aspect)));
   camera.fov=lerp(camera.fov,DEMO?49:baseFov,1-Math.exp(-dt*3.1));camera.updateProjectionMatrix();
   const k=1-Math.exp(-dt*(3.1)),zoom=Math.max(.75,Math.min(1.4,(Number(runtimeSettings.cameraZoom)||100)/100));
@@ -610,6 +646,14 @@ function groundKick(player,weight){
   solveLeg(rig.left,support,weight);solveLeg(rig.right,new THREE.Vector3(-1.06,.19,SHOT_Z),weight);player.updateMatrixWorld(true);
 }
 function beginShot(team){
+  if(animation?.phase==='loading'&&animation.team===team)return;
+  const modelWaiting=team==='B'&&!playerB?.userData.real&&playerALoad;
+  if(modelWaiting||(team==='A'&&((!videoPlayerA&&videoPlayerLoading)||(videoPlayerA&&!videoPlayerA.status.motionReady&&!videoPlayerA.status.failed)))){
+    const held=animation={phase:'loading',team,player:team==='A'?playerA:playerB,result:null};
+    const ready=modelWaiting|| (videoPlayerA?videoPlayerA.ensureMotionReady():videoPlayerLoad.then(()=>{if(pendingVideoPlayerA){videoPlayerA=pendingVideoPlayerA;pendingVideoPlayerA=null;}return videoPlayerA?.ensureMotionReady();}));
+    ready.then(()=>{if(animation!==held)return;animation=null;installPlayerA();beginShot(team);if(animation)animation.result=held.result;}).catch(error=>{console.warn('Şut videosu hazırlanamadı',error);if(animation===held){animation=null;videoPlayerA?.disableMotion();tryLoadRealModels();beginShot(team);if(animation)animation.result=held.result;}});
+    return;
+  }
   if(!playerA||!playerB||!keeper||!ball)return;
   if(animation&&animation.team===team&&['turn','run','kick','ball','awaitResult','outcome','net','result','returnTurn','returnWalk','returnFace'].includes(animation.phase))return;
   resetPose();const p=team==='A'?playerA:playerB;
@@ -758,6 +802,7 @@ function placeDemoActor(actor,index){
   if(actor.userData.real){playAction(actor,'idle');const action=actor.userData.actions.idle;action.setEffectiveTimeScale(.78+index*.13);if(!actor.userData.idleStarted){action.time=(index*.83)%action.getClip().duration;actor.userData.idleStarted=true;}}
 }
 async function demoModel(url){
+  await loadModelTools();
   if(!modelCache.has(url))modelCache.set(url,(async()=>{const {MeshoptDecoder}=await import('./assets/vendor/meshopt-decoder.mjs');await MeshoptDecoder.ready;const loader=new GLTFLoader();loader.setMeshoptDecoder(MeshoptDecoder);return loader.loadAsync(url);})().catch(error=>{modelCache.delete(url);throw error;}));
   return modelCache.get(url);
 }
@@ -800,7 +845,7 @@ async function configureTeams(teams){
   for(const [i,team]of teams.entries()){
     const actor=createPlayer(team.id);placeDemoActor(actor,i);actor.userData.torso.material.color.set(team.secondaryColor);demoActors.set(team.id,actor);scene.add(actor);
   }
-  if(!SkeletonClone){try{const mod=await import('https://esm.sh/three@0.169.0/examples/jsm/utils/SkeletonUtils.js');SkeletonClone=mod.clone;}catch(error){console.warn('Model kopyalayıcı yüklenemedi',error);setLabel('Yedek oyuncular kullanılıyor');return;}}
+  if(!SkeletonClone){try{const mod=await import('./assets/vendor/SkeletonUtils.mjs');SkeletonClone=mod.clone;}catch(error){console.warn('Model kopyalayıcı yüklenemedi',error);setLabel('Yedek oyuncular kullanılıyor');return;}}
   const load=async(team,i)=>{
     if(!team.model)return;
     try{
