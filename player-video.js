@@ -2,7 +2,7 @@
 'use strict';
 // Color and matte share a single video frame so mobile playback remains synchronized.
 window.AIFootballPlayerVideo={async create(THREE,scene){
-  const response=await fetch('./assets/players/a/motion-47bf.json?v=2');
+  const response=await fetch('./assets/players/a/motion-47bf.json?v=3');
   if(!response.ok)throw new Error('Player video manifest unavailable');
   const config=await response.json(),clips={},media=[],clock=config.motion.timeline;
   const root=new THREE.Group();root.visible=false;scene.add(root);
