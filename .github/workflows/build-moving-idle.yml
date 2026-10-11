@@ -1,0 +1,42 @@
+name: Build moving idle video
+
+on:
+  push:
+    paths:
+      - ".github/workflows/build-moving-idle.yml"
+      - "scripts/build_moving_idle.py"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install processing tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          python -m pip install --quiet opencv-python-headless numpy
+      - name: Download supplied waiting-motion video
+        env:
+          SOURCE_URL: "https://d2jqrm6oza8nb6.cloudfront.net/datasets/95b56f40-044d-4d22-b118-4a768db7d483.mp4?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZDgxMjY2NzViOWJmZmJkZiIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MTg0OTMzM30.esaNfLxFkhOvVPmLUjPjGltt8Q4l-q-2FI_ywWpY2d0"
+        run: curl -L --fail --retry 3 "$SOURCE_URL" -o /tmp/source.mp4
+      - name: Build transparent packed idle clip
+        env:
+          SOURCE_VIDEO: /tmp/source.mp4
+        run: python scripts/build_moving_idle.py
+      - name: Commit generated idle clip
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/players/a/idle-moving-packed.mp4
+          git diff --cached --quiet && exit 0
+          git commit -m "Add moving waiting player clip"
+          git push
