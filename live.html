@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>AI Football Live</title>
 <link rel="modulepreload" href="./assets/vendor/three.module.mjs">
-<link rel="preload" as="image" href="./assets/players/a/idle-47bf-poster.webp?v=1" fetchpriority="high">
+<link rel="preload" as="image" href="./assets/players/a/idle-stationary-poster-v89.webp?v=1" fetchpriority="high">
 <link rel="preload" as="image" href="./assets/players/player-b-loading.webp?v=1">
 <link rel="preload" as="image" href="./assets/players/keeper-loading.webp?v=1">
 <style>
@@ -68,10 +68,48 @@ html,body{background:#050a12}
 
 /* Soft stadium light haze above the crowd. */
 #game3dCanvas::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse 40% 14% at 18% 24%,rgba(47,95,165,.20),transparent 75%),radial-gradient(ellipse 40% 13% at 86% 23%,rgba(181,147,65,.13),transparent 75%),linear-gradient(180deg,transparent 13%,rgba(16,28,47,.18) 24%,transparent 42%);filter:blur(12px)}
+
+/* Compact layout editor is available only after verified administrator sign-in. */
+[hidden]{display:none!important}
+.wrap{--hud-start:8px;--keeper-gap:0px;--actor-height:30px}
+.wrap.adminView{--hud-start:calc(var(--actor-height) + 36px);--keeper-gap:37px}
+.wrap>.head{display:none;top:calc(var(--actor-height) + 8px);height:20px}
+.wrap.adminView>.head{display:flex}.wrap.adminView .title{font-size:12px}
+.wrap>.score{top:var(--hud-start);height:52px}
+.wrap>.adminFrontKeeper{top:calc(var(--hud-start) + 58px);height:32px}
+.wrap>.broadcastControls,.adminFrontKeeper:not(.show)~.broadcastControls{top:calc(var(--hud-start) + 58px + var(--keeper-gap))}
+.wrap>.matchControls,.adminFrontKeeper:not(.show)~.matchControls{top:calc(var(--hud-start) + 177px + var(--keeper-gap))}
+.wrap>#game3dStage,.wrap:has(.adminFrontKeeper:not(.show))>#game3dStage{top:calc(var(--hud-start) + 210px + var(--keeper-gap))!important}
+.actorAdjust{position:absolute;top:4px;left:4%;right:4%;z-index:8;background:#101a2a;border:1px solid #35445f;border-radius:7px;padding:2px 5px}
+.actorAdjustTop{display:flex;align-items:center;gap:4px;min-height:24px}
+.actorAdjust button,.actorAdjust select{border:1px solid #344564;background:#18283e;color:#fff;border-radius:4px;font-size:9px;padding:3px 5px;min-height:22px}
+.actorAdjust select{flex:1;min-width:0;max-width:125px}
+.actorAdjust .layoutSave{background:#16795f}.actorAdjust button:disabled{opacity:.5}
+.actorAdjustBody{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding-top:4px}
+.actorAdjustBody label{display:block;font-size:8px;color:#becbe0}
+.actorAdjustBody output{float:right;color:#fff;font-weight:700}
+.actorAdjustBody input{display:block;width:100%;height:22px;margin:0;accent-color:#4fbba0}
+.actorAdjustStatus{font-size:8px;color:#ffd568;min-height:0;text-align:right}
+
 </style>
 </head>
 <body>
 <div class="wrap">
+  <section id="actorAdjust" class="actorAdjust" hidden aria-label="Oyuncu yerleşimi">
+    <div class="actorAdjustTop">
+      <button id="actorAdjustToggle" aria-expanded="false" aria-controls="actorAdjustBody">Yerleşim ▾</button>
+      <select id="actorSelect" aria-label="Oyuncu seç"><option value="A">Sarı-lacivert</option><option value="B">Sarı-kırmızı</option><option value="keeper">Kaleci</option></select>
+      <button id="actorReset" title="Seçili oyuncuyu sıfırla">Sıfırla</button>
+      <button id="actorSave" class="layoutSave" disabled>Kaydet</button>
+    </div>
+    <div id="actorAdjustBody" class="actorAdjustBody" hidden>
+      <label>Sol ↔ Sağ <output id="actorXValue">0</output><input id="actorX" type="range" min="-200" max="200" step="2" value="0" aria-label="Sağ sol konum"></label>
+      <label>Arka ↔ Ön <output id="actorDepthValue">0</output><input id="actorDepth" type="range" min="-200" max="200" step="2" value="0" aria-label="Ön arka konum"></label>
+      <label>Boyut <output id="actorSizeValue">100%</output><input id="actorSize" type="range" min="60" max="150" step="1" value="100" aria-label="Oyuncu boyutu"></label>
+    </div>
+    <div id="actorAdjustStatus" class="actorAdjustStatus" role="status"></div>
+  </section>
+
   <div class="head"><div class="title">AI Football Live</div><div class="headRight"><a href="./admin-edm2026.html" target="_top" style="color:#aab2c8;font-size:10px;white-space:nowrap">Hesabım</a><div class="sub" id="connectionStatus">Bağlanıyor...</div><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN</button></div></div>
   <div class="score"><div class="scoreTeam"><span class="jersey miniJersey jA"></span><div class="num" id="scoreA">0</div></div><div class="vs">VS</div><div class="scoreTeam"><span class="jersey miniJersey jB"></span><div class="num" id="scoreB">0</div></div></div>
   <div class="adminFrontKeeper" id="adminFrontKeeper">
@@ -96,7 +134,7 @@ html,body{background:#050a12}
     <button class="giftbtn shot" onclick="addShots('B',10)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M12 20S4.5 15.4 4.5 9.7A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.7C19.5 15.4 12 20 12 20z" fill="#ff6b8b" stroke="#fff" stroke-width="1.2"/></svg></span><span class="giftEffect">10 şut</span><span class="coin">100 jeton</span></button>
     <button class="giftbtn shot" onclick="addShots('B',50)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M6 7h12v10H6z" fill="#a9f0c8" stroke="#fff" stroke-width="1.2"/><circle cx="12" cy="12" r="2.4" fill="#1a8f65"/></svg></span><span class="giftEffect">50 şut</span><span class="coin">500 jeton</span></button>
   </div><div class="sectionLabel">KALECİ SAVUNMA HEDİYELERİ</div><div class="buttons">
-    <button class="giftbtn def" onclick="addKeeper('B',1)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars"><span></span></span><span class="giftEffect">+1 güç</span><span class="coin">10 jeton</span></button>
+    <button class="giftbtn def" onclick="addKeeper('B',1)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars"><span></span></span></span><span class="giftEffect">+1 güç</span><span class="coin">10 jeton</span></button>
     <button class="giftbtn def" onclick="addKeeper('B',5)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s2"><span></span><span></span></span></span></span><span class="giftEffect">+5 güç</span><span class="coin">50 jeton</span></button>
     <button class="giftbtn def" onclick="addKeeper('B',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
     <button class="giftbtn def" onclick="addKeeper('B',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
@@ -151,6 +189,15 @@ const nameOf=t=>t==='A'?'Sarı-Lacivert':'Sarı-Kırmızı';
 let adminAuthed=false,polling=false,gameRules={},audioCtx=null,realtimeStatus='';
 const DEFAULT_ADMIN_SETTINGS={shotThreshold:10,startKeeper:100,keeperCost:10,shotDelay:3000,soundMaster:88,soundCrowd:72,soundEffects:92,soundGoal:100,soundEnabled:true,crowdEnabled:true,announcerEnabled:true,goalFxEnabled:true,cameraZoom:100,stadiumExposure:116,idleMotion:100,ballSize:100,goalSize:100,confettiAmount:70,sceneLabel:true,showQueues:true,showStatus:true};
 let state={...DEFAULT_ADMIN_SETTINGS,A:{score:0,queue:0},B:{score:0,queue:0},keeper:{A:100,B:100},lastTeam:'B',busy:false};
+const defaultActorLayout=()=>({A:{x:0,depth:0,size:100},B:{x:0,depth:0,size:100},keeper:{x:0,depth:0,size:100}});
+let actorLayout=defaultActorLayout(),actorLayoutDirty=false,actorLayoutSaving=false;
+function normalizeActorLayout(raw){
+  const out=defaultActorLayout();
+  for(const key of Object.keys(out))for(const [field,min,max]of [['x',-200,200],['depth',-200,200],['size',60,150]]){
+    const value=raw?.[key]?.[field];out[key][field]=value!=null&&Number.isFinite(Number(value))?Math.max(min,Math.min(max,Number(value))):out[key][field];
+  }
+  return out;
+}
 let ids={game:null,team:{A:null,B:null},goalkeeper:{A:null,B:null},keeperState:{A:null,B:null}};
 const terminalShots=new Set(),seenEvents=new Set();
 function syncAdminValue(key,value,suffix=''){const el=$('val'+key);if(el)el.textContent=String(value)+suffix}
@@ -158,7 +205,7 @@ function runtimeSettings(){return{
   soundMaster:state.soundMaster,soundCrowd:state.soundCrowd,soundEffects:state.soundEffects,soundGoal:state.soundGoal,
   soundEnabled:state.soundEnabled,crowdEnabled:state.crowdEnabled,announcerEnabled:state.announcerEnabled,
   cameraZoom:state.cameraZoom,stadiumExposure:state.stadiumExposure,idleMotion:state.idleMotion,
-  ballSize:state.ballSize,goalSize:state.goalSize,sceneLabel:state.sceneLabel
+  ballSize:state.ballSize,goalSize:state.goalSize,sceneLabel:state.sceneLabel,actorLayout:structuredClone(actorLayout)
 }}
 function applyRuntimeSettings(){
   const settings=runtimeSettings();window.__AI_FOOTBALL_SETTINGS=settings;
@@ -176,6 +223,11 @@ function fillAdminSettings(){
   syncAdminValue('CameraZoom',state.cameraZoom,'%');syncAdminValue('StadiumExposure',state.stadiumExposure,'%');syncAdminValue('IdleMotion',state.idleMotion,'%');syncAdminValue('BallSize',state.ballSize,'%');syncAdminValue('GoalSize',state.goalSize,'%');syncAdminValue('ConfettiAmount',state.confettiAmount,'');
 }
 function render(){
+  document.querySelector('.wrap').classList.toggle('adminView',adminAuthed);
+  $('actorAdjust').hidden=!adminAuthed;
+  if(!adminAuthed&&actorLayoutDirty){actorLayout=normalizeActorLayout(gameRules.actor_layout);actorLayoutDirty=false;applyRuntimeSettings();}
+  syncActorControls();
+
   $('scoreA').textContent=state.A.score;
   $('scoreB').textContent=state.B.score;
   $('queueA').textContent=state.A.queue;
@@ -194,6 +246,55 @@ function render(){
   if($('frontKeeperFillB'))$('frontKeeperFillB').style.width=Math.max(0,Math.min(100,(Number(state.keeper.B)||0)/max*100))+'%';
   if(!$('adminOverlay').classList.contains('show'))fillAdminSettings();
 }
+
+function resizeActorPanel(){
+  const box=$('actorAdjust');document.querySelector('.wrap').style.setProperty('--actor-height',(box.hidden?30:box.offsetHeight)+'px');
+  requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+}
+function syncActorControls(){
+  const value=actorLayout[$('actorSelect').value];
+  for(const [id,key]of [['actorX','x'],['actorDepth','depth'],['actorSize','size']]){
+    $(id).value=value[key];$(id+'Value').textContent=value[key]+(key==='size'?'%':'');
+  }
+  $('actorSave').disabled=!adminAuthed||!actorLayoutDirty||actorLayoutSaving;
+}
+function previewActorChange(){
+  if(!adminAuthed)return;
+  if(window.AIFootball3D?.isAnimating){$('actorAdjustStatus').textContent='Şut bittikten sonra düzenle';syncActorControls();return;}
+  const key=$('actorSelect').value;
+  actorLayout[key]={x:Number($('actorX').value),depth:Number($('actorDepth').value),size:Number($('actorSize').value)};
+  actorLayout=normalizeActorLayout(actorLayout);actorLayoutDirty=true;
+  $('actorAdjustStatus').textContent='Önizleme · Kaydet ile tüm ekranlara uygula';syncActorControls();applyRuntimeSettings();
+}
+$('actorAdjustToggle').onclick=()=>{
+  if(!adminAuthed)return;const body=$('actorAdjustBody');body.hidden=!body.hidden;
+  $('actorAdjustToggle').setAttribute('aria-expanded',String(!body.hidden));$('actorAdjustToggle').textContent=body.hidden?'Yerleşim ▾':'Yerleşim ▴';resizeActorPanel();
+};
+$('actorSelect').onchange=syncActorControls;
+for(const id of ['actorX','actorDepth','actorSize'])$(id).oninput=previewActorChange;
+$('actorReset').onclick=()=>{
+  if(!adminAuthed||window.AIFootball3D?.isAnimating)return;
+  actorLayout[$('actorSelect').value]={x:0,depth:0,size:100};actorLayoutDirty=true;syncActorControls();applyRuntimeSettings();
+  $('actorAdjustStatus').textContent='Seçili oyuncu sıfırlandı · Kaydet';
+};
+$('actorSave').onclick=async()=>{
+  if(!adminAuthed||actorLayoutSaving||!actorLayoutDirty)return;
+  if(!ids.game){$('actorAdjustStatus').textContent='Bağlantı hazır olduğunda tekrar dene';return;}
+  actorLayoutSaving=true;syncActorControls();const snapshot=structuredClone(actorLayout);
+  try{
+    const {data:auth,error:authError}=await db.auth.getUser();
+    if(authError||auth?.user?.id!==ADMIN_UID){adminAuthed=false;render();throw new Error('Admin oturumu gerekli');}
+    const {data:latest,error:readError}=await db.from('games').select('rules').eq('id',ids.game).single();
+    if(readError)throw readError;
+    const rules={...(latest?.rules||{}),actor_layout:snapshot};
+    const {error}=await db.from('games').update({rules}).eq('id',ids.game);if(error)throw error;
+    gameRules=rules;actorLayoutDirty=JSON.stringify(actorLayout)!==JSON.stringify(snapshot);
+    $('actorAdjustStatus').textContent=actorLayoutDirty?'Kaydedildi · Yeni değişiklikleri de kaydet':'Kaydedildi';
+  }catch(error){console.error(error);$('actorAdjustStatus').textContent='Kaydedilemedi · Tekrar dene';}
+  finally{actorLayoutSaving=false;syncActorControls();}
+};
+new ResizeObserver(resizeActorPanel).observe($('actorAdjust'));
+
 function log(m){const el=$('event');el.dataset.matchMessage=m;el.replaceChildren();const team=/Sarı-Lacivert/i.test(m)?'A':/Sarı-Kırmızı/i.test(m)?'B':null;if(team){const icon=document.createElement('span');icon.className='jersey queueJersey j'+team;el.appendChild(icon);}el.appendChild(document.createTextNode(m.replace(/Sarı-Lacivert|Sarı-Kırmızı/gi,'').trim()));}function setConn(){const live=realtimeStatus==='SUBSCRIBED';$('connectionStatus').textContent=(live?'Canlı bağlı':'Bağlı')+(adminAuthed?' • Admin':'')}
 function openAdmin(){if(adminAuthed){fillAdminSettings();$('adminOverlay').classList.add('show')}}function closeAdmin(){$('adminOverlay').classList.remove('show')}
 function initAudio(){try{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume()}catch(e){}}
@@ -202,7 +303,7 @@ function celebrateGoal(team){if(!window.AIFootball3D?.ready)window.AIFootballAud
 document.addEventListener('pointerdown',initAudio,{once:true});
 function teamFromId(id){return id===ids.team.A?'A':id===ids.team.B?'B':null}
 function applyRules(r){
-  gameRules=r||{};const numberOr=(value,fallback)=>value!=null&&Number.isFinite(Number(value))?Number(value):fallback;const boolOr=(value,fallback)=>value==null?fallback:!!value;
+  gameRules=r||{};if(!actorLayoutDirty&&!actorLayoutSaving)actorLayout=normalizeActorLayout(gameRules.actor_layout);const numberOr=(value,fallback)=>value!=null&&Number.isFinite(Number(value))?Number(value):fallback;const boolOr=(value,fallback)=>value==null?fallback:!!value;
   state.startKeeper=numberOr(gameRules.goalkeeper_initial_power??gameRules.start_keeper,100);
   state.keeperCost=numberOr(gameRules.keeper_cost,10);state.shotDelay=numberOr(gameRules.shot_delay,3000);state.shotThreshold=numberOr(gameRules.shot_threshold,10);
   state.soundMaster=numberOr(gameRules.sound_master,DEFAULT_ADMIN_SETTINGS.soundMaster);state.soundCrowd=numberOr(gameRules.sound_crowd,DEFAULT_ADMIN_SETTINGS.soundCrowd);state.soundEffects=numberOr(gameRules.sound_effects,DEFAULT_ADMIN_SETTINGS.soundEffects);state.soundGoal=numberOr(gameRules.sound_goal,DEFAULT_ADMIN_SETTINGS.soundGoal);
@@ -310,7 +411,7 @@ render();boot();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=6"></script>
 <script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=47"></script>
-<script src="./player-video.js?v=9"></script>
-<script id="game3dScript" src="./game-3d.js?v=77"></script>
+<script src="./player-video.js?v=12"></script>
+<script id="game3dScript" src="./game-3d.js?v=79"></script>
 </body>
 </html>

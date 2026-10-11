@@ -20,7 +20,9 @@ const ASSETS={
   keeper:'./assets/models/player-a.glb?v=6'
 };
 
-const HOME={A:{x:-4.70,z:1.80},B:{x:-4.20,z:2.50}};
+const BASE_HOME={A:{x:-4.70,z:1.80},B:{x:-4.20,z:2.50}};
+const HOME={A:{...BASE_HOME.A},B:{...BASE_HOME.B}};
+const FRAMING_HOME={A:{...BASE_HOME.A},B:{...BASE_HOME.B}};let placingWaiting=false,layoutPending=false;
 const VIEW={idle:{position:[-7.54,1.35,4.20],target:[-.14,1.25,-.80]},shot:{position:[-6.15,2.22,4.35],target:[1.15,.98,0]}};
 if(DEMO){VIEW.idle={position:[-12,4.6,0],target:[1,1.05,0]};VIEW.shot=VIEW.idle;}
 const GOAL_SHIFT_Z=DEMO?0:.65;
@@ -52,7 +54,9 @@ function addStageShell(){
 }
 function setLabel(text){const el=document.getElementById('game3dLabel');if(el){el.textContent=text;el.style.display=runtimeSettings.sceneLabel?'block':'none'}}
 function apply3DSettings(next={}){
+  const previousZoom=runtimeSettings.cameraZoom,previousLayout=JSON.stringify(runtimeSettings.actorLayout);
   runtimeSettings={...runtimeSettings,...next};
+  if(camera&&!DEMO&&(previousZoom!==runtimeSettings.cameraZoom||previousLayout!==JSON.stringify(runtimeSettings.actorLayout))){if(animation)layoutPending=true;else placeWaitingPlayers();}
   const exp=Math.max(.7,Math.min(1.5,(Number(runtimeSettings.stadiumExposure)||116)/100));
   if(renderer)renderer.toneMappingExposure=exp;
   if(ball){const s=Math.max(.7,Math.min(1.6,(Number(runtimeSettings.ballSize)||100)/100));ball.scale.setScalar(s)}
@@ -288,7 +292,8 @@ function prepareActor(gltf,type,team){
   const model=gltf.scene;normalizeModel(model,2.42);tintTeamModel(model,team);
   if(!DEMO&&type==='player'&&team==='A')refinePlayerASurface(model);
   
-  const root=new THREE.Group();root.add(model);
+  vividActorMaterials(model);
+  const root=new THREE.Group();root.add(model);root.scale.setScalar((Number(runtimeSettings.actorLayout?.[type==='keeper'?'keeper':team]?.size)||100)/100);
   const mixer=new THREE.AnimationMixer(model),clips=clipsFor(gltf),actions={};
   for(const name of ['idle','run','kick','walk']){
     if(!clips[name]){if(name==='walk')continue;throw new Error('Player A animation missing: '+name);}
@@ -369,15 +374,17 @@ function playAction(actor,name){
 }
 function installPlayerA(){
   if(DEMO||(animation&&animation.phase!=='loading'))return;
+  let installedActor=false;
   for(const team of ['A','B']){
-    const next=team==='A'?pendingPlayerA:pendingPlayerB;if(!next)continue;
+    const next=team==='A'?pendingPlayerA:pendingPlayerB;if(!next)continue;installedActor=true;
     const old=team==='A'?playerA:playerB;scene.remove(old);
     if(old?.userData?.mixer){const i=mixers.indexOf(old.userData.mixer);if(i>=0)mixers.splice(i,1);}
     if(team==='A'){playerA=next;pendingPlayerA=null}else{playerB=next;pendingPlayerB=null}
-    scene.add(next);mixers.push(next.userData.mixer);
+    scene.add(next);mixers.push(next.userData.mixer);next.scale.setScalar((Number(runtimeSettings.actorLayout?.[team]?.size)||100)/100);
   }
   realMode=!!(playerA?.userData?.real||playerB?.userData?.real);
-  if(realMode)setLabel('3D MAÇ SAHNESİ');
+  if(realMode&&installedActor)setLabel('');
+  if(installedActor&&!animation&&camera)placeWaitingPlayers();
 }
 async function tryLoadRealModels(){
   const needPlayerA=!(videoPlayerA||pendingVideoPlayerA||videoPlayerLoading)||!!videoPlayerA?.status.failed;
@@ -417,7 +424,7 @@ async function tryLoadRealModels(){
         const old=keeper;scene.remove(old);
         if(old?.userData?.mixer){const i=mixers.indexOf(old.userData.mixer);if(i>=0)mixers.splice(i,1)}
         keeper=actor;keeper.position.set(3.78,0,GOAL_Z);keeper.rotation.set(0,-Math.PI/2,0);
-        scene.add(keeper);mixers.push(keeper.userData.mixer);playAction(keeper,'idle');
+        scene.add(keeper);mixers.push(keeper.userData.mixer);playAction(keeper,'idle');if(!animation)placeWaitingPlayers();
       }catch(e){console.warn('Kaleci modeli yüklenemedi; basit kaleci devam ediyor',e)}
     };
     try{
@@ -428,7 +435,7 @@ async function tryLoadRealModels(){
   })();
   return playerALoad;
 }
-function resize(){if(!renderer||!camera)return;const box=document.getElementById('game3dCanvas')?.getBoundingClientRect();if(!box||!box.width)return;renderer.setSize(box.width,box.height,false);camera.aspect=box.width/box.height;camera.fov=DEMO?49:THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(52)/2)/Math.min(1,camera.aspect)));camera.updateProjectionMatrix()}
+function resize(){if(!renderer||!camera)return;const box=document.getElementById('game3dCanvas')?.getBoundingClientRect();if(!box||!box.width)return;renderer.setSize(box.width,box.height,false);camera.aspect=box.width/box.height;camera.fov=DEMO?49:THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(52)/2)/Math.min(1,camera.aspect)));camera.updateProjectionMatrix();if(!DEMO&&!animation)placeWaitingPlayers()}
 function resetPose(){if(DEMO){resetDemoPose();return;}if(!playerA||!playerB||!keeper||!ball)return;for(const p of [playerA,playerB]){p.visible=true;p.position.set(p.userData.homeX,0,p.userData.homeZ);p.rotation.set(0,p.userData.baseRotationY??Math.PI/2,0);if(p.userData.real)playAction(p,'idle');else{p.userData.ll.rotation.set(0,0,0);p.userData.rl.rotation.set(0,0,0);p.userData.la.rotation.set(0,0,-.18);p.userData.ra.rotation.set(0,0,.18)}}keeper.position.set(keeper.userData.homeX??3.75,0,keeper.userData.homeZ??0);keeper.rotation.set(0,keeper.userData.baseRotationY??-Math.PI/2,0);if(keeper.userData.real)playAction(keeper,'idle');else{keeper.userData.la.rotation.set(0,0,-.4);keeper.userData.ra.rotation.set(0,0,.4)}ball.position.set(-1,.14,0);}
 function naturalRealIdle(actor,t,phase=0){
   return; // Waiting poses will be authored separately; remove the current swaying.
@@ -488,7 +495,7 @@ function idleKeeper(t){
   if(!keeper||animation)return;
   const s=Math.sin(t*.00105),s2=Math.sin(t*.00068);
   keeper.position.y=0;
-  keeper.position.z=(keeper.userData.homeZ??0)+s2*.035;
+  keeper.position.z=keeper.userData.homeZ??0;
   keeper.rotation.z=0;
   if(keeper.userData.real){
     idleBone(keeper,'mixamorigHips','X',-.065);
@@ -509,6 +516,7 @@ function animate(){
   const dt=Math.min(clock?.getDelta?.()||.016,.05),t=performance.now();
   for(const actor of [playerA,playerB,keeper,...demoActors.values()])restoreIdleBones(actor);
   for(const m of mixers)m.update(dt);
+  if(layoutPending&&!animation)placeWaitingPlayers();
   installPlayerA();
   if(pendingVideoPlayerA&&(!animation||animation.phase==='loading')){videoPlayerA=pendingVideoPlayerA;pendingVideoPlayerA=null;}
   if(animation)runAnimation(t);
@@ -554,19 +562,65 @@ function stabilizeHead(actor,dt){
 function idleCameraAngle(){return 36*Math.max(1,camera.aspect/.90)}
 let idleFrameCache=null;
 function closeIdleView(){
-  const zoom=clamp((Number(runtimeSettings.cameraZoom)||100)/100,.75,1.4),key=camera.aspect.toFixed(5)+":"+zoom;
+  const framing=placingWaiting?HOME:FRAMING_HOME;
+  const zoom=clamp((Number(runtimeSettings.cameraZoom)||100)/100,.75,1.4);
+  const box=renderer.domElement.getBoundingClientRect(),hud=document.getElementById('matchControls')?.getBoundingClientRect();
+  const safeTop=Math.max(box.top+10,hud?.bottom??box.top),topLimit=1-2*Math.max(10,safeTop+12-box.top)/box.height;
+  const key=camera.aspect.toFixed(5)+":"+zoom+":"+topLimit.toFixed(4);
   if(idleFrameCache?.key===key)return idleFrameCache.view;
   const fov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(idleCameraAngle())/2)/Math.min(1,camera.aspect)));
   const probe=new THREE.PerspectiveCamera(fov,camera.aspect,.1,100);
-  let lo=-1,hi=5;
-  for(let i=0;i<16;i++){
-    const y=(lo+hi)/2,aim=new THREE.Vector3(VIEW.idle.target[0],y,VIEW.idle.target[2]);
-    probe.position.copy(aim).lerp(new THREE.Vector3(...VIEW.idle.position),zoom);probe.lookAt(aim);probe.updateMatrixWorld();
-    const lowest=Math.min(...Object.values(HOME).map(home=>new THREE.Vector3(home.x,-.12,home.z).project(probe).y));
-    if(lowest<-.94)hi=y;else lo=y;
+  let fitZoom=zoom,aim;
+  for(let pass=0;pass<14;pass++){
+    let lo=-1,hi=5;
+    for(let i=0;i<16;i++){
+      const y=(lo+hi)/2;aim=new THREE.Vector3(VIEW.idle.target[0],y,VIEW.idle.target[2]);
+      probe.position.copy(aim).lerp(new THREE.Vector3(...VIEW.idle.position),fitZoom);probe.lookAt(aim);probe.updateMatrixWorld();
+      const lowest=Math.min(...Object.values(framing).map(home=>new THREE.Vector3(home.x,-.12,home.z).project(probe).y));
+      if(lowest<-.94)hi=y;else lo=y;
+    }
+    const highest=Math.max(...Object.values(framing).map(home=>new THREE.Vector3(home.x,2.72,home.z).project(probe).y));
+    if(highest<=topLimit)break;
+    fitZoom*=1.045;
   }
-  const view={position:VIEW.idle.position,target:[VIEW.idle.target[0],(lo+hi)/2,VIEW.idle.target[2]]};
+  const position=aim.clone().lerp(new THREE.Vector3(...VIEW.idle.position),fitZoom/zoom);
+  const view={position:position.toArray(),target:aim.toArray()};
   idleFrameCache={key,view};return view;
+}
+
+// Place the waiting pair on actual turf coordinates, with a small safe left margin.
+function placeWaitingPlayers(){
+  if(!camera||DEMO)return;placingWaiting=true;layoutPending=false;
+  for(const team of ['A','B'])Object.assign(HOME[team],BASE_HOME[team]);
+  const fov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(idleCameraAngle())/2)/Math.min(1,camera.aspect)));
+  const probe=new THREE.PerspectiveCamera(fov,camera.aspect,.1,100);
+  for(let pass=0;pass<3;pass++){
+    idleFrameCache=null;const view=closeIdleView(),zoom=clamp((Number(runtimeSettings.cameraZoom)||100)/100,.75,1.4);
+    const aim=new THREE.Vector3(...view.target);probe.position.copy(aim).lerp(new THREE.Vector3(...view.position),zoom);probe.lookAt(aim);probe.updateMatrixWorld();
+    const right=new THREE.Vector3().setFromMatrixColumn(probe.matrixWorld,0);
+    const point=team=>new THREE.Vector3(HOME[team].x,1.1,HOME[team].z);
+    const scale=team=>{const p=point(team);return p.clone().add(right).project(probe).x-p.project(probe).x;};
+    const aScale=scale('A'),bScale=scale('B'),aCenter=-.94+.47*aScale,bCenter=aCenter+.47*aScale+.30*bScale+.02;
+    for(const [team,target]of [['A',aCenter],['B',bCenter]]){
+      const shift=(target-point(team).project(probe).x)/scale(team);
+      HOME[team].x+=right.x*shift;HOME[team].z+=right.z*shift;
+    }
+  }
+  for(const team of ['A','B'])Object.assign(FRAMING_HOME[team],HOME[team]);
+  placingWaiting=false;idleFrameCache=null;
+  const right=new THREE.Vector3().setFromMatrixColumn(probe.matrixWorld,0);right.y=0;right.normalize();
+  const front=new THREE.Vector3().subVectors(probe.position,new THREE.Vector3(...closeIdleView().target));front.y=0;front.normalize();
+  for(const [team,actor]of [['A',playerA],['B',playerB],['keeper',keeper]]){
+    const settings=runtimeSettings.actorLayout?.[team]||{},x=clamp(Number(settings.x)||0,-200,200)/100,depth=clamp(Number(settings.depth)||0,-200,200)/100;
+    const base=team==='keeper'?{x:3.78,z:GOAL_Z}:FRAMING_HOME[team],home={x:base.x+right.x*x+front.x*depth,z:base.z+right.z*x+front.z*depth};
+    if(team!=='keeper')Object.assign(HOME[team],home);
+    if(!actor)continue;
+    const size=settings.size==null?100:clamp(Number(settings.size)||100,60,150);
+    actor.scale.setScalar(size/100);
+    Object.assign(actor.userData,{homeX:home.x,homeZ:home.z,baseRotationY:team==='keeper'?-Math.PI/2:facingCamera(home)});
+    actor.position.set(home.x,0,home.z);actor.rotation.y=actor.userData.baseRotationY;
+  }
+  videoPlayerA?.resetIdleAnchors();
 }
 
 function updateCamera(dt){
@@ -681,7 +735,7 @@ function finishShot(team,result){
 function enterKick(a,t){a.phase='kick';a.start=t;if(a.team==='A'&&a.player.userData.kickRig?.left[2]){a.supportFoot=new THREE.Vector3(a.player.position.x-.10,.08,SHOT_Z+.18);}if(a.player.userData.real){playAction(a.player,'kick');a.kickEnd=t+a.player.userData.actions.kick.getClip().duration/a.player.userData.actions.kick.getEffectiveTimeScale()*1000;}if(!a.video)setTimeout(()=>{try{window.AIFootballAudio?.kick?.(0)}catch(e){}},Math.max(0,(a.timing?.contact||KICK_CONTACT_MS)*(a.team==='A'?1:.72)));}
 function keeperSavePose(a,u){
   const side=a.saveSide??shotSide(a.team),style=a.saveStyle||'parry',weight=smooth(u);
-  keeper.position.set(3.78,style==='parry'?Math.sin(u*Math.PI)*.22:0,lerp(GOAL_Z,a.targetZ??shotTarget(a.team),weight));
+  keeper.position.set(keeper.userData.homeX??3.78,style==='parry'?Math.sin(u*Math.PI)*.22:0,lerp(keeper.userData.homeZ??GOAL_Z,a.targetZ??shotTarget(a.team),weight));
   keeper.rotation.x=style==='parry'?side*.32*weight:0;
   if(!keeper.userData.real)return;
   idleBone(keeper,'mixamorigHips','X',-.14*weight);
@@ -719,7 +773,7 @@ function runAnimation(t){
       p.rotation.y=angleLerp(a.returnStartYaw,a.returnYaw,ru);
       p.position.set(lerp(a.returnFrom.x,homeX,.03*ru),0,lerp(a.returnFrom.z,homeZ,.03*ru));
     }else if(rp<.90){
-      const wu=smooth((rp-.10)/.80);
+      const wu=clamp((rp-.10)/.80,0,1);
       p.position.set(lerp(a.returnFrom.x,homeX,wu),0,lerp(a.returnFrom.z,homeZ,wu));
       p.rotation.y=a.returnYaw;
     }else{
@@ -829,6 +883,24 @@ async function demoModel(url){
   if(!modelCache.has(url))modelCache.set(url,(async()=>{const {MeshoptDecoder}=await import('./assets/vendor/meshopt-decoder.mjs');await MeshoptDecoder.ready;const loader=new GLTFLoader();loader.setMeshoptDecoder(MeshoptDecoder);return loader.loadAsync(url);})().catch(error=>{modelCache.delete(url);throw error;}));
   return modelCache.get(url);
 }
+
+function vividActorMaterials(model){
+  model.traverse(object=>{
+    if(!object.isMesh)return;
+    for(const material of Array.isArray(object.material)?object.material:[object.material]){
+      if(!material)continue;
+      if('metalness'in material)material.metalness=0;
+      if('roughness'in material)material.roughness=Math.max(material.roughness||0,/skin|face/i.test(material.name||'')?.60:.80);
+      const original=material.onBeforeCompile,cache=material.customProgramCacheKey?.bind(material);
+      material.onBeforeCompile=function(shader,renderer){
+        original?.call(this,shader,renderer);
+        shader.fragmentShader=shader.fragmentShader.replace('#include <colorspace_fragment>','#include <colorspace_fragment>\nfloat playerLuma=dot(gl_FragColor.rgb,vec3(.2126,.7152,.0722));gl_FragColor.rgb=clamp((mix(vec3(playerLuma),gl_FragColor.rgb,1.13)-.5)*1.035+.5,0.0,.97);');
+      };
+      material.customProgramCacheKey=()=>String(cache?.()||'')+'-vivid-v89';material.needsUpdate=true;
+    }
+  });
+}
+
 function skinMaterial(material){return /skin|face|hair|eye|teeth|mouth/i.test(material.name||'');}
 function recolorKit(actor,main,accent){
   const primary=new THREE.Color(main),secondary=new THREE.Color(accent);
@@ -944,7 +1016,7 @@ function hookGame(){if(hooked)return;if(typeof window.resolveShot!=='function'){
 async function boot(){if(installed)return;const shell=addStageShell();if(!shell){setTimeout(boot,120);return}installed=true;runtimeSettings={...runtimeSettings,...(window.__AI_FOOTBALL_SETTINGS||{})};try{await loadThree();setupScene();if(DEMO)window.dispatchEvent(new CustomEvent('football-scene-ready'));else{hookGame()}}catch(e){console.error('3D sahne yüklenemedi',e);setLabel('3D SAHNE YÜKLENEMEDİ')}}
 window.addEventListener('ai-football-settings',e=>apply3DSettings(e.detail||{}));
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-window.AIFootball3D={beginShot,finishShot,waitForShot,get videoStatus(){return videoPlayerA?.status||{ready:false}},reset:resetPose,reloadModels:tryLoadRealModels,configureTeams,playDemoShot,applySettings:apply3DSettings,get ready(){return !!scene},get settings(){return {...runtimeSettings}},get modelStatus(){return [...demoActors].map(([team,actor])=>({team,loaded:actor.userData.real,recoloredPixels:actor.userData.recoloredPixels||0}));}};
+window.AIFootball3D={beginShot,finishShot,waitForShot,get videoStatus(){return videoPlayerA?.status||{ready:false}},reset:resetPose,reloadModels:tryLoadRealModels,configureTeams,playDemoShot,applySettings:apply3DSettings,get ready(){return !!scene},get isAnimating(){return !!animation},get settings(){return {...runtimeSettings}},get modelStatus(){return [...demoActors].map(([team,actor])=>({team,loaded:actor.userData.real,recoloredPixels:actor.userData.recoloredPixels||0}));}};
 })();
 
 
