@@ -17,7 +17,7 @@ window.AIFootballPlayerVideo={async create(THREE,scene){
     const texture=new THREE.VideoTexture(video);texture.minFilter=THREE.LinearFilter;texture.magFilter=THREE.LinearFilter;
     const material=new THREE.ShaderMaterial({uniforms:{frame:{value:texture},opacity:{value:0},footShift0:{value:new THREE.Vector3()},footShift1:{value:new THREE.Vector3()},feetSplit:{value:new THREE.Vector2(.5,.06)},legBand:{value:new THREE.Vector2(.08,.3)}},transparent:true,depthWrite:false,toneMapped:false,side:THREE.DoubleSide,
       vertexShader:'varying vec2 uvFrame; uniform vec3 footShift0; uniform vec3 footShift1; uniform vec2 feetSplit; uniform vec2 legBand; void main(){uvFrame=uv;vec4 world=modelMatrix*vec4(position,1.0);float leg=1.0-smoothstep(legBand.x,legBand.y,uv.y);float side=smoothstep(feetSplit.x-feetSplit.y,feetSplit.x+feetSplit.y,uv.x);world.xyz+=leg*mix(footShift0,footShift1,side);gl_Position=projectionMatrix*viewMatrix*world;}',
-      fragmentShader:'uniform sampler2D frame; uniform float opacity; varying vec2 uvFrame; void main(){vec3 rgb=texture2D(frame,vec2(uvFrame.x*.5,uvFrame.y)).rgb;float a=texture2D(frame,vec2(.5+uvFrame.x*.5,uvFrame.y)).r*opacity;float mx=max(rgb.r,max(rgb.g,rgb.b));float mn=min(rgb.r,min(rgb.g,rgb.b));float sat=mx-mn;float lum=dot(rgb,vec3(.2126,.7152,.0722));float upper=smoothstep(.26,.40,uvFrame.y);float grayGap=(1.0-smoothstep(.08,.20,sat))*smoothstep(.42,.50,lum)*(1.0-smoothstep(.82,.90,lum))*upper;a*=1.0-grayGap*.985;a=smoothstep(.12,.62,a);if(a<.045)discard;float l=dot(rgb,vec3(.2126,.7152,.0722));rgb=mix(vec3(l),rgb,1.07);rgb=(rgb-.5)*1.03+.5;rgb=mix(rgb*.78,rgb,a);gl_FragColor=vec4(clamp(rgb,0.0,1.0),a);}'});
+      fragmentShader:'uniform sampler2D frame; uniform float opacity; varying vec2 uvFrame; void main(){vec3 rgb=texture2D(frame,vec2(uvFrame.x*.5,uvFrame.y)).rgb;float a=texture2D(frame,vec2(.5+uvFrame.x*.5,uvFrame.y)).r*opacity;a=smoothstep(.055,.72,a);if(a<.035)discard;float l=dot(rgb,vec3(.2126,.7152,.0722));rgb=mix(vec3(l),rgb,1.08);rgb=(rgb-.5)*1.035+.5;gl_FragColor=vec4(clamp(rgb,0.0,1.0),a);}'});
     const plane=new THREE.Mesh(geometry,material);plane.renderOrder=2;plane.frustumCulled=false;root.add(plane);
     const c=clips[name]={...info,video,texture,material,plane,ready:false,blocked:false,error:null};
     c.readyPromise=new Promise((resolve,reject)=>{
@@ -112,7 +112,7 @@ window.AIFootballPlayerVideo={async create(THREE,scene){
     }
     frame.feet.forEach((f,i)=>{
       const pivot=active&&['turn','returnTurn'].includes(active.phase);
-      const foot=locks[i],raw=c.plane.localToWorld(new THREE.Vector3((f[0]-.5)*width,(.5-f[1])*config.height,0)),contact=!returningWalk&&!!f[2]&&!pivot;
+      const foot=locks[i],raw=c.plane.localToWorld(new THREE.Vector3((f[0]-.5)*width,(.5-f[1])*config.height,0)),contact=current!=='idle'&&!returningWalk&&!!f[2]&&!pivot;
       if(contact&&!foot.contact){
         // Plant at the boot's currently rendered location so a new step never snaps.
         foot.anchor.copy(raw).add(foot.shift);foot.anchor.y=.015;
