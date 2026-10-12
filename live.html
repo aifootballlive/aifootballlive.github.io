@@ -178,7 +178,7 @@ html,body{background:#050a12}
 </div></div>
 <div class="adminActions"><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-live.js?v=95"></script>
+<script src="./tiktok-shared.js?v=97"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -288,7 +288,7 @@ $('actorSave').onclick=async()=>{
     const {data:latest,error:readError}=await db.from('games').select('rules').eq('id',ids.game).single();
     if(readError)throw readError;
     const rules={...(latest?.rules||{}),actor_layout:snapshot};
-    const {error}=await db.from('games').update({rules}).eq('id',ids.game);if(error)throw error;
+    const {error}=window.AIFootballTikTok?.active?await window.AIFootballTikTok.saveRules({actor_layout:snapshot}):await db.from('games').update({rules}).eq('id',ids.game);if(error)throw error;
     gameRules=rules;actorLayoutDirty=JSON.stringify(actorLayout)!==JSON.stringify(snapshot);
     $('actorAdjustStatus').textContent=actorLayoutDirty?'Kaydedildi · Yeni değişiklikleri de kaydet':'Kaydedildi';
   }catch(error){console.error(error);$('actorAdjustStatus').textContent='Kaydedilemedi · Tekrar dene';}
@@ -389,9 +389,9 @@ async function applyAdminSettings(){
   gameRules={...gameRules,goalkeeper_initial_power:state.startKeeper,keeper_cost:state.keeperCost,shot_delay:state.shotDelay,shot_threshold:state.shotThreshold,last_team:state.lastTeam,
     sound_master:state.soundMaster,sound_crowd:state.soundCrowd,sound_effects:state.soundEffects,sound_goal:state.soundGoal,sound_enabled:state.soundEnabled,crowd_enabled:state.crowdEnabled,announcer_enabled:state.announcerEnabled,goal_fx_enabled:state.goalFxEnabled,
     camera_zoom:state.cameraZoom,stadium_exposure:state.stadiumExposure,idle_motion:state.idleMotion,ball_size:state.ballSize,goal_size:state.goalSize,confetti_amount:state.confettiAmount,scene_label:state.sceneLabel,show_queues:state.showQueues,show_status:state.showStatus};
-  const {error}=await db.from('games').update({rules:gameRules}).eq('id',ids.game);if(error){console.error(error);log('Ayarlar kaydedilemedi');return}
-  await db.from('goalkeepers').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
-  await db.from('goalkeeper_opponent_state').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
+  const {error}=window.AIFootballTikTok?.active?await window.AIFootballTikTok.saveRules(gameRules):await db.from('games').update({rules:gameRules}).eq('id',ids.game);if(error){console.error(error);log('Ayarlar kaydedilemedi');return}
+  if(!window.AIFootballTikTok?.active)await db.from('goalkeepers').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
+  if(!window.AIFootballTikTok?.active)await db.from('goalkeeper_opponent_state').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
   applyRuntimeSettings();render();closeAdmin();log('Tüm admin ayarları kaydedildi')
 }
 async function restoreDefaultSettings(){
@@ -409,12 +409,12 @@ function onPending(payload){if(window.AIFootballTikTok?.active)return;const row=
 function setupRealtime(){if(window.AIFootballTikTok?.active||!ids.game)return;const channel=db.channel('match-'+ids.game).on('postgres_changes',{event:'UPDATE',schema:'public',table:'teams',filter:'game_id=eq.'+ids.game},p=>{if(window.AIFootballTikTok?.active)return;const t=teamFromId(p.new.id);if(t){state[t].score=Number(p.new.score)||0;render()}}).on('postgres_changes',{event:'UPDATE',schema:'public',table:'goalkeeper_opponent_state',filter:'game_id=eq.'+ids.game},p=>{if(window.AIFootballTikTok?.active)return;if(p.new.id===ids.keeperState.A)state.keeper.A=Number(p.new.power);if(p.new.id===ids.keeperState.B)state.keeper.B=Number(p.new.power);render()}).on('postgres_changes',{event:'*',schema:'public',table:'pending_shots',filter:'game_id=eq.'+ids.game},onPending).on('postgres_changes',{event:'INSERT',schema:'public',table:'game_events',filter:'game_id=eq.'+ids.game},p=>handleEventRow(p.new,true)).on('postgres_changes',{event:'UPDATE',schema:'public',table:'games',filter:'id=eq.'+ids.game},p=>applyRules(p.new.rules)).subscribe(status=>{realtimeStatus=status;setConn();if(status==='SUBSCRIBED'){loadRemote(true)}})}
 async function refreshAndResume(){if(document.hidden||(typeof localShotBusy!=='undefined'&&localShotBusy))return;await loadRemote(true);}
 async function loadTikTokPresentation(){try{const {data,error}=await db.from('games').select('rules').eq('name','AI Football Live').limit(1).single();if(error)throw error;if(data?.rules)applyRules(data.rules);if(window.AIFootballTikTok?.active)window.AIFootballTikTok.restore();}catch(e){console.warn('TikTok presentation settings unavailable',e)}}
-async function boot(){await getAuth();if(window.AIFootballTikTok?.active){await loadTikTokPresentation();window.AIFootballTikTok.activate();return;}await loadRemote(true);setupRealtime();db.auth.onAuthStateChange((_event,session)=>{adminAuthed=!!(session&&session.user&&session.user.id===ADMIN_UID);render();setConn();});setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
+async function boot(){await getAuth();db.auth.onAuthStateChange((_event,session)=>{adminAuthed=!!(session&&session.user&&session.user.id===ADMIN_UID);render();setConn();});if(window.AIFootballTikTok?.active){await loadTikTokPresentation();window.AIFootballTikTok.activate();return;}await loadRemote(true);setupRealtime();setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
 render();boot();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=94"></script>
 <script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=47"></script>
-<script src="./player-video.js?v=12"></script>
-<script id="game3dScript" src="./game-3d.js?v=79"></script>
+<script src="./player-video-shared.js?v=97"></script>
+<script id="game3dScript" src="./game-3d-shared.js?v=97"></script>
 </body>
 </html>

@@ -1,22 +1,13 @@
-# Sabit TikTok yayın adresi
+# Sabit yayın ve ortak maç
 
-LIVE Studio bağlantı kaynağı her zaman şu adreste kalır:
+Yayın adresi her zaman https://aifootballlive.github.io/live.html olarak kalır. Görüntü alanı 9:16; LIVE Studio kaynak boyutu 450 × 800 ve yerleşim Sığdır.
 
-https://aifootballlive.github.io/live.html
+Skor, kaleci gücü, bekleyen şutlar ve hediye tekrar kayıtları ortak maç kaydından okunur. Gizli pencere ve farklı cihazlar ayrı skor üretmez. Yayındaki 0–0 skoru ilk geçişte korunur; eski 17–9 tablosu silinmez.
 
-Özel kaynak boyutu: **450 × 800**. Yerleşim: **Sığdır**.
+Aynı bilgisayarda TikFinity Desktop ve yönetici oturumu açık olan oyun sayfası açık kalmalıdır. Yönetici sayfası gelen hediyeyi ortak kuyruğa ekler. LIVE Studio bağlantı kaynağı ve gizli sekmeler aynı maçı izler. Birden fazla yönetici sekmesi açılırsa yalnız birisi maçı yönetir; kapanınca diğer uygun yönetici sekmesi devralır. Yönetici sekmelerinin hepsi kapanırsa yeni şut işleme bekler; skor kaybolmaz.
 
-TikFinity Desktop aynı bilgisayarda açık olmalıdır. Sayfa, masaüstü programının yerel API bağlantısını doğrudan kullanır. Önceki 8894 deneme sunucusu bu sürüm için gerekli değildir.
+Gül / Rose: sarı-laciverte bir şut. TikTok: sarı-kırmızıya bir şut. Seri hediyenin yalnız tamamlanan sayısı işlenir. Aynı hediye olayı ortak kayıtta tekrar sayılmaz. Hediye gönderenin adı ortak kayda yazılmaz; tekrar kontrolü için tek yönlü özet tutulur.
 
-Tarayıcı bu site için yerel bağlantı izni isterse kullanıcı bunu TikFinity bağlantısı için kendisi verebilir. Genel güvenlik ayarlarını veya korumaları kapatmak gerekmez. İzin verilmeden bağlantı kurulmuş sayılmaz.
+Şutlar ortak başlangıç zamanı ve aynı kaleci hareketiyle oynar. Bekleme videosu aynı saate göre ilerler. İnternet gecikmesi ve sekmenin arka planda duraklatılması görüntüde küçük zaman farkları yaratabilir. Şutun ortasında yeni açılan veya geç yüklenen sayfa eski şutu yeniden oynatmaz; güncel skoru alır ve sonraki şuta katılır.
 
-Bu sürümde bağlı iki hediye:
-
-- Gül / Rose: sarı-laciverte her tekrar için bir şut.
-- TikTok: sarı-kırmızıya her tekrar için bir şut.
-
-Bir hediye serisi tamamlanmadan şut eklenmez. Aynı olayın yeniden gelmesi ikinci kez işlenmez. Bağlanmamış diğer hediye ve savunma seçenekleri yayın bilgisayarındaki TikFinity modunda gösterilmez.
-
-TikFinity maçının skoru, kalan şutları ve olay kayıtları **yayın kaynağının tarayıcı profilinde** saklanır. Bu, farklı tarayıcıların veya cihazların aynı maçı otomatik paylaştığı bir bulut kayıt sistemi değildir. Aynı kaynağı yenilemek kaldığı yerden devam eder; profil verilerinin silinmesi bu kaydı da siler. TikFinity bulunmayan cihazlar mevcut normal site bağlantısını kullanır.
-
-Gerçek hediye testi ayrıca gerekir. TikTok tarafından verilen hediye kısıtlamalarını bu bağlantı kaldırmaz. Bu sürüm canlı yayın başlatmaz ve hediye satın almaz.
+Yerel bağlantı izni istenirse kullanıcı bunu yalnız bu site için verebilir. Genel güvenlik korumaları kapatılmaz. Eski 8894 deneme sunucusu gerekli değildir. Gerçek hediye testi ayrıca gerekir; bu sürüm hediye satın almaz, yeni LIVE başlatmaz ve TikTok kısıtlamalarını kaldırmaz.
