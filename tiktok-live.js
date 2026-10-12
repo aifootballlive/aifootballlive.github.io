@@ -31,15 +31,16 @@
  function enqueue(team,count){if(!['A','B'].includes(team)||!Number.isSafeInteger(count)||count<1||count>10000)return false;install();if(!installed)return false;for(let i=0;i<count;i++)localShotQueue.push(team);state[team].queue+=count;render();capture();processWhenReady();return true;}
  function receive(raw){
   if(raw?.event!=='gift'&&raw?.type!=='gift')return false;
-  const g=raw.data||{};if(g.repeatEnd===false||(Number(g.giftType)===1&&g.repeatEnd!==true))return false;
-  const keys=[g.giftId,g.giftName].filter(v=>v!=null).map(clean),teams=['A','B'].filter(t=>mappings[t].some(k=>keys.includes(k)));
+  const g=raw.data||{},giftId=g.giftId??g.giftDetails?.giftId,giftName=g.giftName??g.giftDetails?.giftName,giftType=g.giftType??g.giftDetails?.giftType;
+  if(Number(giftType)===1&&g.repeatEnd!==true)return false;
+  const keys=[giftId,giftName].filter(v=>v!=null).map(clean),teams=['A','B'].filter(t=>mappings[t].some(k=>keys.includes(k)));
   if(teams.length!==1)return false;
   const id=g.transactionId||g.msgId||g.id;if(!id)return false;
-  const key=JSON.stringify([String(id),String(g.uniqueId||g.userId||''),String(g.giftId||g.giftName||'')]);if(seen.has(key))return false;
+  const key=JSON.stringify([String(id),String(g.uniqueId||g.user?.uniqueId||g.userId||g.user?.userId||''),String(giftId||giftName||'')]);if(seen.has(key))return false;
   const count=Number(g.repeatCount??1);if(!Number.isSafeInteger(count)||count<1||count>10000)return false;
   if(!active)return false;install();if(!installed){waitingGifts.push(raw);return false;}
   seen.add(key);if(seen.size>4000)seen.delete(seen.values().next().value);
-  accepted++;lastGift={name:String(g.giftName||g.giftId),team:teams[0],count};
+  accepted++;lastGift={name:String(giftName||giftId),team:teams[0],count};
   return enqueue(teams[0],count);
  }
  function connect(){

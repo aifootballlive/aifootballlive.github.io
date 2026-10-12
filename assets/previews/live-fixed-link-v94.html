@@ -179,7 +179,7 @@ html,body{background:#050a12}
 </div></div>
 <div class="adminActions"><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-live.js?v=94"></script>
+<script src="./tiktok-live.js?v=95"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -413,7 +413,7 @@ async function loadTikTokPresentation(){try{const {data,error}=await db.from('ga
 async function boot(){await getAuth();if(window.AIFootballTikTok?.active){await loadTikTokPresentation();window.AIFootballTikTok.activate();return;}await loadRemote(true);setupRealtime();db.auth.onAuthStateChange((_event,session)=>{adminAuthed=!!(session&&session.user&&session.user.id===ADMIN_UID);render();setConn();});setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
 render();boot();
 </script>
-<script id="instantSyncFix" src="./instant-sync.js?v=6"></script>
+<script id="instantSyncFix" src="./instant-sync.js?v=94"></script>
 <script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=47"></script>
 <script src="./player-video.js?v=12"></script>
 <script id="game3dScript" src="./game-3d.js?v=79"></script>
