@@ -75,6 +75,7 @@ html,body{background:#050a12}
 .wrap.adminView{--hud-start:calc(var(--actor-height) + 36px);--keeper-gap:37px}
 .wrap>.head{display:none;top:calc(var(--actor-height) + 8px);height:20px}
 .wrap.adminView>.head{display:flex}.wrap.adminView .title{font-size:12px}
+.wrap:not(.adminView) #soundEnable{display:none!important}
 .wrap>.score{top:var(--hud-start);height:52px}
 .wrap>.adminFrontKeeper{top:calc(var(--hud-start) + 58px);height:32px}
 .wrap>.broadcastControls,.adminFrontKeeper:not(.show)~.broadcastControls{top:calc(var(--hud-start) + 58px + var(--keeper-gap))}
