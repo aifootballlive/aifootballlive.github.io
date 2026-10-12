@@ -1,0 +1,51 @@
+<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>İkinci karakter denemesi</title><style>
+*{box-sizing:border-box}body{margin:0;background:#101521;color:white;font:13px system-ui}header{padding:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}button{border:1px solid #536178;background:#263247;color:white;border-radius:8px;padding:7px 10px;font:inherit;cursor:pointer}button.active{background:#965325;border-color:#ffbd53}#view{height:calc(100svh - 170px);min-height:420px;width:100%;position:relative}canvas{display:block}#caption{padding:0 12px;color:#b8c8d5;line-height:1.6}#loading{position:absolute;top:20px;left:12px}#labels{position:absolute;bottom:12px;left:0;width:100%;display:flex;justify-content:space-around;pointer-events:none;font-size:11px}#labels span{background:#061019aa;padding:6px;border-radius:7px}</style>
+<header><strong>İkinci karakter denemesi</strong><button data-clip="idle" class="active">Bekleme</button><button data-clip="run">Koşma</button><button data-clip="kick">Şut</button><button data-clip="walk">Yürüme</button><button id="compare">Karşılaştır</button><button id="rotation">Önden / yandan</button></header>
+<div id="caption">Mevcut 3D hareketler kopyalandı; fotoğraftaki forma ve renkler uygulandı. Yüz ve saç aynı mevcut modeldir; şort biçimi henüz tamamlanmadı.</div><div id="view"><div id="loading">Yükleniyor…</div><div id="labels"><span>Mevcut 3D karakter</span><span>Görsel uygulanan kopya</span></div></div>
+<script type="module">
+import * as T from '../vendor/three.module.mjs';
+import {GLTFLoader} from '../vendor/GLTFLoader.mjs';
+import {clone} from '../vendor/SkeletonUtils.mjs';
+import {MeshoptDecoder} from '../vendor/meshopt-decoder.mjs';
+import {photoMapping} from './photo-bind-v92.mjs';
+const view=document.querySelector('#view'),scene=new T.Scene();scene.background=new T.Color('#101a28');
+const renderer=new T.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;view.appendChild(renderer.domElement);
+const camera=new T.PerspectiveCamera(35,1,.01,100);camera.position.set(0,1.4,7.4);camera.lookAt(0,1.24,0);
+scene.add(new T.HemisphereLight(0xffffff,0xbad0b3,2));const key=new T.DirectionalLight(0xffffff,2.2);key.position.set(-3,6,5);scene.add(key);
+const floor=new T.Mesh(new T.PlaneGeometry(100,100),new T.MeshStandardMaterial({color:'#347346',roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.002;scene.add(floor);
+const loader=new GLTFLoader();await MeshoptDecoder.ready;loader.setMeshoptDecoder(MeshoptDecoder);
+const gltf=await loader.loadAsync('../models/player-a-refined.glb?v=1'),photo=await new T.TextureLoader().loadAsync('character-reference-clean-v92.webp');photo.colorSpace=T.SRGBColorSpace;photo.anisotropy=8;
+const actors=[],mixers=[],actions=[];
+for(let idx=0;idx<2;idx++){
+ const model=clone(gltf.scene),box=new T.Box3().setFromObject(model),size=box.getSize(new T.Vector3()),s=2.42/size.y;model.scale.multiplyScalar(s);model.updateMatrixWorld(true);const floorBox=new T.Box3().setFromObject(model);model.position.y-=floorBox.min.y;model.updateMatrixWorld(true);
+ const mixer=new T.AnimationMixer(model);mixer.clipAction(gltf.animations.find(a=>a.name==='idle')).play();mixer.update(0);model.updateMatrixWorld(true);
+ const remap=photoMapping(model);const surfaceBox=new T.Box3().setFromObject(model),height=surfaceBox.max.y-surfaceBox.min.y,centre=(surfaceBox.min.x+surfaceBox.max.x)/2;
+ model.traverse(obj=>{
+  if(!obj.isMesh)return;obj.material=obj.material.clone();obj.material.metalness=0;obj.material.roughness=.85;
+  if(!idx)return;
+  if(/Hair/i.test(obj.material.name))return;
+  if(obj.material.normalScale)obj.material.normalScale.set(.5,.5);
+  obj.geometry=obj.geometry.clone();const pos=obj.geometry.attributes.position,uv=[],front=[];
+  for(let i=0;i<pos.count;i++){const p=new T.Vector3().fromBufferAttribute(pos,i);if(obj.isSkinnedMesh)obj.applyBoneTransform(i,p);p.applyMatrix4(obj.matrixWorld);uv.push(...remap(p,obj,i));front.push(1);}
+  obj.geometry.setAttribute('referenceUV',new T.Float32BufferAttribute(uv,2));
+  obj.material.onBeforeCompile=sh=>{
+   sh.uniforms.referencePhoto={value:photo};
+   sh.vertexShader='attribute vec2 referenceUV;varying vec2 vReferenceUV;\n'+sh.vertexShader;
+   sh.vertexShader=sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvReferenceUV=referenceUV;');
+   sh.fragmentShader='uniform sampler2D referencePhoto;varying vec2 vReferenceUV;\n'+sh.fragmentShader;
+   sh.fragmentShader=sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\nvec4 ref=texture2D(referencePhoto,vReferenceUV);float valid=smoothstep(.35,.9,ref.a)*(1.-smoothstep(.80,.84,vReferenceUV.y));if(diffuseColor.b>diffuseColor.r*1.12&&diffuseColor.b>.04){diffuseColor.rgb=vReferenceUV.y<.34?vec3(.90,.68,.018):vec3(.70,.02,.035);}diffuseColor.rgb=mix(diffuseColor.rgb,ref.rgb,valid);');
+  };
+  obj.material.customProgramCacheKey=()=> 'reference-skin-v92';
+ });
+ const wrapper=new T.Group();wrapper.add(model);wrapper.position.x=idx? .75:-.75;scene.add(wrapper);actors.push(wrapper);mixers.push(mixer);actions.push(Object.fromEntries(gltf.animations.map(c=>[c.name,mixer.clipAction(c)])));
+}
+let current='idle',angle=0,comparison=false;
+function compare(v){comparison=v;actors[0].visible=v;actors[0].position.x=-.75;actors[1].position.x=v?.75:0;camera.position.set(0,1.4,v?7.4:4.9);camera.lookAt(0,1.22,0);document.querySelector('#labels span:first-child').style.display=v?'block':'none';}
+compare(false);document.getElementById('compare').onclick=()=>compare(!comparison);
+
+function choose(name){current=name;for(let i=0;i<2;i++){mixers[i].stopAllAction();const action=actions[i][name];action.reset().setLoop(T.LoopRepeat,Infinity).play();}document.querySelectorAll('[data-clip]').forEach(b=>b.classList.toggle('active',b.dataset.clip===name));}
+choose('idle');document.querySelectorAll('[data-clip]').forEach(b=>b.onclick=()=>choose(b.dataset.clip));document.getElementById('rotation').onclick=()=>{angle=angle?0:.6;for(const a of actors)a.rotation.y=angle;};
+new ResizeObserver(()=>{renderer.setSize(view.clientWidth,view.clientHeight);camera.aspect=view.clientWidth/view.clientHeight;camera.fov=view.clientWidth<500?48:35;camera.updateProjectionMatrix();}).observe(view);
+document.getElementById('loading').remove();const clock=new T.Clock();window.characterPreview={actors,mixers,compare,clips:gltf.animations.map(c=>c.name),choose};
+renderer.setAnimationLoop(()=>{const d=Math.min(clock.getDelta(),.05);for(const m of mixers)m.update(d);renderer.render(scene,camera);});
+</script></html>
