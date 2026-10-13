@@ -15,3 +15,5 @@ Yerel bağlantı izni istenirse kullanıcı bunu yalnız bu site için verebilir
 ## Diğer cihazlardan şut düğmeleri
 
 İzleyici ve gizli sekme şut düğmesine bastığında istek ortak maçın yöneticisine iletilir. İstek ortak kuyruğa alındıktan sonra tüm ekranlar aynı başlangıç zamanında şutu oynar. Aynı isteğin yeniden gönderilmesi ikinci şut üretmez. İzleyiciye maç kaydını doğrudan değiştirme veya admin ayarlarına erişme yetkisi verilmez. Bağlantı kısa süre kesilirse aynı istek yeniden iletilir; sekme yenilendiğinde gönderilmemiş isteğin kimliği korunur. Yönetici oyun sayfası ve TikFinity Desktop açık kalmalıdır.
+
+The v102 yellow/navy player uses the two user-supplied videos. Native colour/matte packed frames preserve the original person; the 5.25s idle loop uses a premultiplied seam, and motion/return share a single video decoder. Soles are tracked against the turf, and the source kick sets the shared outcome timing. Character placement, goal geometry, audio, and text styling are preserved. Preview: assets/previews/live-player-v102.html; recorded check: assets/previews/player-v102-flow.mp4. Refresh the admin page and LIVE Studio Link source after updating.
