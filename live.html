@@ -92,8 +92,9 @@ html,body{background:#050a12}
 .wrap>#game3dStage,.wrap:has(.adminFrontKeeper:not(.show))>#game3dStage{inset:0!important;height:100%!important;z-index:0;overflow:hidden;background:#050a12}
 #sceneWaitingVideo{display:block;width:100%;height:100%;object-fit:contain}
 #actorAdjust{display:none!important}
-/* Fill the browser-source width without centering a reduced portrait inside it. */
-.wrap{width:100%;max-width:none;margin:0;height:auto;min-height:0;aspect-ratio:9/16}
+/* Preserve the entire portrait without stretching or cropping. */
+.wrap{width:min(100vw,56.25dvh);max-width:none;height:auto;aspect-ratio:9/16;margin:0 auto}
+@media (min-aspect-ratio:56/100) and (max-aspect-ratio:57/100){html,body{width:100%;height:100%;overflow:hidden}.wrap{width:100vw;height:100dvh;margin:0}}
 </style>
 </head>
 <body>
