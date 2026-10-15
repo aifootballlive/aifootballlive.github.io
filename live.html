@@ -96,6 +96,7 @@ html,body{background:#050a12}
 .wrap{width:min(100vw,56.25dvh);max-width:none;height:auto;aspect-ratio:9/16;margin:0 auto}
 @media (min-aspect-ratio:56/100) and (max-aspect-ratio:57/100){html,body{width:100%;height:100%;overflow:hidden}.wrap{width:100vw;height:100dvh;margin:0}}
 .jD{background:repeating-linear-gradient(90deg,#76233f 0 9px,#58b8e4 9px 18px)}.wrap>.score{grid-template-columns:repeat(3,1fr)}.broadcastControls{grid-template-columns:repeat(3,minmax(0,1fr))}.matchControls>.queues{grid-template-columns:repeat(3,minmax(0,1fr))}.matchControls .queueLeft{font-size:6px}
+.jC{background:repeating-linear-gradient(90deg,#fff 0 9px,#151515 9px 18px)}.broadcastControls{grid-template-columns:repeat(4,minmax(0,1fr))}.giftbtn:disabled{opacity:.55;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -144,6 +145,7 @@ html,body{background:#050a12}
     <button class="giftbtn def" onclick="addKeeper('B',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
     <button class="giftbtn def" onclick="addKeeper('B',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
   </div></section>
+  <section class="panel"><div class="panelHead"><span class="jersey jC"></span></div><div class="sectionLabel">BJK</div><div class="buttons"><button class="giftbtn shot" disabled title="Siyah-beyaz oyuncunun şut videosu bekleniyor" aria-label="BJK şut — video bekleniyor"><span class="giftVisual">⚽</span><span class="giftEffect">Şut</span><span class="coin">Video bekleniyor</span></button></div></section>
   <section class="panel"><div class="panelHead"><span class="jersey jD"></span></div><div class="sectionLabel">BAĞLI HEDİYE</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('D',1)"><span class="giftVisual">GG</span><span class="giftEffect">1 şut</span><span class="coin">GG</span></button></div></section>
   </div>
   <div class="matchControls" id="matchControls" aria-label="Bekleyen şutlar ve ses"><div class="queues"><div class="queueBox"><div class="queueLeft"><span class="jersey queueJersey jA"></span><span>BEKLEYEN ŞUT</span></div><div class="queueNum" id="queueA">0</div></div><div class="queueBox"><div class="queueLeft"><span class="jersey queueJersey jB"></span><span>BEKLEYEN ŞUT</span></div><div class="queueNum" id="queueB">0</div></div><div class="queueBox"><div class="queueLeft"><span class="jersey queueJersey jD"></span><span>BEKLEYEN ŞUT</span></div><div class="queueNum" id="queueD">0</div></div></div></div>
@@ -184,7 +186,7 @@ html,body{background:#050a12}
 </div></div>
 <div class="adminActions"><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v123.js?v=123"></script>
+<script src="./tiktok-shared-v124.js?v=124"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
