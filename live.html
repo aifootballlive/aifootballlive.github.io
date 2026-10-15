@@ -98,6 +98,7 @@ html,body{background:#050a12}
 .jD{background:repeating-linear-gradient(90deg,#76233f 0 9px,#58b8e4 9px 18px)}.wrap>.score{grid-template-columns:repeat(3,1fr)}.broadcastControls{grid-template-columns:repeat(3,minmax(0,1fr))}.matchControls>.queues{grid-template-columns:repeat(3,minmax(0,1fr))}.matchControls .queueLeft{font-size:6px}
 .jC{background:repeating-linear-gradient(90deg,#fff 0 9px,#151515 9px 18px)}.broadcastControls{grid-template-columns:repeat(4,minmax(0,1fr))}.giftbtn:disabled{opacity:.55;cursor:not-allowed}
 .wrap>.score{grid-template-columns:repeat(4,1fr)}.matchControls>.queues{grid-template-columns:repeat(4,minmax(0,1fr))}.matchControls .queueLeft{font-size:5px}.matchControls .queueJersey{width:14px!important}
+.adminFrontKeeper{grid-template-columns:repeat(4,minmax(0,1fr))}.frontKeeperTop .jersey{width:22px;height:16px}.frontKeeperTop strong{font-size:16px}
 </style>
 </head>
 <body>
@@ -122,6 +123,8 @@ html,body{background:#050a12}
   <div class="adminFrontKeeper" id="adminFrontKeeper">
     <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jersey miniJersey jA"></span><strong id="frontKeeperA">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillA"></div></div></div>
     <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jersey miniJersey jB"></span><strong id="frontKeeperB">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillB"></div></div></div>
+<div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jersey miniJersey jC"></span><strong id="frontKeeperC">0</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillC"></div></div></div>
+<div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jersey miniJersey jD"></span><strong id="frontKeeperD">0</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillD"></div></div></div>
   </div>
   <div class="broadcastControls">
   <section class="panel"><div class="panelHead"><span class="jersey jA"></span></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
@@ -155,6 +158,8 @@ html,body{background:#050a12}
 <div class="overlay" id="adminOverlay"><section class="admin"><div class="adminHead"><span>ADMIN AYARLARI</span><button class="closeBtn" onclick="closeAdmin()">KAPAT</button></div><div class="adminBody"><div class="adminStats">
   <div class="adminStat"><div class="statLabel"><span class="jersey adminMiniJersey jA"></span><span>KALECİ GÜCÜ</span></div><strong id="adminKeeperA">100</strong></div>
   <div class="adminStat"><div class="statLabel"><span class="jersey adminMiniJersey jB"></span><span>KALECİ GÜCÜ</span></div><strong id="adminKeeperB">100</strong></div>
+<div class="adminStat"><div class="statLabel"><span class="jersey adminMiniJersey jC"></span><span>KALECİ GÜCÜ</span></div><strong id="adminKeeperC">0</strong></div>
+<div class="adminStat"><div class="statLabel"><span class="jersey adminMiniJersey jD"></span><span>KALECİ GÜCÜ</span></div><strong id="adminKeeperD">0</strong></div>
   <div class="adminStat"><div class="statLabel"><span class="jersey adminMiniJersey jA"></span><span>BEKLEYEN ŞUT</span></div><strong id="adminQueueA">0</strong></div>
   <div class="adminStat"><div class="statLabel"><span class="jersey adminMiniJersey jB"></span><span>BEKLEYEN ŞUT</span></div><strong id="adminQueueB">0</strong></div>
 </div>
@@ -245,6 +250,7 @@ function render(){
   $('queueA').textContent=state.A.queue;
   $('queueB').textContent=state.B.queue;
   $('adminOpen').classList.toggle('show',adminAuthed);
+  for(const t of ['C','D']){$('adminKeeper'+t).textContent=state.keeper[t];$('frontKeeper'+t).textContent=state.keeper[t];$('frontKeeperFill'+t).style.width=Math.max(0,Math.min(100,(Number(state.keeper[t])||0)/Math.max(1,Number(state.startKeeper)||100)*100))+'%';}
   $('adminKeeperA').textContent=state.keeper.A;
   $('adminKeeperB').textContent=state.keeper.B;
   $('adminQueueA').textContent=state.A.queue;
