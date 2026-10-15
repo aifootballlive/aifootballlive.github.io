@@ -164,7 +164,11 @@ html,body{background:#050a12}
   <div class="adminStat"><div class="statLabel"><span class="jersey adminMiniJersey jB"></span><span>BEKLEYEN ŞUT</span></div><strong id="adminQueueB">0</strong></div>
 </div>
 <div class="adminSection"><div class="adminSectionTitle">OYUN AYARLARI</div><div class="adminGrid">
-  <div class="adminField"><label>Başlangıç kaleci gücü</label><input id="setStartKeeper" type="number" min="1" step="10"></div>
+  <div class="adminField"><label>FB güncel kaleci gücü</label><input id="setKeeperA" type="number" min="0" max="10000" step="1"></div>
+<div class="adminField"><label>GS güncel kaleci gücü</label><input id="setKeeperB" type="number" min="0" max="10000" step="1"></div>
+<div class="adminField"><label>BJK güncel kaleci gücü</label><input id="setKeeperC" type="number" min="0" max="10000" step="1"></div>
+<div class="adminField"><label>TS güncel kaleci gücü</label><input id="setKeeperD" type="number" min="0" max="10000" step="1"></div>
+<div class="adminField"><label>Başlangıç kaleci gücü</label><input id="setStartKeeper" type="number" min="1" step="10"></div>
   <div class="adminField"><label>Şut başına kaleci kaybı</label><input id="setKeeperCost" type="number" min="1" step="1"></div>
   <div class="adminField"><label>Şutlar arası süre (ms)</label><input id="setShotDelay" type="number" min="500" step="100"></div>
   <div class="adminField"><label>1 şut için kredi</label><input id="setShotThreshold" type="number" min="1" step="1"></div>
@@ -192,7 +196,7 @@ html,body{background:#050a12}
 </div></div>
 <div class="adminActions"><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v125.js?v=125"></script>
+<script src="./tiktok-shared-v128.js?v=128"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -230,6 +234,7 @@ function applyRuntimeSettings(){
 }
 function fillAdminSettings(){
   const set=(id,v)=>{const e=$(id);if(e)e.value=v},check=(id,v)=>{const e=$(id);if(e)e.checked=!!v};
+  for(const t of ['A','B','C','D'])set('setKeeper'+t,state.keeper[t]);
   set('setStartKeeper',state.startKeeper);set('setKeeperCost',state.keeperCost);set('setShotDelay',state.shotDelay);set('setShotThreshold',state.shotThreshold);
   set('setSoundMaster',state.soundMaster);set('setSoundCrowd',state.soundCrowd);set('setSoundEffects',state.soundEffects);set('setSoundGoal',state.soundGoal);
   set('setCameraZoom',state.cameraZoom);set('setStadiumExposure',state.stadiumExposure);set('setIdleMotion',state.idleMotion);set('setBallSize',state.ballSize);set('setGoalSize',state.goalSize);set('setConfettiAmount',state.confettiAmount);
@@ -317,7 +322,7 @@ function log(m){const el=$('event');el.dataset.matchMessage=m;el.replaceChildren
 function openAdmin(){if(adminAuthed){fillAdminSettings();$('adminOverlay').classList.add('show')}}function closeAdmin(){$('adminOverlay').classList.remove('show')}
 function initAudio(){try{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume()}catch(e){}}
 function playGoalSound(){try{initAudio();if(!audioCtx)return;const now=audioCtx.currentTime;[392,523,659,784].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=i<2?'square':'sawtooth';o.frequency.setValueAtTime(f,now+i*.11);g.gain.setValueAtTime(.0001,now+i*.11);g.gain.exponentialRampToValueAtTime(.16,now+i*.11+.02);g.gain.exponentialRampToValueAtTime(.0001,now+i*.11+.22);o.connect(g);g.connect(audioCtx.destination);o.start(now+i*.11);o.stop(now+i*.11+.24)})}catch(e){}}
-function celebrateGoal(team){if(!window.AIFootball3D?.ready)window.AIFootballAudio?.speakGoal?.();playGoalSound();const fx=$('goalFx');fx.querySelectorAll('.confettiPiece').forEach(x=>x.remove());const colors=team==='A'?['#ffd21f','#173f9b','#fff']:['#ffd21f','#c91f2c','#fff'];for(let i=0;i<(state.goalFxEnabled?state.confettiAmount:0);i++){const p=document.createElement('i');p.className='confettiPiece';p.style.left=(Math.random()*100)+'vw';p.style.background=colors[i%colors.length];p.style.setProperty('--drift',((Math.random()-.5)*260)+'px');p.style.setProperty('--spin',((Math.random()*900-450))+'deg');p.style.animationDelay=(Math.random()*.22)+'s';p.style.animationDuration=(1.35+Math.random()*.8)+'s';fx.appendChild(p)}fx.classList.remove('show');void fx.offsetWidth;fx.classList.add('show');setTimeout(()=>fx.classList.remove('show'),2200)}
+function celebrateGoal(team){window.AIFootballAudio?.speakGoal?.();playGoalSound();const fx=$('goalFx');fx.querySelectorAll('.confettiPiece').forEach(x=>x.remove());const colors=team==='A'?['#ffd21f','#173f9b','#fff']:['#ffd21f','#c91f2c','#fff'];for(let i=0;i<(state.goalFxEnabled?state.confettiAmount:0);i++){const p=document.createElement('i');p.className='confettiPiece';p.style.left=(Math.random()*100)+'vw';p.style.background=colors[i%colors.length];p.style.setProperty('--drift',((Math.random()-.5)*260)+'px');p.style.setProperty('--spin',((Math.random()*900-450))+'deg');p.style.animationDelay=(Math.random()*.22)+'s';p.style.animationDuration=(1.35+Math.random()*.8)+'s';fx.appendChild(p)}fx.classList.remove('show');void fx.offsetWidth;fx.classList.add('show');setTimeout(()=>fx.classList.remove('show'),2200)}
 document.addEventListener('pointerdown',initAudio,{once:true});
 function teamFromId(id){return id===ids.team.A?'A':id===ids.team.B?'B':null}
 function applyRules(r){
@@ -406,7 +411,7 @@ async function applyAdminSettings(){
   gameRules={...gameRules,goalkeeper_initial_power:state.startKeeper,keeper_cost:state.keeperCost,shot_delay:state.shotDelay,shot_threshold:state.shotThreshold,last_team:state.lastTeam,
     sound_master:state.soundMaster,sound_crowd:state.soundCrowd,sound_effects:state.soundEffects,sound_goal:state.soundGoal,sound_enabled:state.soundEnabled,crowd_enabled:state.crowdEnabled,announcer_enabled:state.announcerEnabled,goal_fx_enabled:state.goalFxEnabled,
     camera_zoom:state.cameraZoom,stadium_exposure:state.stadiumExposure,idle_motion:state.idleMotion,ball_size:state.ballSize,goal_size:state.goalSize,confetti_amount:state.confettiAmount,scene_label:state.sceneLabel,show_queues:state.showQueues,show_status:state.showStatus};
-  const {error}=window.AIFootballTikTok?.active?await window.AIFootballTikTok.saveRules(gameRules):await db.from('games').update({rules:gameRules}).eq('id',ids.game);if(error){console.error(error);log('Ayarlar kaydedilemedi');return}
+  const {error}=window.AIFootballTikTok?.active?await window.AIFootballTikTok.saveRules(gameRules,Object.fromEntries(['A','B','C','D'].map(t=>[t,num('setKeeper'+t,state.keeper[t],0,10000)]))):await db.from('games').update({rules:gameRules}).eq('id',ids.game);if(error){console.error(error);log('Ayarlar kaydedilemedi');return}
   if(!window.AIFootballTikTok?.active)await db.from('goalkeepers').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
   if(!window.AIFootballTikTok?.active)await db.from('goalkeeper_opponent_state').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
   applyRuntimeSettings();render();closeAdmin();log('Tüm admin ayarları kaydedildi')
@@ -420,7 +425,7 @@ async function restoreDefaultSettings(){
   await applyAdminSettings();
   log('Tüm ayarlar varsayılana döndürüldü');
 }
-async function resetMatch(){if(window.AIFootballTikTok?.active){if(adminAuthed&&confirm('TikTok yayın skoru sıfırlansın mı?'))window.AIFootballTikTok.reset();return;}if(!adminAuthed||!confirm('Maç tamamen sıfırlansın mı?'))return;await Promise.all([db.from('teams').update({score:0}).eq('id',ids.team.A),db.from('teams').update({score:0}).eq('id',ids.team.B),db.from('pending_shots').delete().eq('game_id',ids.game),db.from('goalkeeper_opponent_state').update({power:state.startKeeper,initial_power:state.startKeeper}).eq('game_id',ids.game)]);state.A.score=0;state.B.score=0;state.A.queue=0;state.B.queue=0;state.keeper.A=state.startKeeper;state.keeper.B=state.startKeeper;render();closeAdmin();log('Maç sıfırlandı')}
+async function resetMatch(){if(window.AIFootballTikTok?.active){if(adminAuthed&&confirm('Maç sıfırlansın mı? Dört kaleci kayıtlı başlangıç gücüne dönecek.')){await window.AIFootballTikTok.reset();render();closeAdmin();}return;}if(!adminAuthed||!confirm('Maç tamamen sıfırlansın mı?'))return;await Promise.all([db.from('teams').update({score:0}).eq('id',ids.team.A),db.from('teams').update({score:0}).eq('id',ids.team.B),db.from('pending_shots').delete().eq('game_id',ids.game),db.from('goalkeeper_opponent_state').update({power:state.startKeeper,initial_power:state.startKeeper}).eq('game_id',ids.game)]);state.A.score=0;state.B.score=0;state.A.queue=0;state.B.queue=0;state.keeper.A=state.startKeeper;state.keeper.B=state.startKeeper;render();closeAdmin();log('Maç sıfırlandı')}
 async function logoutAdmin(){await db.auth.signOut();adminAuthed=false;render();location.replace('./admin-edm2026.html')}
 function onPending(payload){if(window.AIFootballTikTok?.active)return;const row=payload.new||{};const t=teamFromId(row.attacking_team_id);if(payload.eventType==='INSERT'&&row.status==='pending'&&t){state[t].queue++;render();if(adminAuthed)processQueue();return}if(payload.eventType==='UPDATE'&&row.status==='processing'&&t&&!terminalShots.has(row.id)){terminalShots.add(row.id);state[t].queue=Math.max(0,state[t].queue-1);render();window.AIFootballTikTok?.onShotStarted(t);return}if(payload.eventType==='DELETE'){loadRemote(true)}}
 function setupRealtime(){if(window.AIFootballTikTok?.active||!ids.game)return;const channel=db.channel('match-'+ids.game).on('postgres_changes',{event:'UPDATE',schema:'public',table:'teams',filter:'game_id=eq.'+ids.game},p=>{if(window.AIFootballTikTok?.active)return;const t=teamFromId(p.new.id);if(t){state[t].score=Number(p.new.score)||0;render()}}).on('postgres_changes',{event:'UPDATE',schema:'public',table:'goalkeeper_opponent_state',filter:'game_id=eq.'+ids.game},p=>{if(window.AIFootballTikTok?.active)return;if(p.new.id===ids.keeperState.A)state.keeper.A=Number(p.new.power);if(p.new.id===ids.keeperState.B)state.keeper.B=Number(p.new.power);render()}).on('postgres_changes',{event:'*',schema:'public',table:'pending_shots',filter:'game_id=eq.'+ids.game},onPending).on('postgres_changes',{event:'INSERT',schema:'public',table:'game_events',filter:'game_id=eq.'+ids.game},p=>handleEventRow(p.new,true)).on('postgres_changes',{event:'UPDATE',schema:'public',table:'games',filter:'id=eq.'+ids.game},p=>applyRules(p.new.rules)).subscribe(status=>{realtimeStatus=status;setConn();if(status==='SUBSCRIBED'){loadRemote(true)}})}
