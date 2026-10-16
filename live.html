@@ -140,6 +140,21 @@ html,body{background:#050a12}
 .broadcastControls .panel{border-color:#465164;background:linear-gradient(180deg,rgba(18,27,42,.96),rgba(9,16,29,.94));box-shadow:0 3px 8px #0003}
 .broadcastControls .giftbtn{border-color:#59616b;border-radius:8px;box-shadow:inset 0 1px 0 #ffffff0a}
 .broadcastControls .queueBox{border-color:#384459;background:#0d1727}
+
+/* Each team has one card containing its score and shot gift. */
+.wrap>.broadcastControls,.adminFrontKeeper:not(.show)~.broadcastControls{top:var(--hud-start)}
+.broadcastControls .panel{height:142px;padding:5px;margin:0;border-radius:10px}
+.broadcastControls .panelHead.teamScore{display:flex;align-items:center;justify-content:center;gap:6px;height:46px;margin-bottom:4px}
+.broadcastControls .teamScore .jersey{width:32px;height:25px}
+.broadcastControls .teamScore .jerseyBadge{padding:3px}
+.broadcastControls .teamScore .num{font-size:27px;line-height:1;font-weight:900}
+.broadcastControls .sectionLabel,.broadcastControls .coin{display:none!important}
+.broadcastControls .giftbtn{height:78px;min-height:78px;border:0;background:transparent;box-shadow:none;padding:3px 0;gap:5px}
+.broadcastControls .giftVisual,.broadcastControls .giftVisual img{height:49px;line-height:49px}
+.broadcastControls .giftEffect{font-size:12px;line-height:16px}
+.wrap>.adminFrontKeeper{top:calc(var(--hud-start) + 148px)}
+.wrap>.matchControls,.adminFrontKeeper:not(.show)~.matchControls{top:calc(var(--hud-start) + 148px + var(--keeper-gap))}
+@media(max-width:350px){.broadcastControls .teamScore .jersey{width:26px}.broadcastControls .teamScore .num{font-size:23px}.broadcastControls .panelHead.teamScore{gap:3px}}
 </style>
 </head>
 <body>
@@ -160,7 +175,7 @@ html,body{background:#050a12}
   </section>
 
   <div class="head"><div class="title">AI Football Live</div><div class="headRight"><a href="./admin-edm2026.html" target="_top" style="color:#aab2c8;font-size:10px;white-space:nowrap">Hesabım</a><div class="sub" id="connectionStatus">Bağlanıyor...</div><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile">YENİLE</button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN</button></div></div>
-  <div class="score"><div class="scoreTeam"><span class="jerseyBadge"><span class="jersey miniJersey jA"></span></span><div class="num" id="scoreA">0</div></div><div class="scoreTeam"><span class="jerseyBadge"><span class="jersey miniJersey jB"></span></span><div class="num" id="scoreB">0</div></div><div class="scoreTeam"><span class="jerseyBadge"><span class="jersey miniJersey jC"></span></span><div class="num" id="scoreC">0</div></div><div class="scoreTeam"><span class="jerseyBadge"><span class="jersey miniJersey jD"></span></span><div class="num" id="scoreD">0</div></div></div>
+
   <div class="adminFrontKeeper" id="adminFrontKeeper">
     <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jerseyBadge"><span class="jersey miniJersey jA"></span></span><strong id="frontKeeperA">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillA"></div></div></div>
     <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jerseyBadge"><span class="jersey miniJersey jB"></span></span><strong id="frontKeeperB">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillB"></div></div></div>
@@ -168,7 +183,7 @@ html,body{background:#050a12}
 <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jerseyBadge"><span class="jersey miniJersey jD"></span></span><strong id="frontKeeperD">0</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillD"></div></div></div>
   </div>
   <div class="broadcastControls">
-  <section class="panel"><div class="panelHead"><span class="jerseyBadge"><span class="jersey jA"></span></span></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
+  <section class="panel"><div class="panelHead teamScore"><span class="jerseyBadge"><span class="jersey jA"></span></span><div class="num" id="scoreA">0</div></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
     <button class="giftbtn shot" onclick="addShots('A',1)"><span class="giftVisual"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M12 6l3 2-1 4h-4L9 8l3-2zm-6 5l3 1 1 4-2 2c-1-2-2-4-2-7zm12 0c0 3-1 5-2 7l-2-2 1-4 3-1zM9 18l3-2 3 2-1 1H10l-1-1z" fill="#10182b"/></svg></span><span class="giftEffect">1 şut</span><span class="coin">10 jeton</span></button>
     <button class="giftbtn shot" onclick="addShots('A',5)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M5 8h11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8z" fill="#d8ff68"/><path d="M16 10h2a3 3 0 0 1 0 6h-2" fill="none" stroke="#d8ff68" stroke-width="2"/><path d="M8 5c0-1 1-1 1-2M12 5c0-1 1-1 1-2" stroke="#fff" stroke-width="1.3"/></svg></span><span class="giftEffect">5 şut</span><span class="coin">50 jeton</span></button>
     <button class="giftbtn shot" onclick="addShots('A',10)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M12 20S4.5 15.4 4.5 9.7A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.7C19.5 15.4 12 20 12 20z" fill="#ff6b8b" stroke="#fff" stroke-width="1.2"/></svg></span><span class="giftEffect">10 şut</span><span class="coin">100 jeton</span></button>
@@ -179,7 +194,7 @@ html,body{background:#050a12}
     <button class="giftbtn def" onclick="addKeeper('A',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
     <button class="giftbtn def" onclick="addKeeper('A',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
   </div></section>
-  <section class="panel"><div class="panelHead"><span class="jerseyBadge"><span class="jersey jB"></span></span></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
+  <section class="panel"><div class="panelHead teamScore"><span class="jerseyBadge"><span class="jersey jB"></span></span><div class="num" id="scoreB">0</div></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
     <button class="giftbtn shot" onclick="addShots('B',1)"><span class="giftVisual"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M12 6l3 2-1 4h-4L9 8l3-2zm-6 5l3 1 1 4-2 2c-1-2-2-4-2-7zm12 0c0 3-1 5-2 7l-2-2 1-4 3-1zM9 18l3-2 3 2-1 1H10l-1-1z" fill="#10182b"/></svg></span><span class="giftEffect">1 şut</span><span class="coin">10 jeton</span></button>
     <button class="giftbtn shot" onclick="addShots('B',5)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M5 8h11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8z" fill="#d8ff68"/><path d="M16 10h2a3 3 0 0 1 0 6h-2" fill="none" stroke="#d8ff68" stroke-width="2"/></svg></span><span class="giftEffect">5 şut</span><span class="coin">50 jeton</span></button>
     <button class="giftbtn shot" onclick="addShots('B',10)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M12 20S4.5 15.4 4.5 9.7A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.7C19.5 15.4 12 20 12 20z" fill="#ff6b8b" stroke="#fff" stroke-width="1.2"/></svg></span><span class="giftEffect">10 şut</span><span class="coin">100 jeton</span></button>
@@ -190,8 +205,8 @@ html,body{background:#050a12}
     <button class="giftbtn def" onclick="addKeeper('B',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
     <button class="giftbtn def" onclick="addKeeper('B',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
   </div></section>
-  <section class="panel"><div class="panelHead"><span class="jerseyBadge"><span class="jersey jC"></span></span></div><div class="sectionLabel">BJK</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('C',1)" aria-label="BJK şut"><span class="giftVisual">⚽</span><span class="giftEffect">Şut</span><span class="coin">Finger Heart</span></button></div></section>
-  <section class="panel"><div class="panelHead"><span class="jerseyBadge"><span class="jersey jD"></span></span></div><div class="sectionLabel">BAĞLI HEDİYE</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('D',1)"><span class="giftVisual">GG</span><span class="giftEffect">1 şut</span><span class="coin">GG</span></button></div></section>
+  <section class="panel"><div class="panelHead teamScore"><span class="jerseyBadge"><span class="jersey jC"></span></span><div class="num" id="scoreC">0</div></div><div class="sectionLabel">BJK</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('C',1)" aria-label="BJK şut"><span class="giftVisual">⚽</span><span class="giftEffect">Şut</span><span class="coin">Finger Heart</span></button></div></section>
+  <section class="panel"><div class="panelHead teamScore"><span class="jerseyBadge"><span class="jersey jD"></span></span><div class="num" id="scoreD">0</div></div><div class="sectionLabel">BAĞLI HEDİYE</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('D',1)"><span class="giftVisual">GG</span><span class="giftEffect">1 şut</span><span class="coin">GG</span></button></div></section>
   </div>
   <div class="matchControls" id="matchControls" aria-label="Bekleyen şutlar ve ses"><div class="queues"></div></div>
   <div id="event" hidden aria-hidden="true">Hazır</div><div class="note">Tüm cihazlar aynı canlı maç durumunu gösterir.</div>
