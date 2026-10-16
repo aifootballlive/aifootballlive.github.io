@@ -235,9 +235,8 @@ html,body{background:#050a12}
 </div>
 <div class="adminSection"><div class="adminSectionTitle">OYUN AYARLARI</div><div class="adminGrid">
 
-  <div class="adminField"><label>Şut başına kaleci kaybı</label><input id="setKeeperCost" type="number" min="1" step="1"></div>
+  <div class="adminField"><label>Bir şut başına kaleci güç kaybı</label><input id="setKeeperCost" type="number" min="1" step="1"></div>
   <div class="adminField"><label>Şutlar arası süre (ms)</label><input id="setShotDelay" type="number" min="500" step="100"></div>
-  <div class="adminField"><label>1 şut için kredi</label><input id="setShotThreshold" type="number" min="1" step="1"></div>
 </div></div>
 <div class="adminSection"><div class="adminSectionTitle">SES AYARLARI</div><div class="adminGrid">
   <div class="adminField"><label>Ana ses <span class="adminValue" id="valSoundMaster">88%</span></label><input id="setSoundMaster" type="range" min="0" max="100" value="88" oninput="syncAdminValue('SoundMaster',this.value,'%')"></div>
@@ -304,7 +303,7 @@ function fillAdminSettings(){
   const set=(id,v)=>{const e=$(id);if(e)e.value=v},check=(id,v)=>{const e=$(id);if(e)e.checked=!!v};
   for(const t of ['A','B','C','D']){set('setInitialKeeper'+t,initialKeeper(t));set('setQueue'+t,state[t].queue);}
   adminEditBaseline={initial:Object.fromEntries(['A','B','C','D'].map(t=>[t,initialKeeper(t)])),queues:Object.fromEntries(['A','B','C','D'].map(t=>[t,state[t].queue]))};
-  set('setKeeperCost',state.keeperCost);set('setShotDelay',state.shotDelay);set('setShotThreshold',state.shotThreshold);
+  set('setKeeperCost',state.keeperCost);set('setShotDelay',state.shotDelay);
   set('setSoundMaster',state.soundMaster);set('setSoundCrowd',state.soundCrowd);set('setSoundEffects',state.soundEffects);set('setSoundGoal',state.soundGoal);
   set('setCameraZoom',state.cameraZoom);set('setStadiumExposure',state.stadiumExposure);set('setIdleMotion',state.idleMotion);set('setBallSize',state.ballSize);set('setGoalSize',state.goalSize);set('setConfettiAmount',state.confettiAmount);
   check('setSoundEnabled',state.soundEnabled);check('setCrowdEnabled',state.crowdEnabled);check('setAnnouncerEnabled',state.announcerEnabled);check('setGoalFxEnabled',state.goalFxEnabled);check('setSceneLabel',state.sceneLabel);check('setShowQueues',state.showQueues);check('setShowStatus',state.showStatus);
@@ -485,7 +484,7 @@ async function applyAdminSettings(){
   const initialByTeam=Object.fromEntries(['A','B','C','D'].map(t=>[t,Math.floor(num('setInitialKeeper'+t,initialKeeper(t),0,10000))]));
   const changedKeeper=Object.fromEntries(Object.entries(initialByTeam).filter(([t,v])=>v!==adminEditBaseline.initial[t]));
   const changedQueues=Object.fromEntries(['A','B','C','D'].map(t=>[t,Math.floor(num('setQueue'+t,state[t].queue,0,10000))]).filter(([t,v])=>v!==adminEditBaseline.queues[t]));
-  state.startKeepers=initialByTeam;state.keeperCost=num('setKeeperCost',10,1,10000);state.shotDelay=num('setShotDelay',3000,500,30000);state.shotThreshold=num('setShotThreshold',10,1,10000);
+  state.startKeepers=initialByTeam;state.keeperCost=num('setKeeperCost',10,1,10000);state.shotDelay=num('setShotDelay',3000,500,30000);
   state.soundMaster=num('setSoundMaster',DEFAULT_ADMIN_SETTINGS.soundMaster,0,100);state.soundCrowd=num('setSoundCrowd',DEFAULT_ADMIN_SETTINGS.soundCrowd,0,100);state.soundEffects=num('setSoundEffects',DEFAULT_ADMIN_SETTINGS.soundEffects,0,100);state.soundGoal=num('setSoundGoal',DEFAULT_ADMIN_SETTINGS.soundGoal,0,100);
   state.soundEnabled=chk('setSoundEnabled');state.crowdEnabled=chk('setCrowdEnabled');state.announcerEnabled=chk('setAnnouncerEnabled');state.goalFxEnabled=chk('setGoalFxEnabled');
   state.cameraZoom=num('setCameraZoom',100,75,140);state.stadiumExposure=num('setStadiumExposure',116,70,150);state.idleMotion=num('setIdleMotion',100,0,150);state.ballSize=num('setBallSize',100,70,160);state.goalSize=num('setGoalSize',100,80,130);state.confettiAmount=num('setConfettiAmount',70,0,150);
