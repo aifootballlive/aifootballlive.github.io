@@ -262,7 +262,7 @@ html,body{background:#050a12}
 </div></div>
 <div class="adminActions"><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v150.js?v=150"></script>
+<script src="./tiktok-shared-v151.js?v=151"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -454,7 +454,7 @@ async function addShots(t,n){
     const button=[...document.querySelectorAll('.broadcastControls .shot')].find(b=>b.getAttribute('onclick')==="addShots('"+t+"',1)");
     if(button?.dataset.sending==='true')return;
     const label=button?.querySelector('.giftEffect'),original=label?.textContent||'1 şut';if(button)button.dataset.sending='true';if(label)label.textContent='Gönderiliyor…';
-    const timeout=setTimeout(()=>{if(label)label.textContent='Admin bağlantısı bekleniyor';},6000);
+    const timeout=setTimeout(()=>{if(label)label.textContent=window.AIFootballTikTok.getStatus().adminAvailable?'İstek yeniden iletiliyor…':'Admin hesabını aç';},6000);
     try{const accepted=await window.AIFootballTikTok.manualShot(t,n);if(label)label.textContent=accepted?'Sıraya eklendi ✓':'Tekrar dene';return accepted;}
     finally{clearTimeout(timeout);if(button)delete button.dataset.sending;setTimeout(()=>{if(label&&button?.dataset.sending!=='true')label.textContent=original;},2000);}
   }
