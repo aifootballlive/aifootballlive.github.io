@@ -233,6 +233,7 @@ html,body{background:#050a12}
   <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jC"></span></span><span>BEKLEYEN ŞUT</span></div><input id="setQueueC" type="number" min="0" max="10000" step="1" aria-label="C bekleyen şut"></div>
   <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jD"></span></span><span>BEKLEYEN ŞUT</span></div><input id="setQueueD" type="number" min="0" max="10000" step="1" aria-label="D bekleyen şut"></div>
 </div>
+<div class="adminSection"><div class="adminSectionTitle">GÜNCEL SKORLAR (ATILAN GOL)</div><div class="adminGrid"><div class="adminField"><label>FB gol sayısı</label><input id="setScoreA" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>GS gol sayısı</label><input id="setScoreB" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>BJK gol sayısı</label><input id="setScoreC" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>TS gol sayısı</label><input id="setScoreD" type="number" min="0" max="1000000" step="1"></div></div></div>
 <div class="adminSection"><div class="adminSectionTitle">OYUN AYARLARI</div><div class="adminGrid">
 
   <div class="adminField"><label>Bir şut başına kaleci güç kaybı</label><input id="setKeeperCost" type="number" min="1" step="1"></div>
@@ -261,7 +262,7 @@ html,body{background:#050a12}
 </div></div>
 <div class="adminActions"><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v145.js?v=145"></script>
+<script src="./tiktok-shared-v148.js?v=148"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -297,12 +298,12 @@ function applyRuntimeSettings(){
   document.querySelectorAll('.broadcastControls .queueBox').forEach(q=>q.style.display=state.showQueues?'flex':'none');
   const ev=$('event');if(ev)ev.style.display='none';
 }
-let adminEditBaseline={initial:{},queues:{}};
+let adminEditBaseline={initial:{},queues:{},scores:{}};
 function initialKeeper(t){return Number(state.startKeepers?.[t]??10);}
 function fillAdminSettings(){
   const set=(id,v)=>{const e=$(id);if(e)e.value=v},check=(id,v)=>{const e=$(id);if(e)e.checked=!!v};
-  for(const t of ['A','B','C','D']){set('setInitialKeeper'+t,initialKeeper(t));set('setQueue'+t,state[t].queue);}
-  adminEditBaseline={initial:Object.fromEntries(['A','B','C','D'].map(t=>[t,initialKeeper(t)])),queues:Object.fromEntries(['A','B','C','D'].map(t=>[t,state[t].queue]))};
+  for(const t of ['A','B','C','D']){set('setInitialKeeper'+t,initialKeeper(t));set('setQueue'+t,state[t].queue);set('setScore'+t,state[t].score);}
+  adminEditBaseline={initial:Object.fromEntries(['A','B','C','D'].map(t=>[t,initialKeeper(t)])),queues:Object.fromEntries(['A','B','C','D'].map(t=>[t,state[t].queue])),scores:Object.fromEntries(['A','B','C','D'].map(t=>[t,state[t].score]))};
   set('setKeeperCost',state.keeperCost);set('setShotDelay',state.shotDelay);
   set('setSoundMaster',state.soundMaster);set('setSoundCrowd',state.soundCrowd);set('setSoundEffects',state.soundEffects);set('setSoundGoal',state.soundGoal);
   set('setCameraZoom',state.cameraZoom);set('setStadiumExposure',state.stadiumExposure);set('setIdleMotion',state.idleMotion);set('setBallSize',state.ballSize);set('setGoalSize',state.goalSize);set('setConfettiAmount',state.confettiAmount);
@@ -484,6 +485,7 @@ async function applyAdminSettings(){
   const initialByTeam=Object.fromEntries(['A','B','C','D'].map(t=>[t,Math.floor(num('setInitialKeeper'+t,initialKeeper(t),0,10000))]));
   const changedKeeper=Object.fromEntries(Object.entries(initialByTeam).filter(([t,v])=>v!==adminEditBaseline.initial[t]));
   const changedQueues=Object.fromEntries(['A','B','C','D'].map(t=>[t,Math.floor(num('setQueue'+t,state[t].queue,0,10000))]).filter(([t,v])=>v!==adminEditBaseline.queues[t]));
+  const changedScores=Object.fromEntries(['A','B','C','D'].map(t=>[t,Math.floor(num('setScore'+t,state[t].score,0,1000000))]).filter(([t,v])=>v!==adminEditBaseline.scores[t]));
   state.startKeepers=initialByTeam;state.keeperCost=num('setKeeperCost',10,1,10000);state.shotDelay=num('setShotDelay',3000,500,30000);
   state.soundMaster=num('setSoundMaster',DEFAULT_ADMIN_SETTINGS.soundMaster,0,100);state.soundCrowd=num('setSoundCrowd',DEFAULT_ADMIN_SETTINGS.soundCrowd,0,100);state.soundEffects=num('setSoundEffects',DEFAULT_ADMIN_SETTINGS.soundEffects,0,100);state.soundGoal=num('setSoundGoal',DEFAULT_ADMIN_SETTINGS.soundGoal,0,100);
   state.soundEnabled=chk('setSoundEnabled');state.crowdEnabled=chk('setCrowdEnabled');state.announcerEnabled=chk('setAnnouncerEnabled');state.goalFxEnabled=chk('setGoalFxEnabled');
@@ -492,7 +494,7 @@ async function applyAdminSettings(){
   gameRules={...gameRules,goalkeeper_initial_by_team:initialByTeam,keeper_cost:state.keeperCost,shot_delay:state.shotDelay,shot_threshold:state.shotThreshold,last_team:state.lastTeam,
     sound_master:state.soundMaster,sound_crowd:state.soundCrowd,sound_effects:state.soundEffects,sound_goal:state.soundGoal,sound_enabled:state.soundEnabled,crowd_enabled:state.crowdEnabled,announcer_enabled:state.announcerEnabled,goal_fx_enabled:state.goalFxEnabled,
     camera_zoom:state.cameraZoom,stadium_exposure:state.stadiumExposure,idle_motion:state.idleMotion,ball_size:state.ballSize,goal_size:state.goalSize,confetti_amount:state.confettiAmount,scene_label:state.sceneLabel,show_queues:state.showQueues,show_status:state.showStatus};
-  const {error}=window.AIFootballTikTok?.active?await window.AIFootballTikTok.saveRules(gameRules,changedKeeper,changedQueues):await db.from('games').update({rules:gameRules}).eq('id',ids.game);if(error){console.error(error);log('Ayarlar kaydedilemedi');return}
+  const {error}=window.AIFootballTikTok?.active?await window.AIFootballTikTok.saveRules(gameRules,changedKeeper,changedQueues,changedScores):await db.from('games').update({rules:gameRules}).eq('id',ids.game);if(error){console.error(error);log('Ayarlar kaydedilemedi');return}
   if(!window.AIFootballTikTok?.active)await db.from('goalkeepers').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
   if(!window.AIFootballTikTok?.active)await db.from('goalkeeper_opponent_state').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
   applyRuntimeSettings();render();closeAdmin();log('Tüm admin ayarları kaydedildi')
