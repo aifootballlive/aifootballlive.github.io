@@ -163,6 +163,9 @@ html,body{background:#050a12}
 .wrap.adminView>.adminFrontKeeper{top:calc(var(--hud-start) + 179px)}
 .wrap.adminView>.matchControls{top:calc(var(--hud-start) + 216px)}
 .adminStat input{display:block;width:100%;margin:7px auto 0;padding:8px;border:1px solid #435371;border-radius:7px;background:#101d32;color:#fff;text-align:center;font-size:22px;font-weight:900}.adminStat .statLabel{white-space:normal;font-size:8px}.adminStat .statLabel span:last-child{white-space:normal}
+.adminFrontKeeper .keeperGroupTitle{grid-column:1/-1;color:#e7edf7;font-size:11px;font-weight:900;line-height:16px;padding:0 3px;text-shadow:0 1px 3px #000}
+.wrap.adminView>.adminFrontKeeper{height:54px;grid-template-rows:16px 32px;row-gap:4px}
+.wrap.adminView>.matchControls{top:calc(var(--hud-start) + 238px)}
 </style>
 </head>
 <body>
@@ -185,6 +188,7 @@ html,body{background:#050a12}
   <div class="head"><div class="title">AI Football Live</div><div class="headRight"><a href="./admin-edm2026.html" target="_top" style="color:#aab2c8;font-size:10px;white-space:nowrap">Hesabım</a><div class="sub" id="connectionStatus">Bağlanıyor...</div><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile">YENİLE</button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN AYARLARI</button></div></div>
 
   <div class="adminFrontKeeper" id="adminFrontKeeper">
+    <div class="keeperGroupTitle">Kalan kaleci güçleri</div>
     <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jerseyBadge"><span class="jersey miniJersey jA"></span></span><strong id="frontKeeperA">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillA"></div></div></div>
     <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jerseyBadge"><span class="jersey miniJersey jB"></span></span><strong id="frontKeeperB">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillB"></div></div></div>
 <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jerseyBadge"><span class="jersey miniJersey jC"></span></span><strong id="frontKeeperC">0</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillC"></div></div></div>
