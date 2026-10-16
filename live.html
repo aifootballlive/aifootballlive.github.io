@@ -162,6 +162,7 @@ html,body{background:#050a12}
 .wrap.adminView .broadcastControls .panel{height:173px}
 .wrap.adminView>.adminFrontKeeper{top:calc(var(--hud-start) + 179px)}
 .wrap.adminView>.matchControls{top:calc(var(--hud-start) + 216px)}
+.adminStat input{display:block;width:100%;margin:7px auto 0;padding:8px;border:1px solid #435371;border-radius:7px;background:#101d32;color:#fff;text-align:center;font-size:22px;font-weight:900}.adminStat .statLabel{white-space:normal;font-size:8px}.adminStat .statLabel span:last-child{white-space:normal}
 </style>
 </head>
 <body>
@@ -181,7 +182,7 @@ html,body{background:#050a12}
     <div id="actorAdjustStatus" class="actorAdjustStatus" role="status"></div>
   </section>
 
-  <div class="head"><div class="title">AI Football Live</div><div class="headRight"><a href="./admin-edm2026.html" target="_top" style="color:#aab2c8;font-size:10px;white-space:nowrap">Hesabım</a><div class="sub" id="connectionStatus">Bağlanıyor...</div><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile">YENİLE</button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN</button></div></div>
+  <div class="head"><div class="title">AI Football Live</div><div class="headRight"><a href="./admin-edm2026.html" target="_top" style="color:#aab2c8;font-size:10px;white-space:nowrap">Hesabım</a><div class="sub" id="connectionStatus">Bağlanıyor...</div><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile">YENİLE</button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN AYARLARI</button></div></div>
 
   <div class="adminFrontKeeper" id="adminFrontKeeper">
     <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jerseyBadge"><span class="jersey miniJersey jA"></span></span><strong id="frontKeeperA">100</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillA"></div></div></div>
@@ -219,21 +220,17 @@ html,body{background:#050a12}
   <div id="event" hidden aria-hidden="true">Hazır</div><div class="note">Tüm cihazlar aynı canlı maç durumunu gösterir.</div>
 </div>
 <div class="overlay" id="adminOverlay"><section class="admin"><div class="adminHead"><span>ADMIN AYARLARI</span><button class="closeBtn" onclick="closeAdmin()">KAPAT</button></div><div class="adminBody"><div class="adminStats">
-  <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jA"></span></span><span>KALECİ GÜCÜ</span></div><strong id="adminKeeperA">100</strong></div>
-  <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jB"></span></span><span>KALECİ GÜCÜ</span></div><strong id="adminKeeperB">100</strong></div>
-<div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jC"></span></span><span>KALECİ GÜCÜ</span></div><strong id="adminKeeperC">0</strong></div>
-<div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jD"></span></span><span>KALECİ GÜCÜ</span></div><strong id="adminKeeperD">0</strong></div>
-  <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jA"></span></span><span>BEKLEYEN ŞUT</span></div><strong id="adminQueueA">0</strong></div>
-  <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jB"></span></span><span>BEKLEYEN ŞUT</span></div><strong id="adminQueueB">0</strong></div>
-  <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jC"></span></span><span>BEKLEYEN ŞUT</span></div><strong id="adminQueueC">0</strong></div>
-  <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jD"></span></span><span>BEKLEYEN ŞUT</span></div><strong id="adminQueueD">0</strong></div>
+  <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jA"></span></span><span>BAŞLANGIÇ KALECİ GÜCÜ</span></div><input id="setInitialKeeperA" type="number" min="0" max="10000" step="1" aria-label="A başlangıç kaleci gücü"></div>
+  <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jB"></span></span><span>BAŞLANGIÇ KALECİ GÜCÜ</span></div><input id="setInitialKeeperB" type="number" min="0" max="10000" step="1" aria-label="B başlangıç kaleci gücü"></div>
+<div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jC"></span></span><span>BAŞLANGIÇ KALECİ GÜCÜ</span></div><input id="setInitialKeeperC" type="number" min="0" max="10000" step="1" aria-label="C başlangıç kaleci gücü"></div>
+<div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jD"></span></span><span>BAŞLANGIÇ KALECİ GÜCÜ</span></div><input id="setInitialKeeperD" type="number" min="0" max="10000" step="1" aria-label="D başlangıç kaleci gücü"></div>
+  <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jA"></span></span><span>BEKLEYEN ŞUT</span></div><input id="setQueueA" type="number" min="0" max="10000" step="1" aria-label="A bekleyen şut"></div>
+  <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jB"></span></span><span>BEKLEYEN ŞUT</span></div><input id="setQueueB" type="number" min="0" max="10000" step="1" aria-label="B bekleyen şut"></div>
+  <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jC"></span></span><span>BEKLEYEN ŞUT</span></div><input id="setQueueC" type="number" min="0" max="10000" step="1" aria-label="C bekleyen şut"></div>
+  <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jD"></span></span><span>BEKLEYEN ŞUT</span></div><input id="setQueueD" type="number" min="0" max="10000" step="1" aria-label="D bekleyen şut"></div>
 </div>
 <div class="adminSection"><div class="adminSectionTitle">OYUN AYARLARI</div><div class="adminGrid">
-  <div class="adminField"><label>FB güncel kaleci gücü</label><input id="setKeeperA" type="number" min="0" max="10000" step="1"></div>
-<div class="adminField"><label>GS güncel kaleci gücü</label><input id="setKeeperB" type="number" min="0" max="10000" step="1"></div>
-<div class="adminField"><label>BJK güncel kaleci gücü</label><input id="setKeeperC" type="number" min="0" max="10000" step="1"></div>
-<div class="adminField"><label>TS güncel kaleci gücü</label><input id="setKeeperD" type="number" min="0" max="10000" step="1"></div>
-<div class="adminField"><label>Başlangıç kaleci gücü</label><input id="setStartKeeper" type="number" min="1" step="10"></div>
+
   <div class="adminField"><label>Şut başına kaleci kaybı</label><input id="setKeeperCost" type="number" min="1" step="1"></div>
   <div class="adminField"><label>Şutlar arası süre (ms)</label><input id="setShotDelay" type="number" min="500" step="100"></div>
   <div class="adminField"><label>1 şut için kredi</label><input id="setShotThreshold" type="number" min="1" step="1"></div>
@@ -261,7 +258,7 @@ html,body{background:#050a12}
 </div></div>
 <div class="adminActions"><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v141.js?v=141"></script>
+<script src="./tiktok-shared-v145.js?v=145"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -297,10 +294,13 @@ function applyRuntimeSettings(){
   document.querySelectorAll('.broadcastControls .queueBox').forEach(q=>q.style.display=state.showQueues?'flex':'none');
   const ev=$('event');if(ev)ev.style.display='none';
 }
+let adminEditBaseline={initial:{},queues:{}};
+function initialKeeper(t){return Number(state.startKeepers?.[t]??10);}
 function fillAdminSettings(){
   const set=(id,v)=>{const e=$(id);if(e)e.value=v},check=(id,v)=>{const e=$(id);if(e)e.checked=!!v};
-  for(const t of ['A','B','C','D'])set('setKeeper'+t,state.keeper[t]);
-  set('setStartKeeper',state.startKeeper);set('setKeeperCost',state.keeperCost);set('setShotDelay',state.shotDelay);set('setShotThreshold',state.shotThreshold);
+  for(const t of ['A','B','C','D']){set('setInitialKeeper'+t,initialKeeper(t));set('setQueue'+t,state[t].queue);}
+  adminEditBaseline={initial:Object.fromEntries(['A','B','C','D'].map(t=>[t,initialKeeper(t)])),queues:Object.fromEntries(['A','B','C','D'].map(t=>[t,state[t].queue]))};
+  set('setKeeperCost',state.keeperCost);set('setShotDelay',state.shotDelay);set('setShotThreshold',state.shotThreshold);
   set('setSoundMaster',state.soundMaster);set('setSoundCrowd',state.soundCrowd);set('setSoundEffects',state.soundEffects);set('setSoundGoal',state.soundGoal);
   set('setCameraZoom',state.cameraZoom);set('setStadiumExposure',state.stadiumExposure);set('setIdleMotion',state.idleMotion);set('setBallSize',state.ballSize);set('setGoalSize',state.goalSize);set('setConfettiAmount',state.confettiAmount);
   check('setSoundEnabled',state.soundEnabled);check('setCrowdEnabled',state.crowdEnabled);check('setAnnouncerEnabled',state.announcerEnabled);check('setGoalFxEnabled',state.goalFxEnabled);check('setSceneLabel',state.sceneLabel);check('setShowQueues',state.showQueues);check('setShowStatus',state.showStatus);
@@ -314,25 +314,25 @@ function render(){
   if(!adminAuthed&&actorLayoutDirty){actorLayout=normalizeActorLayout(gameRules.actor_layout);actorLayoutDirty=false;applyRuntimeSettings();}
   syncActorControls();
 
-  $('scoreC').textContent=state.C.score;$('adminQueueC').textContent=state.C.queue;
-  $('scoreD').textContent=state.D.score;$('adminQueueD').textContent=state.D.queue;
+  $('scoreC').textContent=state.C.score;
+  $('scoreD').textContent=state.D.score;
   $('scoreA').textContent=state.A.score;
   $('scoreB').textContent=state.B.score;
-  $('adminQueueA').textContent=state.A.queue;
-  $('adminQueueB').textContent=state.B.queue;
+  
+  
   $('adminOpen').classList.toggle('show',adminAuthed);$('adminRefresh').hidden=!adminAuthed;$('adminRefresh').classList.toggle('show',adminAuthed);
-  for(const t of ['C','D']){$('adminKeeper'+t).textContent=state.keeper[t];$('frontKeeper'+t).textContent=state.keeper[t];$('frontKeeperFill'+t).style.width=Math.max(0,Math.min(100,(Number(state.keeper[t])||0)/Math.max(1,Number(state.startKeeper)||100)*100))+'%';}
-  $('adminKeeperA').textContent=state.keeper.A;
-  $('adminKeeperB').textContent=state.keeper.B;
-  $('adminQueueA').textContent=state.A.queue;
-  $('adminQueueB').textContent=state.B.queue;
+  for(const t of ['C','D']){$('frontKeeper'+t).textContent=state.keeper[t];$('frontKeeperFill'+t).style.width=Math.max(0,Math.min(100,(Number(state.keeper[t])||0)/Math.max(1,initialKeeper(t))*100))+'%';}
+  
+  
+  
+  
   const front=$('adminFrontKeeper');
   if(front)front.classList.toggle('show',adminAuthed);
   if($('frontKeeperA'))$('frontKeeperA').textContent=state.keeper.A;
   if($('frontKeeperB'))$('frontKeeperB').textContent=state.keeper.B;
-  const max=Math.max(1,Number(state.startKeeper)||100);
-  if($('frontKeeperFillA'))$('frontKeeperFillA').style.width=Math.max(0,Math.min(100,(Number(state.keeper.A)||0)/max*100))+'%';
-  if($('frontKeeperFillB'))$('frontKeeperFillB').style.width=Math.max(0,Math.min(100,(Number(state.keeper.B)||0)/max*100))+'%';
+  
+  if($('frontKeeperFillA'))$('frontKeeperFillA').style.width=Math.max(0,Math.min(100,(Number(state.keeper.A)||0)/Math.max(1,initialKeeper('A'))*100))+'%';
+  if($('frontKeeperFillB'))$('frontKeeperFillB').style.width=Math.max(0,Math.min(100,(Number(state.keeper.B)||0)/Math.max(1,initialKeeper('B'))*100))+'%';
   if(!$('adminOverlay').classList.contains('show'))fillAdminSettings();
 }
 
@@ -393,7 +393,8 @@ document.addEventListener('pointerdown',initAudio,{once:true});
 function teamFromId(id){return id===ids.team.A?'A':id===ids.team.B?'B':null}
 function applyRules(r){
   gameRules=r||{};if(!actorLayoutDirty&&!actorLayoutSaving)actorLayout=normalizeActorLayout(gameRules.actor_layout);const numberOr=(value,fallback)=>value!=null&&Number.isFinite(Number(value))?Number(value):fallback;const boolOr=(value,fallback)=>value==null?fallback:!!value;
-  state.startKeeper=numberOr(gameRules.goalkeeper_initial_power??gameRules.start_keeper,100);
+  state.startKeeper=numberOr(gameRules.goalkeeper_initial_power??gameRules.start_keeper,10);
+  state.startKeepers=Object.fromEntries(['A','B','C','D'].map(t=>[t,numberOr(gameRules.goalkeeper_initial_by_team?.[t],10)]));
   state.keeperCost=numberOr(gameRules.keeper_cost,10);state.shotDelay=numberOr(gameRules.shot_delay,3000);state.shotThreshold=numberOr(gameRules.shot_threshold,10);
   state.soundMaster=numberOr(gameRules.sound_master,DEFAULT_ADMIN_SETTINGS.soundMaster);state.soundCrowd=numberOr(gameRules.sound_crowd,DEFAULT_ADMIN_SETTINGS.soundCrowd);state.soundEffects=numberOr(gameRules.sound_effects,DEFAULT_ADMIN_SETTINGS.soundEffects);state.soundGoal=numberOr(gameRules.sound_goal,DEFAULT_ADMIN_SETTINGS.soundGoal);
   state.soundEnabled=true;state.crowdEnabled=boolOr(gameRules.crowd_enabled,true);state.announcerEnabled=boolOr(gameRules.announcer_enabled,true);state.goalFxEnabled=boolOr(gameRules.goal_fx_enabled,true);
@@ -477,15 +478,18 @@ async function applyAdminSettings(){
   if(!adminAuthed)return;
   const num=(id,fallback,min,max)=>{let v=Number($(id)?.value);if(!Number.isFinite(v))v=fallback;if(min!=null)v=Math.max(min,v);if(max!=null)v=Math.min(max,v);return v};
   const chk=id=>!!$(id)?.checked;
-  state.startKeeper=num('setStartKeeper',100,1,10000);state.keeperCost=num('setKeeperCost',10,1,10000);state.shotDelay=num('setShotDelay',3000,500,30000);state.shotThreshold=num('setShotThreshold',10,1,10000);
+  const initialByTeam=Object.fromEntries(['A','B','C','D'].map(t=>[t,Math.floor(num('setInitialKeeper'+t,initialKeeper(t),0,10000))]));
+  const changedKeeper=Object.fromEntries(Object.entries(initialByTeam).filter(([t,v])=>v!==adminEditBaseline.initial[t]));
+  const changedQueues=Object.fromEntries(['A','B','C','D'].map(t=>[t,Math.floor(num('setQueue'+t,state[t].queue,0,10000))]).filter(([t,v])=>v!==adminEditBaseline.queues[t]));
+  state.startKeepers=initialByTeam;state.keeperCost=num('setKeeperCost',10,1,10000);state.shotDelay=num('setShotDelay',3000,500,30000);state.shotThreshold=num('setShotThreshold',10,1,10000);
   state.soundMaster=num('setSoundMaster',DEFAULT_ADMIN_SETTINGS.soundMaster,0,100);state.soundCrowd=num('setSoundCrowd',DEFAULT_ADMIN_SETTINGS.soundCrowd,0,100);state.soundEffects=num('setSoundEffects',DEFAULT_ADMIN_SETTINGS.soundEffects,0,100);state.soundGoal=num('setSoundGoal',DEFAULT_ADMIN_SETTINGS.soundGoal,0,100);
   state.soundEnabled=chk('setSoundEnabled');state.crowdEnabled=chk('setCrowdEnabled');state.announcerEnabled=chk('setAnnouncerEnabled');state.goalFxEnabled=chk('setGoalFxEnabled');
   state.cameraZoom=num('setCameraZoom',100,75,140);state.stadiumExposure=num('setStadiumExposure',116,70,150);state.idleMotion=num('setIdleMotion',100,0,150);state.ballSize=num('setBallSize',100,70,160);state.goalSize=num('setGoalSize',100,80,130);state.confettiAmount=num('setConfettiAmount',70,0,150);
   state.sceneLabel=chk('setSceneLabel');state.showQueues=chk('setShowQueues');state.showStatus=chk('setShowStatus');
-  gameRules={...gameRules,goalkeeper_initial_power:state.startKeeper,keeper_cost:state.keeperCost,shot_delay:state.shotDelay,shot_threshold:state.shotThreshold,last_team:state.lastTeam,
+  gameRules={...gameRules,goalkeeper_initial_by_team:initialByTeam,keeper_cost:state.keeperCost,shot_delay:state.shotDelay,shot_threshold:state.shotThreshold,last_team:state.lastTeam,
     sound_master:state.soundMaster,sound_crowd:state.soundCrowd,sound_effects:state.soundEffects,sound_goal:state.soundGoal,sound_enabled:state.soundEnabled,crowd_enabled:state.crowdEnabled,announcer_enabled:state.announcerEnabled,goal_fx_enabled:state.goalFxEnabled,
     camera_zoom:state.cameraZoom,stadium_exposure:state.stadiumExposure,idle_motion:state.idleMotion,ball_size:state.ballSize,goal_size:state.goalSize,confetti_amount:state.confettiAmount,scene_label:state.sceneLabel,show_queues:state.showQueues,show_status:state.showStatus};
-  const {error}=window.AIFootballTikTok?.active?await window.AIFootballTikTok.saveRules(gameRules,Object.fromEntries(['A','B','C','D'].map(t=>[t,num('setKeeper'+t,state.keeper[t],0,10000)]))):await db.from('games').update({rules:gameRules}).eq('id',ids.game);if(error){console.error(error);log('Ayarlar kaydedilemedi');return}
+  const {error}=window.AIFootballTikTok?.active?await window.AIFootballTikTok.saveRules(gameRules,changedKeeper,changedQueues):await db.from('games').update({rules:gameRules}).eq('id',ids.game);if(error){console.error(error);log('Ayarlar kaydedilemedi');return}
   if(!window.AIFootballTikTok?.active)await db.from('goalkeepers').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
   if(!window.AIFootballTikTok?.active)await db.from('goalkeeper_opponent_state').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
   applyRuntimeSettings();render();closeAdmin();log('Tüm admin ayarları kaydedildi')
@@ -493,7 +497,7 @@ async function applyAdminSettings(){
 async function restoreDefaultSettings(){
   if(!adminAuthed)return;
   if(!confirm('Tüm admin ayarları varsayılan değerlere dönsün mü?'))return;
-  Object.assign(state,DEFAULT_ADMIN_SETTINGS);
+  Object.assign(state,DEFAULT_ADMIN_SETTINGS);state.startKeepers={A:10,B:10,C:10,D:10};
   fillAdminSettings();
   applyRuntimeSettings();
   await applyAdminSettings();
