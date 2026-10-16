@@ -155,6 +155,13 @@ html,body{background:#050a12}
 .wrap>.adminFrontKeeper{top:calc(var(--hud-start) + 148px)}
 .wrap>.matchControls,.adminFrontKeeper:not(.show)~.matchControls{top:calc(var(--hud-start) + 148px + var(--keeper-gap))}
 @media(max-width:350px){.broadcastControls .teamScore .jersey{width:26px}.broadcastControls .teamScore .num{font-size:23px}.broadcastControls .panelHead.teamScore{gap:3px}}
+/* Queue totals are visible on the signed-in administrator account only. */
+.adminTeamQueue{display:none}
+.wrap.adminView .adminTeamQueue{display:flex;align-items:center;justify-content:space-between;gap:3px;margin:4px 1px 0;padding-top:5px;border-top:1px solid #384459;color:#b8c5d9;font-size:9px;font-weight:800}
+.adminTeamQueue strong{font-size:18px;color:#fff;line-height:22px}
+.wrap.adminView .broadcastControls .panel{height:173px}
+.wrap.adminView>.adminFrontKeeper{top:calc(var(--hud-start) + 179px)}
+.wrap.adminView>.matchControls{top:calc(var(--hud-start) + 216px)}
 </style>
 </head>
 <body>
@@ -193,7 +200,7 @@ html,body{background:#050a12}
     <button class="giftbtn def" onclick="addKeeper('A',5)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s2"><span></span><span></span></span></span></span><span class="giftEffect">+5 güç</span><span class="coin">50 jeton</span></button>
     <button class="giftbtn def" onclick="addKeeper('A',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
     <button class="giftbtn def" onclick="addKeeper('A',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
-  </div></section>
+  </div><div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueA">0</strong></div></section>
   <section class="panel"><div class="panelHead teamScore"><span class="jerseyBadge"><span class="jersey jB"></span></span><div class="num" id="scoreB">0</div></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
     <button class="giftbtn shot" onclick="addShots('B',1)"><span class="giftVisual"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M12 6l3 2-1 4h-4L9 8l3-2zm-6 5l3 1 1 4-2 2c-1-2-2-4-2-7zm12 0c0 3-1 5-2 7l-2-2 1-4 3-1zM9 18l3-2 3 2-1 1H10l-1-1z" fill="#10182b"/></svg></span><span class="giftEffect">1 şut</span><span class="coin">10 jeton</span></button>
     <button class="giftbtn shot" onclick="addShots('B',5)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M5 8h11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8z" fill="#d8ff68"/><path d="M16 10h2a3 3 0 0 1 0 6h-2" fill="none" stroke="#d8ff68" stroke-width="2"/></svg></span><span class="giftEffect">5 şut</span><span class="coin">50 jeton</span></button>
@@ -204,9 +211,9 @@ html,body{background:#050a12}
     <button class="giftbtn def" onclick="addKeeper('B',5)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s2"><span></span><span></span></span></span></span><span class="giftEffect">+5 güç</span><span class="coin">50 jeton</span></button>
     <button class="giftbtn def" onclick="addKeeper('B',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
     <button class="giftbtn def" onclick="addKeeper('B',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
-  </div></section>
-  <section class="panel"><div class="panelHead teamScore"><span class="jerseyBadge"><span class="jersey jC"></span></span><div class="num" id="scoreC">0</div></div><div class="sectionLabel">BJK</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('C',1)" aria-label="BJK şut"><span class="giftVisual">⚽</span><span class="giftEffect">Şut</span><span class="coin">Finger Heart</span></button></div></section>
-  <section class="panel"><div class="panelHead teamScore"><span class="jerseyBadge"><span class="jersey jD"></span></span><div class="num" id="scoreD">0</div></div><div class="sectionLabel">BAĞLI HEDİYE</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('D',1)"><span class="giftVisual">GG</span><span class="giftEffect">1 şut</span><span class="coin">GG</span></button></div></section>
+  </div><div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueB">0</strong></div></section>
+  <section class="panel"><div class="panelHead teamScore"><span class="jerseyBadge"><span class="jersey jC"></span></span><div class="num" id="scoreC">0</div></div><div class="sectionLabel">BJK</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('C',1)" aria-label="BJK şut"><span class="giftVisual">⚽</span><span class="giftEffect">Şut</span><span class="coin">Finger Heart</span></button></div><div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueC">0</strong></div></section>
+  <section class="panel"><div class="panelHead teamScore"><span class="jerseyBadge"><span class="jersey jD"></span></span><div class="num" id="scoreD">0</div></div><div class="sectionLabel">BAĞLI HEDİYE</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('D',1)"><span class="giftVisual">GG</span><span class="giftEffect">1 şut</span><span class="coin">GG</span></button></div><div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueD">0</strong></div></section>
   </div>
   <div class="matchControls" id="matchControls" aria-label="Bekleyen şutlar ve ses"><div class="queues"></div></div>
   <div id="event" hidden aria-hidden="true">Hazır</div><div class="note">Tüm cihazlar aynı canlı maç durumunu gösterir.</div>
@@ -302,6 +309,7 @@ function fillAdminSettings(){
 }
 function render(){
   document.querySelector('.wrap').classList.toggle('adminView',adminAuthed);
+  for(const t of ['A','B','C','D'])$('frontQueue'+t).textContent=state[t].queue;
   $('actorAdjust').hidden=!adminAuthed;
   if(!adminAuthed&&actorLayoutDirty){actorLayout=normalizeActorLayout(gameRules.actor_layout);actorLayoutDirty=false;applyRuntimeSettings();}
   syncActorControls();
