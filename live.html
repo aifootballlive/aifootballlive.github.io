@@ -656,6 +656,46 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  .wrap .broadcastControls .panelHead{height:96px!important}
  .wrap .broadcastControls .giftEffect{font-size:18px!important}
 }
+
+/* Readability +4px: independent of desktop viewport, including TikTok portrait preview. */
+.wrap{--readable-card-height:clamp(224px,min(50vw,29dvh),234px)}
+.wrap>.broadcastControls .panel,.wrap:not(.adminView)>.broadcastControls .panel,
+.wrap.adminView>.broadcastControls .panel{height:var(--readable-card-height)!important}
+.wrap .broadcastControls .panelHead.teamScore,
+.wrap .broadcastControls .panelHead{
+  height:112px!important;
+  grid-template-rows:37px minmax(70px,auto)!important;
+}
+.wrap .broadcastControls .teamTitle,
+.wrap.adminView .broadcastControls .teamTitle,
+.wrap:not(.adminView) .broadcastControls .teamTitle{
+  font-size:24px!important;line-height:1.04!important;
+  letter-spacing:-.5px!important;
+}
+.wrap .broadcastControls .teamScore .num,
+.wrap.adminView .broadcastControls .teamScore .num{font-size:40px!important}
+.wrap .broadcastControls .giftbtn{height:49px!important;min-height:49px!important}
+.wrap .broadcastControls .giftVisual,
+.wrap .broadcastControls .giftVisual img{height:24px!important;line-height:24px!important}
+.wrap .broadcastControls .giftEffect,
+.wrap.adminView .broadcastControls .giftEffect{
+  font-size:24px!important;line-height:1!important;
+}
+.wrap .broadcastControls .panel .adminTeamQueue,
+.wrap.adminView .broadcastControls .panel .adminTeamQueue{
+  font-size:20px!important;line-height:1.03!important;
+  min-height:44px!important;padding:3px 2px!important;
+}
+.wrap .broadcastControls .panel .adminTeamQueue strong{font-size:29px!important}
+.wrap>.liveArenaName,.wrap.adminView>.liveArenaName{font-size:25px!important}
+.wrap>.matchClockHud .clockLabel{font-size:24px!important;line-height:1.1!important}
+.wrap>.matchClockHud .clockDigits{font-size:43px!important;line-height:1.02!important}
+.wrap>.matchClockHud,.wrap:not(.adminView)>.matchClockHud,
+.wrap.adminView>.matchClockHud{
+  top:calc(var(--readable-card-top) + var(--readable-card-height) + 3px)!important;
+  padding:3px 4px!important;
+}
+.wrap>.leagueProfileHint{font-size:23px!important;line-height:1.08!important}
 </style>
 </head>
 <body>
