@@ -972,6 +972,46 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  .wrap .broadcastControls>.panel .adminTeamQueue.queueSpark{animation:none!important;outline:3px solid var(--team-accent)}
 }
 
+
+/* Formanın gerçek renklerini gösteren takım kartı başlıkları.
+   Dört takımın renk şeritleri marka/logolardan bağımsız, yüksek kontrastlıdır. */
+.wrap .broadcastControls .teamA{--jersey-one:#f4c735;--jersey-two:#123978}
+.wrap .broadcastControls .teamB{--jersey-one:#f5be30;--jersey-two:#bd2435}
+.wrap .broadcastControls .teamC{--jersey-one:#f3f4f7;--jersey-two:#151a23}
+.wrap .broadcastControls .teamD{--jersey-one:#72243f;--jersey-two:#61b9e8}
+.wrap .broadcastControls>.panel .panelHead.teamScore{
+ background:repeating-linear-gradient(90deg,
+  var(--jersey-one) 0 17%,var(--jersey-two) 17% 34%)!important;
+ box-shadow:inset 0 0 0 999px rgba(4,10,23,.47),0 2px 6px #0008!important;
+ border-radius:5px!important;
+}
+.wrap .broadcastControls>.panel .panelHead.teamScore .teamTitle,
+.wrap .broadcastControls>.panel .panelHead.teamScore .num{
+ text-shadow:-1px -1px 2px #000,1px 1px 4px #000,0 2px 8px #000!important;
+}
+/* Yalnızca bekleyen şut SAYISI yanıp söner; kart ve açıklama sabit kalır. */
+@keyframes aflQueueNumberBlink{
+ 0%,100%{opacity:1;transform:scale(1);filter:brightness(1)}
+ 20%{opacity:.24;transform:scale(.96)}
+ 43%{opacity:1;transform:scale(1.24);filter:brightness(1.8)}
+ 62%{opacity:.4;transform:scale(1)}
+ 83%{opacity:1;transform:scale(1.2);filter:brightness(1.65)}
+}
+.wrap .broadcastControls>.panel .adminTeamQueue.queueSpark{animation:none!important}
+.wrap .broadcastControls>.panel .adminTeamQueue.queueSpark strong{
+ color:#fff!important;text-shadow:0 0 5px #fff7!important
+}
+.wrap .broadcastControls>.panel .adminTeamQueue strong.queueSpark{
+ display:inline-block!important;transform-origin:center!important;
+ animation:aflQueueNumberBlink 1.05s ease-out 1!important;
+ color:#ffeb7a!important;text-shadow:0 0 8px var(--team-accent),0 0 5px #fff!important;
+}
+@media(prefers-reduced-motion:reduce){
+ .wrap .broadcastControls>.panel .adminTeamQueue strong.queueSpark{
+  animation:none!important;outline:2px solid var(--team-accent)
+ }
+}
+
 </style>
 </head>
 <body>
@@ -1119,7 +1159,7 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v182.js?v=182"></script>
+<script src="./tiktok-shared-v183.js?v=183"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
