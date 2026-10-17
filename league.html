@@ -133,7 +133,8 @@ th,td{padding:17px 11px}
 <script>
 (()=>{
 'use strict';
-const db=window.supabase.createClient("https://xozzbaguihyhruloiqjm.supabase.co","sb_publishable_Oftm7DRbr0Vdt9gTLFGAaw_LQq4PCnP");
+// Do not leave an empty league table if a CDN or network request fails.
+const db=window.supabase?.createClient?.("https://xozzbaguihyhruloiqjm.supabase.co","sb_publishable_Oftm7DRbr0Vdt9gTLFGAaw_LQq4PCnP")||null;
 const id=x=>document.getElementById(x);
 const names={A:'Altın Pusula',B:'Kızıl Kıvılcım',C:'Gece Yıldızı',D:'Bordo Dalga'};
 const colors={A:'#f0d436',B:'#c83436',C:'#e2e5e8',D:'#a54868'};
@@ -183,18 +184,34 @@ function renderLeague(league,archives){
  }
  if(!archivesEl.children.length){const p=document.createElement('div');p.className='note';p.textContent='Henüz tamamlanan sezon yok.';archivesEl.append(p);}
 }
-let working=false;
+let working=false,lastSnapshot=0;
+const empty=emptyLeague();
+// Render four teams synchronously so neither the public page nor iframe is blank.
+renderLeague(empty,[]);
+id('status').textContent='Lig verileri yükleniyor…';
+function applySnapshot(league,archive,origin){
+ if(!league||typeof league!=='object')return false;
+ renderLeague(league,Array.isArray(archive)?archive:[]);
+ lastSnapshot=Date.now();
+ id('status').textContent=origin==='parent'?'Canlı maçtaki güncel lig tablosu':'Güncel lig puan durumu';
+ return true;
+}
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin||event.data?.type!=='AIFootballLeagueSnapshotV1')return;
+ applySnapshot(event.data.league,event.data.archive,'parent');
+});
 async function refresh(){
  if(working||document.hidden)return;working=true;
  try{
+  if(!db)throw new Error('Lig veri bağlantısı henüz hazır değil');
   const {data,error}=await db.from('games').select('rules').eq('name','AI Football Live').limit(1).single();
   if(error)throw error;
   const shared=data?.rules?.tiktok_match_v2;
-  renderLeague(shared?.league||emptyLeague(),shared?.leagueArchive||[]);
-  id('status').textContent='Güncel lig puan durumu';
+  if(shared?.league)applySnapshot(shared.league,shared.leagueArchive,'database');
+  else if(!lastSnapshot)id('status').textContent='Henüz lig sonucu kaydedilmedi. Takımlar hazır.';
  }catch(error){
-  id('status').textContent='Lig tablosu yüklenemedi; bağlantıyı kontrol edin.';
-  console.warn(error.message);
+  if(!lastSnapshot)id('status').textContent='Canlı lig bilgileri bekleniyor. Takımlar gösteriliyor.';
+  console.warn('League refresh',error.message);
  }finally{working=false;}
 }
 for(const button of document.querySelectorAll('.leagueChoice'))button.addEventListener('click',()=>{
