@@ -564,19 +564,33 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
 .leagueDrawerHead{font-size:27px!important;min-height:76px}
 .leagueDrawer iframe{height:calc(100% - 76px)}
 @media(max-width:650px){
- .wrap{--readable-card-top:12%;--readable-card-height:clamp(184px,min(49vw,26dvh),220px)}
+ /* Use the same readable typographic scale as desktop inside the portrait feed.
+    The previous mobile overrides silently reduced titles, scores, and queue labels. */
+ .wrap{--readable-card-top:11%;--readable-card-height:clamp(208px,min(54vw,30dvh),230px)}
  .wrap>.head,.wrap.adminView>.head{flex-wrap:wrap;justify-content:space-between;gap:3px;min-height:45px}
  .wrap>.head .title,.wrap.adminView>.head .title{font-size:17px!important}
  .wrap>.headRight .sub,.wrap.adminView>.headRight .sub{font-size:11px!important;max-width:88px}
  .wrap>.headRight .adminOpen,.wrap.adminView>.headRight .adminOpen{font-size:13px!important;min-height:34px;padding:5px}
  #adminRefresh:not([hidden]){min-width:34px!important;min-height:34px!important}
  #adminRefresh svg{width:23px!important;height:23px!important}
- .wrap>.liveArenaName,.wrap.adminView>.liveArenaName{top:7.3%!important;font-size:17px!important}
- .wrap .broadcastControls .teamTitle{font-size:clamp(14px,4vw,18px)!important}
- .wrap .broadcastControls .teamScore .num{font-size:29px!important}
- .wrap .broadcastControls .giftEffect{font-size:16px!important}
- .wrap .broadcastControls .panel .adminTeamQueue{font-size:12px!important}
- .wrap>.leagueProfileHint{font-size:15px!important}
+ .wrap>.liveArenaName,.wrap.adminView>.liveArenaName{top:7.3%!important;font-size:21px!important}
+ .wrap .broadcastControls .panelHead.teamScore,.wrap .broadcastControls .panelHead{
+   grid-template-rows:38px minmax(48px,auto)!important;height:92px!important}
+ .wrap .broadcastControls .teamTitle{
+   font-size:20px!important;line-height:1.12!important;
+   overflow-wrap:anywhere;hyphens:auto}
+ .wrap .broadcastControls .teamScore .num{font-size:36px!important}
+ .wrap .broadcastControls .giftbtn{height:56px!important;min-height:56px!important}
+ .wrap .broadcastControls .giftVisual,.wrap .broadcastControls .giftVisual img{
+   height:30px!important;line-height:30px!important}
+ .wrap .broadcastControls .giftEffect{font-size:20px!important;line-height:1.1!important}
+ .wrap .broadcastControls .panel .adminTeamQueue{
+   font-size:16px!important;line-height:1.15!important;
+   min-height:45px;align-items:center;overflow-wrap:anywhere}
+ .wrap .broadcastControls .panel .adminTeamQueue strong{font-size:25px!important}
+ .wrap>.leagueProfileHint{font-size:20px!important;line-height:1.18!important}
+ .wrap .matchClockHud .clockLabel{font-size:21px!important}
+ .wrap .matchClockHud .clockDigits{font-size:43px!important}
  .adminStats{grid-template-columns:repeat(2,minmax(0,1fr))}
  .adminGrid{grid-template-columns:1fr}
  .adminActions button,.adminRoundControls button,
