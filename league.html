@@ -36,6 +36,10 @@ tbody tr:first-child{background:#223b54}tbody tr:first-child td:first-child{font
 <body>
 <main>
 <header><div><h1>AI Football Live</h1><div class="subtitle">Herkese açık lig tablosu</div></div><a class="back" href="./live.html">Maça dön</a></header>
+<label for="leagueSelect">Lig seçimi</label> <select id="leagueSelect"><option value="great">Büyükler</option><option value="small">Küçükler</option><option value="village">Köyler</option><option value="countries">Ülkeler</option><option value="continents">Kıtalar</option><option value="world">Dünya</option></select>
+<button id="copyLeague" type="button">Lig bağlantısını kopyala</button>
+<div id="emptyLeague" class="panel" hidden>Bu lig henüz kurulmadı. Henüz takım veya maç verisi yok.</div>
+<div id="leagueData">
 <div id="status" role="status">Lig verileri yükleniyor…</div>
 <section class="summary" aria-label="Lig bilgileri">
 <div class="stat"><span>SEZON</span><strong id="season">1</strong></div>
@@ -45,18 +49,19 @@ tbody tr:first-child{background:#223b54}tbody tr:first-child td:first-child{font
 <section class="panel"><h2>Lig Puan Durumu</h2><div class="tablewrap"><table aria-label="Takım sıralaması">
 <thead><tr><th>TAKIM</th><th>O</th><th>G</th><th>B</th><th>M</th><th>GOL</th><th>PUAN</th><th>KUPA</th></tr></thead>
 <tbody id="standings"></tbody></table></div>
-<p class="note">O: Oynanan, G: Galibiyet, B: Beraberlik, M: Mağlubiyet. Tek lider 3 puan; birincilikte eşitlik 1 puan. 5 galibiyette 1 yıldız, sezon şampiyonluğunda 1 kupa kazanılır. Bağlantı kesintisinden dolayı iptal edilen maçlara puan verilmez.</p></section>
+<p class="note">O: Oynanan, G: Galibiyet, B: Beraberlik, M: Mağlubiyet. Tek lider 3 puan; birincilikte eşitlik 1 puan. Puan, galibiyet ve gol eşitliğinde kupa verilmez; şampiyonluk finali gerekir. 5 galibiyette 1 yıldız, sezon şampiyonluğunda 1 kupa kazanılır. Bağlantı kesintisinden dolayı iptal edilen maçlara puan verilmez.</p></section>
 <section class="panel"><h2>Son Maçlar</h2><div id="history" class="history"><div class="note">Henüz tamamlanan maç yok.</div></div></section>
 <section class="panel"><h2>Önceki Sezon Şampiyonları</h2><div id="archive" class="history"><div class="note">Henüz tamamlanan sezon yok.</div></div></section>
 <p class="note">Bu sayfa yaklaşık her 10 saniyede bir yenilenir. Yayın görüntüsündeki lig düğmesi TikTok içinden tıklanamaz; bağlantıyı tarayıcıda açabilirsiniz.</p>
-</main>
+</div></main>
+<script src="./match-policy.js?v=172"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (()=>{
 'use strict';
 const db=window.supabase.createClient("https://xozzbaguihyhruloiqjm.supabase.co","sb_publishable_Oftm7DRbr0Vdt9gTLFGAaw_LQq4PCnP");
 const id=x=>document.getElementById(x);
-const names={A:'Fenerbahçe',B:'Galatasaray',C:'Beşiktaş',D:'Trabzonspor'};
+const names=AIFootballPolicy.names;
 const colors={A:'#f0d436',B:'#c83436',C:'#e2e5e8',D:'#a54868'};
 const keys=['A','B','C','D'];
 const metric=(o,k)=>Number(o?.[k])||0;
@@ -69,12 +74,13 @@ function renderLeague(league,archives){
  const sorted=keys.slice().sort((a,b)=>metric(teams[b],'points')-metric(teams[a],'points')||metric(teams[b],'wins')-metric(teams[a],'wins')||metric(teams[b],'goals')-metric(teams[a],'goals'));
  id('season').textContent=league.season||1;
  id('rounds').textContent=metric(league,'completedRounds')+' / '+(league.plannedRounds||20);
- id('leader').textContent=metric(league,'completedRounds')?names[sorted[0]]:'—';
+ const tied=AIFootballPolicy.finalists(league);
+ id('leader').textContent=league.finalRequired?'Final bekleniyor':metric(league,'completedRounds')?(tied.length===1?names[sorted[0]]:'Eşit liderlik'):'—';
  const body=id('standings');body.replaceChildren();
  for(const team of sorted){
   const stats=teams[team]||{},tr=document.createElement('tr');
   const td=document.createElement('td'),box=document.createElement('span');box.className='team';
-  const dot=document.createElement('span');dot.className='dot';dot.style.background=colors[team];
+  const dot=document.createElement('span');dot.className='dot';dot.style.cssText='width:24px;height:22px;clip-path:polygon(20% 0,40% 8%,60% 8%,80% 0,100% 25%,80% 45%,75% 35%,75% 100%,25% 100%,25% 35%,20% 45%,0 25%)';dot.style.background={A:'linear-gradient(90deg,#f0d436 50%,#173f9b 50%)',B:'linear-gradient(90deg,#f0d436 50%,#c83436 50%)',C:'linear-gradient(90deg,#fff 50%,#111 50%)',D:'linear-gradient(90deg,#882b46 50%,#62b8d6 50%)'}[team];
   const label=document.createElement('span');label.textContent=names[team];
   const stars=Math.floor(metric(stats,'wins')/5);
   if(stars)label.title=stars+' yıldız';
@@ -89,7 +95,7 @@ function renderLeague(league,archives){
   const row=document.createElement('div');row.className='result';
   const text=document.createElement('strong'),scores=document.createElement('span');
   text.textContent='Maç '+(game.round||'?')+' — '+(game.winner?names[game.winner]+' kazandı':'Berabere');
-  scores.textContent=keys.map(t=>t+': '+metric(game.scores,t)).join('  ');
+  scores.textContent=keys.map(t=>names[t]+': '+metric(game.scores,t)).join('  ');
   row.append(text,scores);history.append(row);
  }
  if(!history.children.length){const p=document.createElement('div');p.className='note';p.textContent='Henüz tamamlanan maç yok.';history.append(p);}
@@ -103,6 +109,10 @@ function renderLeague(league,archives){
  }
  if(!archivesEl.children.length){const p=document.createElement('div');p.className='note';p.textContent='Henüz tamamlanan sezon yok.';archivesEl.append(p);}
 }
+const catalog={great:{name:'Büyükler',status:'active'},small:{name:'Küçükler',status:'planned'},village:{name:'Köyler',status:'planned'},countries:{name:'Ülkeler',status:'planned'},continents:{name:'Kıtalar',status:'planned'},world:{name:'Dünya',status:'planned'}};
+function selectLeague(){const active=id('leagueSelect').value==='great';id('leagueData').hidden=!active;id('emptyLeague').hidden=active;}
+id('leagueSelect').onchange=selectLeague;
+id('copyLeague').onclick=async()=>{try{await navigator.clipboard.writeText(new URL('./league.html',location.href).href);id('copyLeague').textContent='Bağlantı kopyalandı';}catch{id('copyLeague').textContent='Adres çubuğundaki bağlantıyı kopyalayın';}};
 let working=false;
 async function refresh(){
  if(working||document.hidden)return;working=true;
@@ -111,7 +121,7 @@ async function refresh(){
   if(error)throw error;
   const shared=data?.rules?.tiktok_match_v2;
   renderLeague(shared?.league||emptyLeague(),shared?.leagueArchive||[]);
-  id('status').textContent='Güncel lig puan durumu';
+  id('status').textContent=shared?.league?'Güncel lig puan durumu':'Henüz kayıtlı lig verisi yok; başlangıç tablosu gösteriliyor.';
  }catch(error){
   id('status').textContent='Lig tablosu yüklenemedi; bağlantıyı kontrol edin.';
   console.warn(error.message);
