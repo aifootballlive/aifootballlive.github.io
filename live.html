@@ -1131,6 +1131,115 @@ body.settingsMode .wrap>.liveStartButton{display:none!important}
  padding:12px!important;text-align:center!important;font-size:15px!important;
 }
 
+
+/* COMPACT PHONE VIEW ONLY: legacy oversized OBS readability styles must not
+   force 238px cards or 40px numerals on a ~360px mobile viewport.
+   Desktop preview and full-HD OBS source remain unchanged. */
+@media screen and (max-width:600px){
+ body:not(.drawerMode):not(.settingsMode)>.wrap{
+  --readable-card-top:10.5%;
+  --readable-card-height:clamp(165px,46cqw,182px);
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head{
+  min-height:38px!important;padding:3px 5px!important;
+  gap:4px!important;flex-wrap:nowrap!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head .title{
+  font-size:clamp(12px,3.5cqw,15px)!important;line-height:1.2!important;
+  min-width:0!important;white-space:nowrap!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.headRight{
+  gap:3px!important;flex-wrap:nowrap!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.headRight .sub{
+  font-size:9px!important;max-width:68px!important;line-height:1.08!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.headRight .adminOpen{
+  font-size:10px!important;min-height:32px!important;padding:4px 5px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView #adminRefresh:not([hidden]){
+  min-height:32px!important;min-width:32px!important;padding:3px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView #adminRefresh svg{
+  width:21px!important;height:21px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap>.liveArenaName{
+  top:6.6%!important;font-size:clamp(13px,3.65cqw,16px)!important;
+  padding:3px 6px!important;white-space:nowrap!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls{
+  gap:2px!important;left:1.5%!important;right:1.5%!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel{
+  height:var(--readable-card-height)!important;padding:3px 2px!important;
+  border-width:1.5px!important;border-radius:6px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel .panelHead.teamScore{
+  height:72px!important;min-height:72px!important;
+  grid-template-rows:36px 32px!important;
+  grid-template-columns:minmax(0,40%) minmax(0,60%)!important;
+  padding:1px 1px 3px!important;margin:0 0 4px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel .teamLogo{
+  width:28px!important;height:33px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel .teamScore .num{
+  font-size:30px!important;line-height:.94!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel .teamScore .num::before{
+  font-size:10px!important;line-height:1.1!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel .teamTitle{
+  font-size:clamp(12px,3.4cqw,14px)!important;line-height:1.05!important;
+  letter-spacing:-.025em!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel .buttons{
+  gap:2px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel .giftbtn.shot{
+  height:47px!important;min-height:47px!important;
+  padding:2px 1px!important;gap:0!important;border-radius:5px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel .giftVisual,
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel .giftVisual svg{
+  width:27px!important;height:29px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel .giftEffect{
+  font-size:12px!important;line-height:1.1!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel .adminTeamQueue{
+  min-height:30px!important;bottom:3px!important;left:2px!important;right:2px!important;
+  padding:2px 3px!important;font-size:11px!important;
+  line-height:1.05!important;border-radius:4px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap .broadcastControls>.panel .adminTeamQueue strong{
+  font-size:22px!important;line-height:1!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap>.matchClockHud{
+  top:calc(var(--readable-card-top) + var(--readable-card-height) + 6px)!important;
+  padding:3px 5px!important;max-width:96%!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap>.matchClockHud .clockLabel{
+  font-size:clamp(13px,3.6cqw,17px)!important;line-height:1.12!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap>.matchClockHud .clockDigits{
+  font-size:clamp(29px,7.5cqw,35px)!important;line-height:1!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.leagueProfileHint{
+  bottom:12.5%!important;font-size:13px!important;
+  line-height:1.15!important;padding:4px 6px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.liveStartButton{
+  min-height:55px!important;bottom:1.5%!important;padding:5px 8px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.liveStartButton .startMatchAction{
+  font-size:23px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.liveStartButton .startMatchHint{
+  font-size:11px!important;
+ }
+}
+
 </style>
 </head>
 <body>
@@ -1403,8 +1512,11 @@ function syncMainMatchStart(){
  if(!adminAuthed)return;
  const clock=window.AIFootballTikTok?.getMatchClock?.();
  const ends=window.AIFootballTikTok?.getBreakDeadlines?.();
- const hasEnded=Number.isFinite(clock?.finishedAt);
+ // The shared timer accepts a finishedAt value serialized as a number or
+ // numeric string. Use the same summary deadline as the waiting-screen renderer.
+ const finishedAt=Number(clock?.finishedAt);
  const deadline=Number(ends?.summaryUntil);
+ const hasEnded=!!ends&&Number.isFinite(finishedAt)&&finishedAt>0;
  const now=Date.now();
  const ready=hasEnded&&Number.isFinite(deadline)&&deadline>0&&now>=deadline;
  button.disabled=!ready;
