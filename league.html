@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Football Live - Lig Tablosu</title>
+<meta name="description" content="Canlı AI Football lig puan durumu, takım galibiyetleri, goller ve kupalar.">
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:#08111e;color:#fff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#28445e 0,#0a1426 54%,#07101a 100%);padding:16px}
+main{max-width:850px;margin:0 auto}header{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:16px 0 22px}
+a{color:#cee8ff;text-decoration:none;font-weight:700}.back{border:1px solid #47647b;padding:9px 13px;border-radius:8px;font-size:13px}
+h1{margin:0;font-size:24px;letter-spacing:-.03em}h2{font-size:16px;margin:0 0 15px}
+.subtitle{font-size:13px;color:#a1b5cb;margin-top:7px}
+.panel{padding:18px;border:1px solid #294057;border-radius:14px;background:rgba(16,32,52,.91);box-shadow:0 8px 25px #0207114d;margin-bottom:18px}
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:15px}
+.stat{padding:13px 10px;border-radius:10px;border:1px solid #3c5165;background:#101f32}
+.stat strong{font-size:23px;display:block;margin-top:6px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:#a7bbcf}
+table{border-collapse:collapse;width:100%;white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
+th,td{padding:13px 6px;border-bottom:1px solid #30425c}th{font-size:10px;color:#abc0d5;letter-spacing:.03em}
+th:first-child,td:first-child{text-align:left}
+tbody tr:first-child{background:#223b54}tbody tr:first-child td:first-child{font-weight:900;color:#ffe29d}
+.team{display:flex;align-items:center;gap:7px;min-width:100px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.small{font-size:11px;color:#aebdd0;font-weight:500}
+.tablewrap{overflow-x:auto}
+.history{display:grid;gap:8px}
+.result{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;border:1px solid #374e64;border-radius:8px;padding:11px;font-size:12px}
+.result strong{font-size:12px}
+.result time{color:#a1b4c9}
+.note{color:#a5b7cb;font-size:12px;line-height:1.6}
+#status{padding:9px 0;font-size:12px;color:#bed0de}
+@media(max-width:530px){body{padding:10px}.panel{padding:12px}h1{font-size:21px}.stat{padding:10px 7px}.stat strong{font-size:20px}td,th{padding:12px 5px}.team{min-width:88px;font-size:12px}table{font-size:12px}}
+</style>
+</head>
+<body>
+<main>
+<header><div><h1>AI Football Live</h1><div class="subtitle">Herkese açık lig tablosu</div></div><a class="back" href="./live.html">Maça dön</a></header>
+<div id="status" role="status">Lig verileri yükleniyor…</div>
+<section class="summary" aria-label="Lig bilgileri">
+<div class="stat"><span>SEZON</span><strong id="season">1</strong></div>
+<div class="stat"><span>OYNANAN MAÇ</span><strong id="rounds">0 / 20</strong></div>
+<div class="stat"><span>LİG LİDERİ</span><strong id="leader">—</strong></div>
+</section>
+<section class="panel"><h2>Lig Puan Durumu</h2><div class="tablewrap"><table aria-label="Takım sıralaması">
+<thead><tr><th>TAKIM</th><th>O</th><th>G</th><th>B</th><th>M</th><th>GOL</th><th>PUAN</th><th>KUPA</th></tr></thead>
+<tbody id="standings"></tbody></table></div>
+<p class="note">O: Oynanan, G: Galibiyet, B: Beraberlik, M: Mağlubiyet. Tek lider 3 puan; birincilikte eşitlik 1 puan. 5 galibiyette 1 yıldız, sezon şampiyonluğunda 1 kupa kazanılır. Bağlantı kesintisinden dolayı iptal edilen maçlara puan verilmez.</p></section>
+<section class="panel"><h2>Son Maçlar</h2><div id="history" class="history"><div class="note">Henüz tamamlanan maç yok.</div></div></section>
+<section class="panel"><h2>Önceki Sezon Şampiyonları</h2><div id="archive" class="history"><div class="note">Henüz tamamlanan sezon yok.</div></div></section>
+<p class="note">Bu sayfa yaklaşık her 10 saniyede bir yenilenir. Yayın görüntüsündeki lig düğmesi TikTok içinden tıklanamaz; bağlantıyı tarayıcıda açabilirsiniz.</p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(()=>{
+'use strict';
+const db=window.supabase.createClient("https://xozzbaguihyhruloiqjm.supabase.co","sb_publishable_Oftm7DRbr0Vdt9gTLFGAaw_LQq4PCnP");
+const id=x=>document.getElementById(x);
+const names={A:'Fenerbahçe',B:'Galatasaray',C:'Beşiktaş',D:'Trabzonspor'};
+const colors={A:'#f0d436',B:'#c83436',C:'#e2e5e8',D:'#a54868'};
+const keys=['A','B','C','D'];
+const metric=(o,k)=>Number(o?.[k])||0;
+function emptyLeague(){return{season:1,plannedRounds:20,completedRounds:0,teams:Object.fromEntries(keys.map(x=>[x,{played:0,wins:0,draws:0,losses:0,goals:0,points:0}])),trophies:{},history:[]};}
+function appendTextCell(tr,txt){
+ const td=document.createElement('td');td.textContent=String(txt);tr.append(td);return td;
+}
+function renderLeague(league,archives){
+ const teams=league.teams||{};
+ const sorted=keys.slice().sort((a,b)=>metric(teams[b],'points')-metric(teams[a],'points')||metric(teams[b],'wins')-metric(teams[a],'wins')||metric(teams[b],'goals')-metric(teams[a],'goals'));
+ id('season').textContent=league.season||1;
+ id('rounds').textContent=metric(league,'completedRounds')+' / '+(league.plannedRounds||20);
+ id('leader').textContent=metric(league,'completedRounds')?names[sorted[0]]:'—';
+ const body=id('standings');body.replaceChildren();
+ for(const team of sorted){
+  const stats=teams[team]||{},tr=document.createElement('tr');
+  const td=document.createElement('td'),box=document.createElement('span');box.className='team';
+  const dot=document.createElement('span');dot.className='dot';dot.style.background=colors[team];
+  const label=document.createElement('span');label.textContent=names[team];
+  const stars=Math.floor(metric(stats,'wins')/5);
+  if(stars)label.title=stars+' yıldız';
+  box.append(dot,label);td.append(box);
+  if(stars){const extra=document.createElement('div');extra.className='small';extra.textContent=stars+' yıldız';td.append(extra);}
+  tr.append(td);
+  for(const k of ['played','wins','draws','losses','goals','points'])appendTextCell(tr,metric(stats,k));
+  appendTextCell(tr,metric(league.trophies,team));body.append(tr);
+ }
+ const history=id('history');history.replaceChildren();
+ for(const game of (league.history||[]).slice(-8).reverse()){
+  const row=document.createElement('div');row.className='result';
+  const text=document.createElement('strong'),scores=document.createElement('span');
+  text.textContent='Maç '+(game.round||'?')+' — '+(game.winner?names[game.winner]+' kazandı':'Berabere');
+  scores.textContent=keys.map(t=>t+': '+metric(game.scores,t)).join('  ');
+  row.append(text,scores);history.append(row);
+ }
+ if(!history.children.length){const p=document.createElement('div');p.className='note';p.textContent='Henüz tamamlanan maç yok.';history.append(p);}
+ const archivesEl=id('archive');archivesEl.replaceChildren();
+ for(const season of (archives||[]).slice(-10).reverse()){
+  const row=document.createElement('div');row.className='result';
+  const strong=document.createElement('strong'),desc=document.createElement('span');
+  strong.textContent='Sezon '+season.season+' • Şampiyon '+(names[season.champion]||'Belirsiz');
+  desc.textContent=(Number(season.teams?.[season.champion]?.points)||0)+' puan';
+  row.append(strong,desc);archivesEl.append(row);
+ }
+ if(!archivesEl.children.length){const p=document.createElement('div');p.className='note';p.textContent='Henüz tamamlanan sezon yok.';archivesEl.append(p);}
+}
+let working=false;
+async function refresh(){
+ if(working||document.hidden)return;working=true;
+ try{
+  const {data,error}=await db.from('games').select('rules').eq('name','AI Football Live').limit(1).single();
+  if(error)throw error;
+  const shared=data?.rules?.tiktok_match_v2;
+  renderLeague(shared?.league||emptyLeague(),shared?.leagueArchive||[]);
+  id('status').textContent='Güncel lig puan durumu';
+ }catch(error){
+  id('status').textContent='Lig tablosu yüklenemedi; bağlantıyı kontrol edin.';
+  console.warn(error.message);
+ }finally{working=false;}
+}
+refresh();setInterval(refresh,10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
+})();
+</script>
+</body></html>
