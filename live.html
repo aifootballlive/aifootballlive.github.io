@@ -1714,6 +1714,53 @@ body.settingsMode>.leagueDrawer:not(.show){
  display:none!important;
 }
 
+
+/* Desktop admin forms should remain legible but not grow to 26-34px:
+   large fonts made the side pane overflow and showed half of each form. */
+@media (min-width:801px){
+ body.drawerMode>.overlay.show,
+ body.drawerMode>.leagueDrawer.show{
+  min-width:0!important;max-width:none!important;
+  height:calc(100dvh - 12px)!important;overflow:hidden!important;
+ }
+ body.drawerMode .adminHead{padding:10px 11px!important;gap:7px!important;
+  font-size:17px!important;line-height:1.2!important}
+ body.drawerMode .adminHead strong{font-size:17px!important}
+ body.drawerMode .drawerHeaderActions{gap:6px!important}
+ body.drawerMode .drawerTab,body.drawerMode .closeBtn{
+  padding:8px 10px!important;font-size:13px!important;min-height:35px!important;
+ }
+ body.drawerMode .adminBody{padding:11px!important}
+ body.drawerMode .adminStats,body.drawerMode .adminGrid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;
+ }
+ body.drawerMode .adminSection,body.drawerMode .adminStat{
+  min-width:0!important;padding:10px!important;margin-top:8px!important;
+ }
+ body.drawerMode .adminSectionTitle{font-size:16px!important;line-height:1.25!important}
+ body.drawerMode .adminStat .statLabel,body.drawerMode .adminField label,
+ body.drawerMode .adminToggle,body.drawerMode .adminStat{
+  font-size:13px!important;line-height:1.3!important;
+  min-width:0!important;overflow-wrap:anywhere!important;
+ }
+ body.drawerMode .adminField input,body.drawerMode .adminField select,
+ body.drawerMode .adminStat input{
+  font-size:17px!important;line-height:1.2!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  padding:7px 8px!important;min-height:40px!important;
+ }
+ body.drawerMode .adminActions button,body.drawerMode .adminRoundControls button,
+ body.drawerMode #giftProcessingToggle{
+  font-size:14px!important;line-height:1.25!important;
+  min-height:42px!important;padding:8px!important;
+ }
+ body.drawerMode .adminPreviewHint,body.drawerMode .giftToggleHelp{
+  font-size:13px!important;line-height:1.35!important;padding:8px!important;
+ }
+ body.drawerMode .leagueDrawerHead{font-size:16px!important;min-height:50px!important;padding:9px!important}
+ body.drawerMode .leagueDrawer iframe{height:calc(100% - 50px)!important}
+}
+
 </style>
 </head>
 <body>
