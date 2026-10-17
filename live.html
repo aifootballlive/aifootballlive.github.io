@@ -566,7 +566,7 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
 @media(max-width:650px){
  /* Use the same readable typographic scale as desktop inside the portrait feed.
     The previous mobile overrides silently reduced titles, scores, and queue labels. */
- .wrap{--readable-card-top:11%;--readable-card-height:clamp(208px,min(54vw,30dvh),230px)}
+ .wrap{--readable-card-top:15%;--readable-card-height:clamp(190px,min(47vw,27dvh),205px)}
  .wrap>.head,.wrap.adminView>.head{flex-wrap:wrap;justify-content:space-between;gap:3px;min-height:45px}
  .wrap>.head .title,.wrap.adminView>.head .title{font-size:17px!important}
  .wrap>.headRight .sub,.wrap.adminView>.headRight .sub{font-size:11px!important;max-width:88px}
@@ -575,22 +575,24 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  #adminRefresh svg{width:23px!important;height:23px!important}
  .wrap>.liveArenaName,.wrap.adminView>.liveArenaName{top:7.3%!important;font-size:21px!important}
  .wrap .broadcastControls .panelHead.teamScore,.wrap .broadcastControls .panelHead{
-   grid-template-rows:38px minmax(48px,auto)!important;height:92px!important}
+   grid-template-rows:34px minmax(46px,auto)!important;height:84px!important}
  .wrap .broadcastControls .teamTitle{
    font-size:20px!important;line-height:1.12!important;
    overflow-wrap:anywhere;hyphens:auto}
  .wrap .broadcastControls .teamScore .num{font-size:36px!important}
- .wrap .broadcastControls .giftbtn{height:56px!important;min-height:56px!important}
+ .wrap .broadcastControls .giftbtn{height:51px!important;min-height:51px!important}
  .wrap .broadcastControls .giftVisual,.wrap .broadcastControls .giftVisual img{
-   height:30px!important;line-height:30px!important}
+   height:28px!important;line-height:28px!important}
  .wrap .broadcastControls .giftEffect{font-size:20px!important;line-height:1.1!important}
  .wrap .broadcastControls .panel .adminTeamQueue{
    font-size:16px!important;line-height:1.15!important;
-   min-height:45px;align-items:center;overflow-wrap:anywhere}
+   min-height:40px;align-items:center;overflow-wrap:anywhere}
  .wrap .broadcastControls .panel .adminTeamQueue strong{font-size:25px!important}
  .wrap>.leagueProfileHint{font-size:20px!important;line-height:1.18!important}
- .wrap .matchClockHud .clockLabel{font-size:21px!important}
- .wrap .matchClockHud .clockDigits{font-size:43px!important}
+ .wrap>.matchClockHud,.wrap:not(.adminView)>.matchClockHud,.wrap.adminView>.matchClockHud{
+  top:calc(var(--readable-card-top) + var(--readable-card-height) + 8px)!important;padding:3px 5px!important}
+ .wrap .matchClockHud .clockLabel{font-size:19px!important;line-height:1.1!important}
+ .wrap .matchClockHud .clockDigits{font-size:38px!important;line-height:1.05!important}
  .adminStats{grid-template-columns:repeat(2,minmax(0,1fr))}
  .adminGrid{grid-template-columns:1fr}
  .adminActions button,.adminRoundControls button,
