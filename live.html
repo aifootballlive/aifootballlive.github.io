@@ -263,6 +263,14 @@ html,body{background:#050a12}
 .adminRoundControls button{padding:12px 8px;border-radius:8px;border:1px solid #7795af;background:#233954;color:#fff;font-weight:900;font-size:12px}
 .adminRoundControls button[data-enabled="true"]{background:#1f664a;border-color:#5bb990}
 .adminRoundControls #startNextMatchButton{grid-column:1/-1;background:#70522d}
+
+/* Leave separate space for the lower clock while showing the league-break board. */
+.wrap:has(#leagueBreakPanel:not([hidden]))>.matchClockHud{bottom:2%!important;padding:4px 6px!important}
+.wrap:has(#leagueBreakPanel:not([hidden]))>.matchClockHud .clockLabel{font-size:12px;line-height:16px}
+.wrap:has(#leagueBreakPanel:not([hidden]))>.matchClockHud .clockDigits{font-size:27px;line-height:30px}
+.wrap:has(#leagueBreakPanel:not([hidden]))>.leagueBreakPanel{top:35%;padding:10px 9px}
+.wrap:has(#leagueBreakPanel:not([hidden]))>.leagueBreakPanel th,
+.wrap:has(#leagueBreakPanel:not([hidden]))>.leagueBreakPanel td{padding:6px 2px}
 </style>
 </head>
 <body>
