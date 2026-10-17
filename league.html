@@ -36,6 +36,26 @@ tbody tr:first-child{background:#223b54}tbody tr:first-child td:first-child{font
 .leagues{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 9px}
 .leagueChoice{border-radius:9px;border:1px solid #465c73;background:#192c41;color:#e7f0fc;padding:9px 11px;font-weight:800;cursor:pointer;font-size:12px}
 .leagueChoice.selected{background:#456789;border-color:#bfd3ef;color:#fff}
+
+/* Pointer cursor only on active interactive elements, not on decorative text. */
+a[href],
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+[onclick]:not(:disabled),
+label[for],
+label:has(input[type="checkbox"]:not(:disabled)),
+label:has(input[type="radio"]:not(:disabled)),
+input:is([type="checkbox"],[type="radio"],[type="range"],[type="submit"],[type="button"],[type="reset"]):not(:disabled),
+select:not(:disabled),
+summary {
+  cursor: pointer !important;
+}
+button:disabled,
+input:disabled,
+select:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed !important;
+}
 </style>
 </head>
 <body>
