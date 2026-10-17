@@ -792,6 +792,17 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  .wrap .broadcastControls .teamTitle{font-size:18px!important}
  .wrap .broadcastControls .giftEffect{font-size:18px!important}
 }
+
+/* Desktop comparison view: match TikTok LIVE Studio's ~392px phone preview.
+   Do not touch the 1080x1920 portrait OBS/browser source or narrow phones. */
+@media screen and (min-width:700px) and (min-aspect-ratio:4/5) and (max-height:1150px){
+ body:not(.drawerMode):not(.settingsMode) > .wrap{
+  width:min(392px,100vw,56.25dvh)!important;
+  max-width:392px!important;
+  aspect-ratio:9/16;
+  height:auto!important;
+ }
+}
 </style>
 </head>
 <body>
