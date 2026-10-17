@@ -12,22 +12,22 @@ html,body{margin:0;height:100%;background:#0b1020;color:#fff;font-family:system-
 <div class="wrap"><div class="box">
 <h1>AI Football Live Admin</h1>
 <p>Oyun için oluşturulan admin e-posta adresin ve şifrenle giriş yap. GitHub / Supabase panel girişi ayrıdır.</p>
-<section id="profile" hidden><p><strong>Hesabım</strong></p><p id="profileEmail" style="overflow-wrap:anywhere"></p><p>Yetki: Admin</p><a class="btn" href="./" style="display:block;box-sizing:border-box;text-align:center;text-decoration:none">Oyuna dön</a><button id="logoutBtn" class="btn" type="button" style="background:#a43c50">Çıkış yap</button></section>
+<section id="profile" hidden><p><strong>Hesabım</strong></p><p id="profileEmail" style="overflow-wrap:anywhere"></p><p>Yetki: Admin</p><a class="btn" href="./live.html" style="display:block;box-sizing:border-box;text-align:center;text-decoration:none">Oyuna dön</a><button id="logoutBtn" class="btn" type="button" style="background:#a43c50">Çıkış yap</button></section>
 <form id="loginForm">
 <div class="field"><label for="email">E-posta</label><input id="email" type="email" autocomplete="username" required></div>
 <div class="field"><label for="password">Şifre</label><input id="password" type="password" autocomplete="current-password" required></div>
 <button id="loginBtn" class="btn" type="submit">Giriş yap</button>
-</form><p style="margin-top:16px"><a href="./" style="color:#8be0c5">Oyunu izle</a></p><div id="msg" class="msg" role="status" aria-live="polite"></div>
+</form><p style="margin-top:16px"><a href="./live.html" style="color:#8be0c5">Oyunu izle</a></p><div id="msg" class="msg" role="status" aria-live="polite"></div>
 </div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Oftm7DRbr0Vdt9gTLFGAaw_LQq4PCnP';
 const ADMIN_UID='6893f884-6b91-4224-abaa-43f87df0966f';
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const form=document.getElementById('loginForm'),btn=document.getElementById('loginBtn'),msg=document.getElementById('msg');
 function show(text,ok=false){msg.textContent=text;msg.className='msg'+(ok?' ok':'')}
-async function finishIfAdmin(user){if(!user||user.id!==ADMIN_UID)return false;try{localStorage.setItem('aiFootballAdminDeviceV2','1');sessionStorage.setItem('aiFootballAdminDeviceV2','1')}catch(e){}show('Giriş başarılı. Oyun açılıyor…',true);setTimeout(()=>location.replace('./'),350);return true}
+async function finishIfAdmin(user){if(!user||user.id!==ADMIN_UID)return false;try{localStorage.setItem('aiFootballAdminDeviceV2','1');sessionStorage.setItem('aiFootballAdminDeviceV2','1')}catch(e){}show('Giriş başarılı. Oyun açılıyor…',true);setTimeout(()=>location.replace('./live.html'),350);return true}
 function showProfile(user){const isAdmin=!!(user&&user.id===ADMIN_UID);form.hidden=isAdmin;document.getElementById('profile').hidden=!isAdmin;document.getElementById('profileEmail').textContent=isAdmin?(user.email||'Admin hesabı'):'';}
 (async()=>{try{const {data}=await db.auth.getUser();showProfile(data&&data.user);}catch(e){show('Oturum kontrol edilemedi. Tekrar deneyebilirsin.')}})();
 db.auth.onAuthStateChange((_event,session)=>showProfile(session&&session.user));

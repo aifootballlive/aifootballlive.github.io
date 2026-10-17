@@ -291,13 +291,13 @@ html,body{background:#050a12}
 <button id="giftProcessingToggle" data-paused="false" type="button" onclick="toggleGiftProcessing()">ŞUT OYNATMAYI DURDUR</button>
 <p class="giftToggleHelp">Gelen hediyeler kayıt edilip kuyruğa alınır, şutlar duraklatılır. TikTok'ta hediye gönderilmesini tamamen kapatmak için TikTok LIVE ayarlarından Allow Gifts seçeneğini kapatın.</p><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v166.js?v=166"></script>
+<script src="./tiktok-shared-v169.js?v=169"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Oftm7DRbr0Vdt9gTLFGAaw_LQq4PCnP';
 const ADMIN_UID='6893f884-6b91-4224-abaa-43f87df0966f';
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const $=id=>document.getElementById(id),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const nameOf=t=>({A:'Sarı-Lacivert',B:'Sarı-Kırmızı',C:'Siyah-Beyaz',D:'Bordo-Mavili'}[t]||t);
 let adminAuthed=false,polling=false,gameRules={},audioCtx=null,realtimeStatus='';
@@ -442,7 +442,23 @@ function applyRules(r){
   applyRuntimeSettings();render()
 }
 function handleEventRow(row,animate=true){if(window.AIFootballTikTok?.active)return;if(!row||!row.id||seenEvents.has(row.id))return;seenEvents.add(row.id);const attack=teamFromId(row.attacking_team_id),defend=teamFromId(row.defending_team_id);if(row.event_type==='goal'){log('GOL! '+(attack?nameOf(attack):''));if(animate&&attack){window.AIFootball3D?.finishShot?.(attack,'goal');celebrateGoal(attack)}}else if(row.event_type==='saved'){log((defend?nameOf(defend)+' ':'')+'kalecisi kurtardı!')}else if(row.event_type==='reset'){log('Maç sıfırlandı')}}
-async function getAuth(){const {data}=await db.auth.getUser();adminAuthed=!!(data&&data.user&&data.user.id===ADMIN_UID);render();setConn()}
+let authCheck=null,authGeneration=0;
+function applyAuthRole(user){adminAuthed=!!(user&&user.id===ADMIN_UID);render();setConn();}
+async function getAuth(){
+ if(authCheck)return authCheck;
+ const generation=authGeneration;
+ authCheck=(async()=>{
+  try{
+   const local=await db.auth.getSession();
+   if(generation!==authGeneration)return;
+   if(!local.data?.session){if(!local.error)applyAuthRole(null);return;}
+   const {data,error}=await db.auth.getUser();
+   if(generation!==authGeneration)return;
+   if(error){if(error.status===401||error.status===403||error.name==='AuthSessionMissingError')applyAuthRole(null);else console.warn('Admin oturumu yeniden kontrol edilecek');return;}
+   applyAuthRole(data?.user);
+  }catch(error){console.warn('Oturum bağlantısı yeniden denenecek');}
+ })().finally(()=>authCheck=null);return authCheck;
+}
 async function loadRemote(force=false){if(window.AIFootballTikTok?.active)return;if(polling||(!force&&state.busy)||document.hidden)return;polling=true;try{const {data:g,error:ge}=await db.from('games').select('id,rules').eq('name','AI Football Live').limit(1).single();if(ge)throw ge;ids.game=g.id;applyRules(g.rules);const {data:teams,error:te}=await db.from('teams').select('id,name,score').eq('game_id',ids.game);if(te)throw te;const a=teams.find(x=>x.name==='Sarı-Lacivert'),b=teams.find(x=>x.name==='Sarı-Kırmızı');if(!a||!b)throw new Error('Takımlar bulunamadı');ids.team.A=a.id;ids.team.B=b.id;state.A.score=a.score||0;state.B.score=b.score||0;const {data:gks,error:gke}=await db.from('goalkeepers').select('id,team_id').eq('game_id',ids.game);if(gke)throw gke;for(const gk of gks){if(gk.team_id===ids.team.A)ids.goalkeeper.A=gk.id;if(gk.team_id===ids.team.B)ids.goalkeeper.B=gk.id}const {data:kss,error:kse}=await db.from('goalkeeper_opponent_state').select('id,goalkeeper_id,power').eq('game_id',ids.game);if(kse)throw kse;for(const ks of kss){if(ks.goalkeeper_id===ids.goalkeeper.A){ids.keeperState.A=ks.id;state.keeper.A=Number(ks.power)}if(ks.goalkeeper_id===ids.goalkeeper.B){ids.keeperState.B=ks.id;state.keeper.B=Number(ks.power)}}const {data:pending,error:pe}=await db.from('pending_shots').select('attacking_team_id').eq('game_id',ids.game).eq('status','pending');if(pe)throw pe;state.A.queue=pending.filter(x=>x.attacking_team_id===ids.team.A).length;state.B.queue=pending.filter(x=>x.attacking_team_id===ids.team.B).length;const {data:last}=await db.from('game_events').select('id,event_type,attacking_team_id,defending_team_id,created_at').eq('game_id',ids.game).order('created_at',{ascending:false}).limit(1);render();if(last&&last[0])handleEventRow(last[0],false);setConn()}catch(e){console.error(e);$('connectionStatus').textContent='Bağlantı hatası'}finally{polling=false;if(window.AIFootballTikTok?.active)window.AIFootballTikTok.restore()}}
 const localShotQueue=[];let localShotBusy=false;
 window.AIFootballLocalShotsPending=()=>localShotQueue.length>0;
@@ -484,7 +500,7 @@ async function runLocalShotQueue(){
     }
   }finally{localShotBusy=false}
 }
-function refreshAdminPage(){if(!adminAuthed)return;const url=new URL(location.href);url.searchParams.set('_refresh',Date.now().toString());location.replace(url.href);}
+function refreshAdminPage(){if(!adminAuthed)return;location.reload();}
 async function addShots(t,n){
   if(window.AIFootballTikTok?.active){
     // No changing button text and no async wait: optimistic queue update happens synchronously.
@@ -557,7 +573,11 @@ function onPending(payload){if(window.AIFootballTikTok?.active)return;const row=
 function setupRealtime(){if(window.AIFootballTikTok?.active||!ids.game)return;const channel=db.channel('match-'+ids.game).on('postgres_changes',{event:'UPDATE',schema:'public',table:'teams',filter:'game_id=eq.'+ids.game},p=>{if(window.AIFootballTikTok?.active)return;const t=teamFromId(p.new.id);if(t){state[t].score=Number(p.new.score)||0;render()}}).on('postgres_changes',{event:'UPDATE',schema:'public',table:'goalkeeper_opponent_state',filter:'game_id=eq.'+ids.game},p=>{if(window.AIFootballTikTok?.active)return;if(p.new.id===ids.keeperState.A)state.keeper.A=Number(p.new.power);if(p.new.id===ids.keeperState.B)state.keeper.B=Number(p.new.power);render()}).on('postgres_changes',{event:'*',schema:'public',table:'pending_shots',filter:'game_id=eq.'+ids.game},onPending).on('postgres_changes',{event:'INSERT',schema:'public',table:'game_events',filter:'game_id=eq.'+ids.game},p=>handleEventRow(p.new,true)).on('postgres_changes',{event:'UPDATE',schema:'public',table:'games',filter:'id=eq.'+ids.game},p=>applyRules(p.new.rules)).subscribe(status=>{realtimeStatus=status;setConn();if(status==='SUBSCRIBED'){loadRemote(true)}})}
 async function refreshAndResume(){if(document.hidden||(typeof localShotBusy!=='undefined'&&localShotBusy))return;await loadRemote(true);}
 async function loadTikTokPresentation(){try{const {data,error}=await db.from('games').select('rules').eq('name','AI Football Live').limit(1).single();if(error)throw error;if(data?.rules)applyRules(data.rules);if(window.AIFootballTikTok?.active)window.AIFootballTikTok.restore();}catch(e){console.warn('TikTok presentation settings unavailable',e)}}
-async function boot(){await getAuth();db.auth.onAuthStateChange((_event,session)=>{adminAuthed=!!(session&&session.user&&session.user.id===ADMIN_UID);render();setConn();});if(window.AIFootballTikTok?.active){await loadTikTokPresentation();window.AIFootballTikTok.activate();return;}await loadRemote(true);setupRealtime();setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
+async function boot(){
+ db.auth.onAuthStateChange((event,session)=>{if(event!=='INITIAL_SESSION')authGeneration++;if(event==='SIGNED_OUT')applyAuthRole(null);else if(session?.user)applyAuthRole(session.user);else if(event==='INITIAL_SESSION'&&!adminAuthed)applyAuthRole(null);});
+ const recheck=()=>{if(!document.hidden)getAuth().catch(()=>{});};
+ window.addEventListener('focus',recheck);window.addEventListener('online',recheck);document.addEventListener('visibilitychange',recheck);
+ await getAuth();if(window.AIFootballTikTok?.active){await loadTikTokPresentation();window.AIFootballTikTok.activate();return;}await loadRemote(true);setupRealtime();setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
 render();boot();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=94"></script>
