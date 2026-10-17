@@ -1,7 +1,7 @@
 /* Unified stadium video. Keeps the shared-match presentation contract. */
 (()=>{
 'use strict';
-let shot=null,settings={},previousVideo=null,preparedCue=null;
+let shot=null,settings={};
 const stage=document.createElement('div');stage.id='game3dStage';
 let video=document.createElement('video');video.id='sceneWaitingVideo';
 video.src='./assets/scene-v111/waiting.mp4';video.autoplay=true;video.loop=true;video.muted=true;video.defaultMuted=true;video.playsInline=true;video.preload='auto';
@@ -21,13 +21,13 @@ const bjkGoalVideo=bjkShotVideo.cloneNode(true);bjkGoalVideo.id='sceneBJKGoalVid
 const tsGoalVideo=tsShotVideo.cloneNode(true);tsGoalVideo.id='sceneTSGoalVideo';tsGoalVideo.src='./assets/scene-v140/ts-goal.mp4';tsGoalVideo.muted=true;tsGoalVideo.defaultMuted=true;stage.append(tsGoalVideo);
 const allShotVideos=[fbShotVideo,gsShotVideo,fbGoalVideo,tsShotVideo,bjkShotVideo,gsGoalVideo,bjkGoalVideo,tsGoalVideo];
 // Mobile browsers may ignore preload=auto and keep only metadata for hidden clips.
-// Cache every team clip, prioritize the announced shot, and prepare the next frame early.
-for(const clip of allShotVideos)clip.preload='metadata';
+// Cache the four BJK/TS clips fully before making the shot player available.
+for(const clip of [bjkShotVideo,tsShotVideo,bjkGoalVideo,tsGoalVideo])clip.preload='metadata';
 const cachedClips=new Set(),cacheFailures=new Set(),clipCacheURLs=[];
-const cacheQueue=[fbShotVideo,gsShotVideo,fbGoalVideo,gsGoalVideo,bjkShotVideo,tsShotVideo,bjkGoalVideo,tsGoalVideo];
+const cacheQueue=[bjkShotVideo,tsShotVideo,bjkGoalVideo,tsGoalVideo];
 async function cacheWorker(){while(cacheQueue.length){const clip=cacheQueue.shift();try{const response=await fetch(clip.src,{cache:'force-cache',signal:AbortSignal.timeout(45000)});if(!response.ok)throw Error('Video HTTP '+response.status);const blob=await response.blob();if(!blob.size)throw Error('Empty video');const url=URL.createObjectURL(blob.type==='video/mp4'?blob:new Blob([blob],{type:'video/mp4'}));clipCacheURLs.push(url);clip.src=url;clip.load();cachedClips.add(clip);}catch(error){cacheFailures.add(clip);console.warn('Video cache fallback:',clip.id,error.message);}}}
 cacheWorker();cacheWorker();
-const protectedClips=allShotVideos;
+const protectedClips=[bjkShotVideo,tsShotVideo,bjkGoalVideo,tsGoalVideo];
 const selectClip=(team,result)=>team==='A'&&result==='goal'?fbGoalVideo:team==='B'&&result==='goal'?gsGoalVideo:team==='C'&&result==='goal'?bjkGoalVideo:team==='D'&&result==='goal'?tsGoalVideo:shotVideos[team];
 // Trigger celebration from the displayed video frame, never from wall-clock timers.
 const goalMoments={A:3.4,B:3.8,C:4.0,D:3.35};
@@ -35,19 +35,42 @@ const celebratedShots=new Set();
 function checkGoalMoment(v,time){if(!shot||v!==shotVideo||shot.result!=='goal')return;const moment=goalMoments[shot.team];if(!Number.isFinite(moment)||time<moment)return;const key=shot.cueStartsAt??shot.syncStartedAt;if(celebratedShots.has(key))return;celebratedShots.add(key);if(celebratedShots.size>256)celebratedShots.delete(celebratedShots.values().next().value);window.celebrateGoal?.(shot.team);}
 for(const v of allShotVideos){if(v.requestVideoFrameCallback){const frame=(_,meta)=>{checkGoalMoment(v,meta.mediaTime);v.requestVideoFrameCallback(frame);};v.requestVideoFrameCallback(frame);}else v.addEventListener('timeupdate',()=>checkGoalMoment(v,v.currentTime));}
 // Use the clip's original audio and the existing admin mute/master/effects controls.
-function syncShotAudio(){const audio=window.AIFootballAudio;const cfg={...(window.__AI_FOOTBALL_SETTINGS||{}),...(audio?.settings||{})};shotVideo.volume=Math.max(0,Math.min(1,(Number(cfg.soundMaster??88)/100)*(Number(cfg.soundEffects??92)/100)));shotVideo.muted=shotVideo.dataset.autoplayMuted==='true'||!(audio?.enabled&&cfg.soundEnabled!==false);}
+function syncShotAudio(){const audio=window.AIFootballAudio;const cfg={...(window.__AI_FOOTBALL_SETTINGS||{}),...(audio?.settings||{})};shotVideo.volume=Math.max(0,Math.min(1,(Number(cfg.soundMaster??88)/100)*(Number(cfg.soundEffects??92)/100)));shotVideo.muted=!(audio?.enabled&&cfg.soundEnabled!==false);}
 setInterval(syncShotAudio,100);
-document.addEventListener('pointerdown',()=>{for(const v of allShotVideos)delete v.dataset.autoplayMuted;syncShotAudio();if(shot&&!document.hidden)shotVideo.play().catch(()=>{shotVideo.dataset.autoplayMuted='true';shotVideo.muted=true;shotVideo.play().catch(()=>{});});});
-function endShot(force=false){if(!force&&shot&&window.AIFootballTikTok?.onVideoEnded?.(shot.cueStartsAt??shot.syncStartedAt))return;shotVideo.pause();shotVideo.style.display='none';if(previousVideo){previousVideo.pause();previousVideo.style.display='none';previousVideo=null;}shot=null;resetStandby();video.currentTime=LOOP_START;play();}
-function showShot(){if(!shot)return;const elapsed=Math.max(0,(Date.now()-shot.syncStartedAt)/1000);if(elapsed>=(shotVideo.duration||10)){endShot();return;}video.pause();resetStandby();lastRepair=Date.now();if(Math.abs(shotVideo.currentTime-elapsed)>.08||shotVideo.ended)shotVideo.currentTime=elapsed;shotVideo.style.display='block';shotVideo.style.zIndex='4';const active=shotVideo;const reveal=()=>{if(shotVideo!==active)return;if(previousVideo&&previousVideo!==active){previousVideo.pause();previousVideo.style.display='none';}previousVideo=null;};if(active.requestVideoFrameCallback)active.requestVideoFrameCallback(reveal);else active.addEventListener('playing',reveal,{once:true});syncShotAudio();active.play().catch(()=>{if(active!==shotVideo)return;active.dataset.autoplayMuted='true';active.muted=true;return active.play();}).catch(()=>{});}
+// While another shot is queued, freeze on the previous clip's final frame.
+function endShot(force=false){
+ const previous=shot;
+ const sharedPending=!force&&previous&&window.AIFootballTikTok?.onVideoEnded?.(previous.cueStartsAt??previous.syncStartedAt)===true;
+ const localPending=!force&&window.AIFootballLocalShotsPending?.()===true;
+ shotVideo.pause();shot=null;
+ if(sharedPending||localPending){video.pause();return;}
+ shotVideo.style.display='none';resetStandby();video.currentTime=LOOP_START;play();
+}
+// Reveal the next video only once it has decoded a frame; never flash the idle clip.
+function showShot(){
+ if(!shot)return;
+ const target=shotVideo,elapsed=Math.max(0,(Date.now()-shot.syncStartedAt)/1000);
+ if(elapsed>=(target.duration||10)){endShot();return;}
+ video.pause();resetStandby();lastRepair=Date.now();target.currentTime=elapsed;
+ const reveal=()=>{
+  if(target!==shotVideo||!shot||target.seeking||target.readyState<2)return;
+  for(const clip of allShotVideos)if(clip!==target)clip.style.display='none';
+  target.style.display='block';
+ };
+ target.addEventListener('seeked',reveal,{once:true});
+ target.addEventListener('canplay',reveal,{once:true});
+ reveal();
+ syncShotAudio();
+ target.play().catch(()=>{target.muted=true;target.play().catch(()=>{});});
+}
 // Recover a suspended mobile decoder and keep the displayed frame on the shared clock.
 let repairing=false,lastRepair=0;
 function maintainShot(){
  if(!shot||document.hidden||repairing||shotVideo.ended)return;
  const v=shotVideo,expected=Math.max(0,(Date.now()-shot.syncStartedAt)/1000),duration=v.duration;
  if(!Number.isFinite(duration)||expected>=duration)return;
- const drift=expected-v.currentTime;if(v.readyState>=2&&!v.seeking){v.playbackRate=Math.abs(drift)>.15?(drift>0?1.03:.97):1;if(Math.abs(drift)>2.5&&(v.paused||Date.now()-lastRepair>4000)){lastRepair=Date.now();v.currentTime=Math.min(expected,Math.max(0,duration-.05));}}
- if(v.paused){repairing=true;v.play().catch(()=>{v.dataset.autoplayMuted='true';v.muted=true;return v.play();}).catch(()=>{}).finally(()=>repairing=false);}
+ if(v.readyState>=2&&!v.seeking&&Math.abs(v.currentTime-expected)>.6&&Date.now()-lastRepair>1000){lastRepair=Date.now();v.currentTime=Math.min(expected,Math.max(0,duration-.05));}
+ if(v.paused){repairing=true;v.play().catch(()=>{v.muted=true;return v.play();}).catch(()=>{}).finally(()=>repairing=false);}
 }
 setInterval(maintainShot,250);
 for(const v of allShotVideos)for(const event of ['canplay','loadeddata'])v.addEventListener(event,()=>{if(v===shotVideo)maintainShot();});
@@ -60,19 +83,16 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){video.paus
 window.addEventListener('pageshow',()=>{if(shot)showShot();else{sync();play();}});
 
 // No legacy character, ball or goalkeeper animation while shot clips are pending.
-function prepareShot(team,result,cueStartsAt){const clip=selectClip(team,result);if(!clip)return false;const at=cacheQueue.indexOf(clip);if(at>0){cacheQueue.splice(at,1);cacheQueue.unshift(clip);}if(!cachedClips.has(clip)&&!cacheFailures.has(clip))return false;if(clip===shotVideo&&shot)return clip.readyState>=2;if(preparedCue!==cueStartsAt){preparedCue=cueStartsAt;clip.preload='auto';if(clip.currentTime!==0)clip.currentTime=0;}return clip.readyState>=2&&!clip.seeking;}
 window.AIFootball3D={
-prepareShot,
-
 getShotTiming(team,result){const clip=selectClip(team,result);return {outcomeMs:result==='goal'&&goalMoments[team]?Math.round(goalMoments[team]*1000):team==='A'?5000:5500,durationMs:Math.round((clip?.duration||(team==='B'?14:result==='goal'?8:10))*1000)};},
-beginShot(team,options={}){if(!shotVideos[team])return;shotVideo.pause();shotVideo.playbackRate=1;if(previousVideo&&previousVideo!==shotVideo){previousVideo.pause();previousVideo.style.display='none';previousVideo=null;}if(shot){previousVideo=shotVideo;previousVideo.style.zIndex='3';}shotVideo=selectClip(team,options.result);preparedCue=null;shot={team,result:options.result,cueStartsAt:options.cueStartsAt??options.startsAt??Date.now(),syncStartedAt:options.startsAt||Date.now(),endsAt:(options.startsAt||Date.now())+Math.round((shotVideo.duration||10)*1000)};showShot();},
-finishShot(team,result){if(shot?.team===team){shot.result=result;const clip=selectClip(team,result);if(clip!==shotVideo){shotVideo.pause();shotVideo.style.display='none';shotVideo=clip;shot.endsAt=shot.syncStartedAt+Math.round((clip.duration||8)*1000);showShot();}}},
+beginShot(team,options={}){if(!shotVideos[team])return;shotVideo.pause();shotVideo=selectClip(team,options.result);shot={team,result:options.result,cueStartsAt:options.cueStartsAt??options.startsAt??Date.now(),syncStartedAt:options.startsAt||Date.now(),endsAt:(options.startsAt||Date.now())+Math.round((shotVideo.duration||10)*1000)};showShot();},
+finishShot(team,result){if(shot?.team===team){shot.result=result;const clip=selectClip(team,result);if(clip!==shotVideo){shotVideo.pause();shotVideo=clip;shot.endsAt=shot.syncStartedAt+Math.round((clip.duration||8)*1000);showShot();}}},
 playTestShot(){if(this.isAnimating||shotVideo.readyState<2)return false;this.beginShot('A',{startsAt:Date.now()});return true;},
 async waitForShot(){while(this.isAnimating)await new Promise(r=>setTimeout(r,60));},
 finishSyncedShot(startsAt){if((shot?.cueStartsAt??shot?.syncStartedAt)===startsAt)endShot(true);},
 get isAnimating(){return !!shot;},
 get shotStatus(){return this.isAnimating?{...shot,phase:'waiting',returnComplete:false}:null;},
-get videoStatus(){return {ready:video.readyState>=2,motionReady:video.readyState>=2,mode:'unified-video',shotClipsReady:protectedClips.every(v=>cachedClips.has(v)),cachedShotClips:cachedClips.size,cacheFailures:cacheFailures.size};},
+get videoStatus(){return {ready:video.readyState>=2,motionReady:video.readyState>=2&&allShotVideos.every(v=>v.readyState>=1)&&protectedClips.every(v=>cachedClips.has(v)||cacheFailures.has(v)),mode:'unified-video',shotClipsReady:protectedClips.every(v=>cachedClips.has(v)),cachedShotClips:cachedClips.size,cacheFailures:cacheFailures.size};},
 get ready(){return video.readyState>=2;},applySettings(value){settings={...settings,...value};},get settings(){return {...settings};},reset(){endShot(true);},configureTeams(){},reloadModels(){},get modelStatus(){return [];}
 };
 window.addEventListener('ai-football-settings',e=>window.AIFootball3D.applySettings(e.detail||{}));play();

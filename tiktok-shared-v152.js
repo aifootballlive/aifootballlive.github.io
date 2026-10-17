@@ -21,11 +21,10 @@
   cueTimings.set(cue.id,signature);if(cueTimings.size>1000)cueTimings.delete(cueTimings.keys().next().value);
   // A promoted cue must not wait for a previous video's ended event on a new/reconnected client.
   if(match?.cue?.id===cue.id&&Date.now()>=cue.endsAt&&!window.AIFootball3D?.isAnimating){played.add(cue.id);endedCues.add(cue.startsAt);return;}
-  window.AIFootball3D?.prepareShot?.(cue.team,cue.result,cue.startsAt);
   if(played.has(cue.id)||timers.has(cue.id))return;
   const start=async(actualStart)=>{
    timers.delete(cue.id);const liveCue=[match?.cue,match?.nextCue].find(c=>c?.id===cue.id&&!c.finishedAt);if(!liveCue)return;if(liveCue.startsAt!==cue.startsAt||liveCue.result!==cue.result){consider(liveCue);return;}
-   if(!window.AIFootball3D?.videoStatus?.motionReady||window.AIFootball3D?.prepareShot?.(cue.team,cue.result,cue.startsAt)===false){if(Date.now()<cue.endsAt)timers.set(cue.id,setTimeout(start,100));return;}
+   if(!window.AIFootball3D?.videoStatus?.motionReady){if(Date.now()<cue.endsAt)timers.set(cue.id,setTimeout(start,100));return;}
    played.add(cue.id);if(Date.now()>=cue.endsAt){endedCues.add(cue.startsAt);return;} // Join an active shot at its current frame, even after reconnecting.
    window.AIFootball3D.beginShot(cue.team,{startsAt:cue.startsAt,variation:cue.variation,result:cue.result,cueStartsAt:cue.startsAt});
    window.AIFootball3D.finishShot(cue.team,cue.result);
@@ -70,7 +69,7 @@
   row=r;ids.game=r.id;
   const presentation={...r.rules};delete presentation[KEY];const text=JSON.stringify(presentation);
   if(text!==lastRules){lastRules=text;applyRules(presentation);}
-  if(m?.version===2){match=m;restore();acknowledgeRequests();consider(m.cue);consider(m.nextCue);if(m.cue?.finishedAt&&!m.nextCue&&!m.jobs.length)window.AIFootball3D?.finishSyncedShot?.(m.cue.startsAt);}else paint();
+  if(m?.version===2){match=m;restore();acknowledgeRequests();consider(m.cue);consider(m.nextCue);if(m.cue?.finishedAt)window.AIFootball3D?.finishSyncedShot?.(m.cue.startsAt);}else paint();
  }
  async function read(){if(reading)return reading;reading=(async()=>{const {data,error}=await db.from('games').select('id,rules').eq('name','AI Football Live').limit(1).abortSignal(requestSignal()).single();if(error)throw error;apply(data);lastRead=Date.now();return data;})().finally(()=>reading=null);return reading;}
  function change(edit,leaseRequired=true,patch=null){const run=async()=>{
@@ -128,7 +127,6 @@
    return;
   }
   if(!match.jobs.length||!window.AIFootball3D?.videoStatus?.motionReady)return;
-  const pending=takeJob(clone(match),match.cue?.team),result=match.keeper[pending.team]<=0?'goal':'save';if(window.AIFootball3D?.prepareShot?.(pending.team,result,0)===false)return;
   await change(m=>{if(m.cue&&!m.cue.finishedAt||!m.jobs.length)return false;m.cue=makeCue(m,takeJob(m,m.cue?.team),Date.now());m.nextCue=null;m.cooldownUntil=0;});
  }
  async function tick(){
@@ -141,7 +139,7 @@
  }
  function connect(){if(!admin())return;if(socket&&[WebSocket.CONNECTING,WebSocket.OPEN].includes(socket.readyState))return;clearTimeout(retry);retry=null;try{const w=socket=new WebSocket(API);w.onopen=()=>{connected=true;paint();};w.onmessage=e=>{try{receive(JSON.parse(e.data)).catch(console.warn);}catch{}};w.onerror=()=>{};w.onclose=()=>{connected=false;paint();retry=setTimeout(connect,5000);};}catch{retry=setTimeout(connect,5000);}}
  function install(){if(installed)return;if(!ready()){setTimeout(install,50);return;}installed=true;legend();read().then(ensureChannel).catch(e=>console.warn(e.message));tick();}
- window.AIFootballTikTok={get active(){return true;},get connected(){return connected;},getStatus(){return {active:true,connected,shared:!!match,leader:owns(),revision:match?.revision,accepted:match?.accepted||0,lastGift:match?.lastGift||null,pending:match?.jobs.length||0,waitingRequests:pendingRequests.size,channelReady,adminAvailable:!!match?.lease&&match.lease.until>Date.now(),lastError:errorText};},getClock(){return match?{epoch:match.idleEpoch}:null;},activate:install,restore,onVideoEnded(startsAt){endedCues.add(startsAt);const next=match?.nextCue;if(next&&!next.finishedAt){consider(next);return true;}if(match?.cue?.startsAt!==startsAt&&match?.cue&&!match.cue.finishedAt){consider(match.cue);return true;}return !!match?.jobs?.length;},onShotStarted(){},onShotResolved(){},reconnect:connect,
+ window.AIFootballTikTok={get active(){return true;},get connected(){return connected;},getStatus(){return {active:true,connected,shared:!!match,leader:owns(),revision:match?.revision,accepted:match?.accepted||0,lastGift:match?.lastGift||null,pending:match?.jobs.length||0,waitingRequests:pendingRequests.size,channelReady,adminAvailable:!!match?.lease&&match.lease.until>Date.now(),lastError:errorText};},getClock(){return match?{epoch:match.idleEpoch}:null;},activate:install,restore,onVideoEnded(startsAt){endedCues.add(startsAt);const next=stagedStarts.get(startsAt);if(next){stagedStarts.delete(startsAt);next();return true;}return !!(match?.nextCue||match?.jobs?.length);},onShotStarted(){},onShotResolved(){},reconnect:connect,
   async saveRules(patch,keeperValues,queueValues,scoreValues){const clean={...patch};delete clean[KEY];try{if(!await change(m=>{if(scoreValues)for(const [t,v]of Object.entries(scoreValues)){if(!['A','B','C','D'].includes(t)||!Number.isSafeInteger(v)||v<0||v>1000000)continue;const delta=v-(Number(m.scores[t])||0);m.scores[t]=v;for(const cue of [m.cue,m.nextCue])if(cue&&!cue.committed&&cue.after?.scores)cue.after.scores[t]=Math.max(0,(Number(cue.after.scores[t])||0)+delta);}if(clean.goalkeeper_initial_by_team)m.initialKeeper=clone(clean.goalkeeper_initial_by_team);if(keeperValues)for(const t of ['A','B','C','D']){const v=Number(keeperValues[t]);if(Number.isFinite(v)&&v>=0){m.keeper[t]=v;if(m.cue&&!m.cue.committed)m.cue.after.keeper[t]=v;}}
       if(queueValues&&Object.keys(queueValues).length&&m.nextCue){m.jobs.unshift({id:m.nextCue.id,team:m.nextCue.team});m.nextCue=null;}
       if(queueValues)for(const [t,n]of Object.entries(queueValues)){if(!['A','B','C','D'].includes(t)||!Number.isSafeInteger(n)||n<0||n>10000)continue;let remaining=n;m.jobs=m.jobs.filter(j=>j.team!==t||remaining-->0);while(remaining-->0)m.jobs.push({id:'admin:'+crypto.randomUUID(),team:t});}
