@@ -78,7 +78,10 @@
    const tr=document.createElement('tr'),first=document.createElement('td');
    const icon=document.createElement('img');icon.src='./assets/team-logos/'+badgePaths[team];icon.alt='';icon.className='breakLogo';
    first.append(icon,document.createTextNode(teamShort[team]));tr.append(first);
-   for(const n of [league.teams?.[team]?.wins,league.teams?.[team]?.goals,league.teams?.[team]?.points,league.trophies?.[team]]){const td=document.createElement('td');td.textContent=String(Number(n)||0);tr.append(td);}
+   const row=league.teams?.[team]||{};
+   for(const n of [row.played,row.wins,row.draws,row.losses,row.goals,row.points,league.trophies?.[team]]){
+    const td=document.createElement('td');td.textContent=String(Number(n)||0);tr.append(td);
+   }
    area.append(tr);
   }
   const label=document.getElementById('leagueBreakSeason');if(label)label.textContent=timingFor(m).arenaName.toLocaleUpperCase('tr-TR')+' • SEZON '+(Number(league.season)||1)+(m?.clock?.leagueFinal?' • ŞAMPİYONLUK FİNALİ':'');
