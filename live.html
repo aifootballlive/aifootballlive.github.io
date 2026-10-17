@@ -322,13 +322,67 @@ body.settingsMode .adminActions button,body.settingsMode .adminRoundControls but
  body.settingsMode>.wrap{width:min(100%,280px)!important;margin:0 auto 12px!important}
  body.settingsMode>.overlay.show{width:100%;min-width:0}
  body.settingsMode>.overlay.show .admin{max-height:none}}
+
+/* One-page admin/league drawer. Keep the ongoing 9:16 video mounted in one window. */
+body.drawerMode{display:flex!important;justify-content:center;align-items:flex-start;gap:12px;
+ padding:10px;background:#0b1424;overflow-x:auto}
+body.drawerMode>.wrap{flex:none;position:relative!important;margin:0!important;
+ width:min(36vw,calc(96dvh * .5625))!important;height:auto!important;aspect-ratio:9/16}
+body.drawerMode>.overlay.show,body.drawerMode>.leagueDrawer.show,
+body.settingsMode>.leagueDrawer.show{
+ display:block!important;position:relative!important;inset:auto!important;z-index:10;
+ flex:1;min-width:360px;max-width:920px;height:calc(100dvh - 20px);padding:0!important;background:#10182b;
+ border:1px solid #3c5070;border-radius:12px;overflow:hidden}
+body.drawerMode>.overlay.show .admin{margin:0;width:100%;max-height:100%;height:100%;border:0}
+body.drawerMode>.overlay.show .adminBody{padding:14px}
+body.drawerMode>.overlay.show .adminHead{position:sticky;top:0;z-index:12}
+.leagueDrawer{display:none}
+.leagueDrawer.show{display:block}
+.leagueDrawerHead{display:flex;justify-content:space-between;align-items:center;gap:12px;
+ padding:12px 14px;background:#192641;border-bottom:1px solid #486084;font-size:18px;font-weight:900}
+.leagueDrawer iframe{height:calc(100% - 57px);width:100%;border:0;background:#0a1525}
+.drawerHeaderActions{display:flex;align-items:center;gap:8px}
+.drawerTab{border:1px solid #637e9e;background:#294361;color:#fff;font-weight:900;
+ font-size:14px;border-radius:8px;padding:9px 12px;cursor:pointer}
+body.drawerMode .adminHead,body.settingsMode .adminHead{font-size:18px!important;padding:13px 15px}
+body.drawerMode .closeBtn,body.settingsMode .closeBtn{font-size:14px!important;padding:9px 14px}
+body.drawerMode .adminSectionTitle,body.settingsMode .adminSectionTitle{font-size:18px!important;line-height:25px}
+body.drawerMode .adminField label,body.settingsMode .adminField label,
+body.drawerMode .adminToggle,body.settingsMode .adminToggle,
+body.drawerMode .adminStat,body.settingsMode .adminStat,
+body.drawerMode .adminStat .statLabel,body.settingsMode .adminStat .statLabel{font-size:15px!important;line-height:22px!important}
+body.drawerMode .adminField input,body.drawerMode .adminField select,
+body.drawerMode .adminStat input,body.settingsMode .adminField input,
+body.settingsMode .adminField select,body.settingsMode .adminStat input{
+ font-size:18px!important;min-height:43px;line-height:23px;font-weight:800}
+body.drawerMode .adminStat,body.settingsMode .adminStat{padding:9px}
+body.drawerMode .adminSection,body.settingsMode .adminSection{padding:12px;margin-top:10px}
+body.drawerMode .adminBody,body.settingsMode .adminBody{padding:12px}
+.adminActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+.adminActions #adminSaveStatus,.adminActions .applyBtn{grid-column:1/-1}
+.adminActions button{font-size:14px!important;line-height:18px;min-height:46px;padding:9px 5px}
+.adminActions .endBtn{background:#a04e23;border:1px solid #eaaa5c;color:#fff;border-radius:8px;font-weight:900}
+.adminRoundControls{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.adminRoundControls button,#giftProcessingToggle{font-size:14px!important;line-height:18px;min-height:46px;padding:9px 5px}
+#adminRefresh{display:inline-flex!important;align-items:center;justify-content:center;
+ padding:5px!important;min-width:28px;min-height:28px}
+#adminRefresh svg{display:block}
+body.settingsMode>.leagueDrawer.show{width:min(55vw,900px);margin:0}
+@media(max-width:800px){
+ body.drawerMode{display:block!important;padding:8px}
+ body.drawerMode>.wrap{width:min(100%,290px)!important;margin:0 auto 12px!important}
+ body.drawerMode>.overlay.show,body.drawerMode>.leagueDrawer.show,
+ body.settingsMode>.leagueDrawer.show{min-width:0;width:100%;max-width:none;height:72dvh;margin:0}
+ body.drawerMode>.overlay.show .admin{max-height:72dvh}
+ .drawerTab{font-size:13px;padding:8px}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div id="matchClockHud" class="matchClockHud" data-phase="normal" role="timer" aria-label="Maçın bitmesine kalan süre"><span class="clockLabel">Maçın Bitmesine Kalan Süre</span><strong class="clockDigits">25:00</strong></div>
-  <a id="accountAccess" class="accountPageLink" href="./admin-settings.html" target="_blank" rel="noopener" aria-label="Yönetici ayarlarını aç">YÖNETİCİ</a>
-  <a class="leaguePageLink" href="./league.html" target="_blank" rel="noopener" aria-label="Lig tablosunu görüntüle">LİG</a>
+  
+  
   <div class="liveArenaName" id="liveArenaName">Doruk Arenası</div>
   <div class="leagueProfileHint" id="leagueProfileHint">Lig tablosu için profilimizdeki bağlantıyı açın</div>
   <button class="liveStartButton" id="liveStartButton" type="button" onclick="startNextMatch()">MAÇI BAŞLAT</button>
@@ -358,7 +412,7 @@ body.settingsMode .adminActions button,body.settingsMode .adminRoundControls but
     <div id="actorAdjustStatus" class="actorAdjustStatus" role="status"></div>
   </section>
 
-  <div class="head"><div class="title">AI Football Live</div><div class="headRight"><a id="adminSessionAccess" class="adminSessionLink" href="./admin-edm2026.html" target="_top"><span class="sessionLight online" aria-hidden="true"></span>Admin sayfası</a><div class="sub" id="connectionStatus">Bağlanıyor...</div><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile">YENİLE</button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN AYARLARI</button></div></div>
+  <div class="head"><div class="title">AI Football Live</div><div class="headRight"><div class="sub" id="connectionStatus">Bağlanıyor...</div><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile" title="Sayfayı yenile"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.8 9a7 7 0 0 1 12.8-2L20 12M4 12l1.4 5a7 7 0 0 0 12.8-2"/></svg></button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN AYARLARI</button></div></div>
 
   <div class="adminFrontKeeper" id="adminFrontKeeper">
     <div class="keeperGroupTitle">Kalan kaleci güçleri</div>
@@ -396,7 +450,7 @@ body.settingsMode .adminActions button,body.settingsMode .adminRoundControls but
   <div class="matchControls" id="matchControls" aria-label="Bekleyen şutlar ve ses"><div class="queues"></div></div>
   <div id="event" hidden aria-hidden="true">Hazır</div><div class="note">Tüm cihazlar aynı canlı maç durumunu gösterir.</div>
 </div>
-<div class="overlay" id="adminOverlay"><section class="admin"><div class="adminHead"><span>ADMIN AYARLARI</span><button class="closeBtn" onclick="closeAdmin()">KAPAT</button></div><div class="adminBody"><div class="adminStats">
+<div class="overlay" id="adminOverlay"><section class="admin"><div class="adminHead"><strong>ADMIN AYARLARI</strong><div class="drawerHeaderActions"><button type="button" class="drawerTab" onclick="openLeagueDrawer()">LİG TABLOSU</button><button type="button" class="closeBtn" onclick="closeAdmin()">KAPAT</button></div></div><div class="adminBody"><div class="adminStats">
   <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jA"></span></span><span>BAŞLANGIÇ KALECİ GÜCÜ</span></div><input id="setInitialKeeperA" type="number" min="0" max="10000" step="1" aria-label="A başlangıç kaleci gücü"></div>
   <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jB"></span></span><span>BAŞLANGIÇ KALECİ GÜCÜ</span></div><input id="setInitialKeeperB" type="number" min="0" max="10000" step="1" aria-label="B başlangıç kaleci gücü"></div>
 <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jC"></span></span><span>BAŞLANGIÇ KALECİ GÜCÜ</span></div><input id="setInitialKeeperC" type="number" min="0" max="10000" step="1" aria-label="C başlangıç kaleci gücü"></div>
@@ -432,19 +486,19 @@ body.settingsMode .adminActions button,body.settingsMode .adminRoundControls but
   <label class="adminToggle"><span>Gol konfeti / efekt</span><input id="setGoalFxEnabled" type="checkbox" checked></label>
 </div></div>
 <div class="adminSection"><div class="adminSectionTitle">GÖRÜNTÜ ÖNİZLEMESİ</div>
- <p class="giftToggleHelp">Kamera yakınlığı ve stadyum parlaklığı kaydırılırken video önizlemesinde hemen uygulanır. Mevcut sahne hazır MP4 video olduğu için kale, top ve futbolcular ayrı nesneler değildir; kale/top boyutunu tek başına değiştirmek bu sürümde mümkün değildir.</p></div>
- <div class="adminSection"><div class="adminSectionTitle">3D SAHNE AYARLARI</div><div class="adminGrid">
-  <div class="adminField"><label>Kamera uzaklığı <span class="adminValue" id="valCameraZoom">100%</span></label><input id="setCameraZoom" type="range" min="75" max="140" value="100" oninput="syncAdminValue('CameraZoom',this.value,'%')"></div>
+ <p class="giftToggleHelp">Video yakınlığı ve parlaklık önizlemede hemen uygulanır. Hazır MP4 videoda kale ve top ayrı nesne olmadığı için işlevsiz boyut ayarları kaldırıldı.</p></div>
+ <div class="adminSection"><div class="adminSectionTitle">VİDEO GÖRÜNTÜ AYARLARI</div><div class="adminGrid">
+  <div class="adminField"><label>Görüntü yakınlığı <span class="adminValue" id="valCameraZoom">100%</span></label><input id="setCameraZoom" type="range" min="75" max="140" value="100" oninput="syncAdminValue('CameraZoom',this.value,'%')"></div>
   <div class="adminField"><label>Stadyum parlaklığı <span class="adminValue" id="valStadiumExposure">116%</span></label><input id="setStadiumExposure" type="range" min="70" max="150" value="116" oninput="syncAdminValue('StadiumExposure',this.value,'%')"></div>
-  <div class="adminField"><label>Bekleme hareketi <span class="adminValue" id="valIdleMotion">100%</span></label><input id="setIdleMotion" type="range" min="0" max="150" value="100" oninput="syncAdminValue('IdleMotion',this.value,'%')"></div>
-  <div class="adminField"><label>Top büyüklüğü <span class="adminValue" id="valBallSize">100%</span></label><input id="setBallSize" type="range" min="70" max="160" value="100" oninput="syncAdminValue('BallSize',this.value,'%')"></div>
-  <div class="adminField"><label>Kale büyüklüğü <span class="adminValue" id="valGoalSize">100%</span></label><input id="setGoalSize" type="range" min="80" max="130" value="100" oninput="syncAdminValue('GoalSize',this.value,'%')"></div>
-  <div class="adminField"><label>Konfeti miktarı <span class="adminValue" id="valConfettiAmount">70</span></label><input id="setConfettiAmount" type="range" min="0" max="150" value="70" oninput="syncAdminValue('ConfettiAmount',this.value,'')"></div>
-  <label class="adminToggle"><span>3D sahne etiketi</span><input id="setSceneLabel" type="checkbox" checked></label>
-  <label class="adminToggle"><span>Bekleyen şut kutuları</span><input id="setShowQueues" type="checkbox" checked></label>
-  <label class="adminToggle"><span>Olay / durum satırı</span><input id="setShowStatus" type="checkbox" checked></label>
+  
+  
+  
+  
+  
+  
+  
 </div></div>
-<div class="adminActions"><div id="adminSaveStatus" role="status" style="color:#81e2bb;font-size:14px;font-weight:800"></div><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div>
+<div class="adminActions"><div id="adminSaveStatus" role="status" style="color:#81e2bb;font-size:14px;font-weight:800"></div><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn endBtn" onclick="finishActiveMatch()">AKTİF MAÇI SONLANDIR</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">VARSAYILAN AYARLAR</button></div>
 <div class="adminRoundControls">
   <button id="autoMatchesToggle" type="button" onclick="toggleRoundControl('autoMatches')">OTOMATİK MAÇLAR: AÇIK</button>
   <button id="manualMatchStartToggle" type="button" onclick="toggleRoundControl('manualMatchStart')">MAÇI ADMİN BAŞLATSIN: KAPALI</button>
@@ -452,8 +506,12 @@ body.settingsMode .adminActions button,body.settingsMode .adminRoundControls but
 </div>
 <button id="giftProcessingToggle" data-paused="false" type="button" onclick="toggleGiftProcessing()">ŞUT OYNATMAYI DURDUR</button>
 <p class="giftToggleHelp">Gelen hediyeler kayıt edilip kuyruğa alınır, şutlar duraklatılır. TikTok'ta hediye gönderilmesini tamamen kapatmak için TikTok LIVE ayarlarından Allow Gifts seçeneğini kapatın.</p><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
+<aside id="leagueDrawer" class="leagueDrawer" aria-label="Lig puan durumu" aria-hidden="true">
+ <div class="leagueDrawerHead"><strong>LİG TABLOSU</strong><div class="drawerHeaderActions"><button type="button" class="drawerTab" onclick="openAdmin()">AYARLAR</button><button type="button" class="closeBtn" onclick="closeAdmin()">KAPAT</button></div></div>
+ <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
+</aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v177.js?v=177"></script>
+<script src="./tiktok-shared-v178.js?v=178"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -515,10 +573,10 @@ function fillAdminSettings(){
   set('setArenaName',times.arenaName);set('setBroadcastLanguage',times.language);
   set('setKeeperCost',state.keeperCost);set('setShotDelay',state.shotDelay);
   set('setSoundMaster',state.soundMaster);set('setSoundCrowd',state.soundCrowd);set('setSoundEffects',state.soundEffects);set('setSoundGoal',state.soundGoal);
-  set('setCameraZoom',state.cameraZoom);set('setStadiumExposure',state.stadiumExposure);set('setIdleMotion',state.idleMotion);set('setBallSize',state.ballSize);set('setGoalSize',state.goalSize);set('setConfettiAmount',state.confettiAmount);
-  check('setSoundEnabled',state.soundEnabled);check('setCrowdEnabled',state.crowdEnabled);check('setAnnouncerEnabled',state.announcerEnabled);check('setGoalFxEnabled',state.goalFxEnabled);check('setSceneLabel',state.sceneLabel);check('setShowQueues',state.showQueues);check('setShowStatus',state.showStatus);
+  set('setCameraZoom',state.cameraZoom);set('setStadiumExposure',state.stadiumExposure);
+  check('setSoundEnabled',state.soundEnabled);check('setCrowdEnabled',state.crowdEnabled);check('setAnnouncerEnabled',state.announcerEnabled);check('setGoalFxEnabled',state.goalFxEnabled);
   syncAdminValue('SoundMaster',state.soundMaster,'%');syncAdminValue('SoundCrowd',state.soundCrowd,'%');syncAdminValue('SoundEffects',state.soundEffects,'%');syncAdminValue('SoundGoal',state.soundGoal,'%');
-  syncAdminValue('CameraZoom',state.cameraZoom,'%');syncAdminValue('StadiumExposure',state.stadiumExposure,'%');syncAdminValue('IdleMotion',state.idleMotion,'%');syncAdminValue('BallSize',state.ballSize,'%');syncAdminValue('GoalSize',state.goalSize,'%');syncAdminValue('ConfettiAmount',state.confettiAmount,'');
+  syncAdminValue('CameraZoom',state.cameraZoom,'%');syncAdminValue('StadiumExposure',state.stadiumExposure,'%');
 }
 function render(){
   document.querySelector('.wrap').classList.toggle('adminView',adminAuthed);
@@ -616,12 +674,27 @@ new ResizeObserver(resizeActorPanel).observe($('actorAdjust'));
 function log(m){const el=$('event');el.dataset.matchMessage=m;el.replaceChildren();const team=/Altın Pusula|Sarı-Lacivert/i.test(m)?'A':/Kızıl Kıvılcım|Sarı-Kırmızı/i.test(m)?'B':null;if(team){const icon=document.createElement('span');icon.className='jersey queueJersey j'+team;el.appendChild(icon);}el.appendChild(document.createTextNode(m.replace(/Altın Pusula|Kızıl Kıvılcım|Sarı-Lacivert|Sarı-Kırmızı/gi,'').trim()));}function setConn(){const live=realtimeStatus==='SUBSCRIBED';$('connectionStatus').textContent=(live?'Canlı bağlı':'Bağlı')+(adminAuthed?' • Admin':'')}
 function openAdmin(){
  if(!adminAuthed)return;
- if(!document.body.classList.contains('settingsMode')){window.open('./admin-settings.html','_blank','noopener');return;}
- fillAdminSettings();$('adminOverlay').classList.add('show');
+ fillAdminSettings();
+ $('leagueDrawer').classList.remove('show');$('leagueDrawer').setAttribute('aria-hidden','true');
+ document.body.classList.add('drawerMode');
+ $('adminOverlay').classList.add('show');
+ requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+}
+function openLeagueDrawer(){
+ if(!adminAuthed)return;
+ document.body.classList.add('drawerMode');
+ $('adminOverlay').classList.remove('show');
+ const drawer=$('leagueDrawer'),iframe=$('leagueDrawerFrame');
+ if(!iframe.getAttribute('src'))iframe.src=iframe.dataset.src;
+ drawer.classList.add('show');drawer.setAttribute('aria-hidden','false');
+ requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
 }
 function closeAdmin(){
- if(document.body.classList.contains('settingsMode')){location.href='./live.html';return;}
+ if(document.body.classList.contains('settingsMode')){location.replace('./live.html');return;}
  $('adminOverlay').classList.remove('show');
+ $('leagueDrawer').classList.remove('show');$('leagueDrawer').setAttribute('aria-hidden','true');
+ document.body.classList.remove('drawerMode');
+ requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
 }
 function initAudio(){try{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume()}catch(e){}}
 function playGoalSound(){try{initAudio();if(!audioCtx)return;const now=audioCtx.currentTime;[392,523,659,784].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=i<2?'square':'sawtooth';o.frequency.setValueAtTime(f,now+i*.11);g.gain.setValueAtTime(.0001,now+i*.11);g.gain.exponentialRampToValueAtTime(.16,now+i*.11+.02);g.gain.exponentialRampToValueAtTime(.0001,now+i*.11+.22);o.connect(g);g.connect(audioCtx.destination);o.start(now+i*.11);o.stop(now+i*.11+.24)})}catch(e){}}
@@ -645,9 +718,10 @@ function applyAuthRole(user){
  adminAuthed=!!(user&&user.id===ADMIN_UID);
  render();setConn();
  if(document.body.classList.contains('settingsMode')){
-  if(adminAuthed)openAdmin();
-  else $('adminOverlay').classList.remove('show');
+  if(adminAuthed&&!$('leagueDrawer').classList.contains('show'))openAdmin();
+  else if(!adminAuthed)$('adminOverlay').classList.remove('show');
  }
+ if(!adminAuthed&&document.body.classList.contains('drawerMode'))closeAdmin();
 }
 async function getAuth(){
  if(authCheck)return authCheck;
@@ -742,8 +816,8 @@ async function applyAdminSettings(){
   state.startKeepers=initialByTeam;state.keeperCost=num('setKeeperCost',10,1,10000);state.shotDelay=num('setShotDelay',3000,500,30000);
   state.soundMaster=num('setSoundMaster',DEFAULT_ADMIN_SETTINGS.soundMaster,0,100);state.soundCrowd=num('setSoundCrowd',DEFAULT_ADMIN_SETTINGS.soundCrowd,0,100);state.soundEffects=num('setSoundEffects',DEFAULT_ADMIN_SETTINGS.soundEffects,0,100);state.soundGoal=num('setSoundGoal',DEFAULT_ADMIN_SETTINGS.soundGoal,0,100);
   state.soundEnabled=chk('setSoundEnabled');state.crowdEnabled=chk('setCrowdEnabled');state.announcerEnabled=chk('setAnnouncerEnabled');state.goalFxEnabled=chk('setGoalFxEnabled');
-  state.cameraZoom=num('setCameraZoom',100,75,140);state.stadiumExposure=num('setStadiumExposure',116,70,150);state.idleMotion=num('setIdleMotion',100,0,150);state.ballSize=num('setBallSize',100,70,160);state.goalSize=num('setGoalSize',100,80,130);state.confettiAmount=num('setConfettiAmount',70,0,150);
-  state.sceneLabel=chk('setSceneLabel');state.showQueues=chk('setShowQueues');state.showStatus=chk('setShowStatus');
+  state.cameraZoom=num('setCameraZoom',100,75,140);state.stadiumExposure=num('setStadiumExposure',116,70,150);
+  
   gameRules={...gameRules,goalkeeper_initial_by_team:initialByTeam,keeper_cost:state.keeperCost,shot_delay:state.shotDelay,shot_threshold:state.shotThreshold,last_team:state.lastTeam,
     sound_master:state.soundMaster,sound_crowd:state.soundCrowd,sound_effects:state.soundEffects,sound_goal:state.soundGoal,sound_enabled:state.soundEnabled,crowd_enabled:state.crowdEnabled,announcer_enabled:state.announcerEnabled,goal_fx_enabled:state.goalFxEnabled,
     camera_zoom:state.cameraZoom,stadium_exposure:state.stadiumExposure,idle_motion:state.idleMotion,ball_size:state.ballSize,goal_size:state.goalSize,confetti_amount:state.confettiAmount,scene_label:state.sceneLabel,show_queues:state.showQueues,show_status:state.showStatus};
@@ -758,7 +832,7 @@ async function applyAdminSettings(){
   if(!window.AIFootballTikTok?.active)await db.from('goalkeepers').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
   if(!window.AIFootballTikTok?.active)await db.from('goalkeeper_opponent_state').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
   applyRuntimeSettings();render();
-  if(!document.body.classList.contains('settingsMode'))closeAdmin();
+  if(!document.body.classList.contains('settingsMode')&&!document.body.classList.contains('drawerMode'))closeAdmin();
   else{const saveNote=$('adminSaveStatus');if(saveNote)saveNote.textContent='Ayarlar kaydedildi';}
   log('Tüm admin ayarları kaydedildi')
 }
@@ -777,6 +851,17 @@ async function toggleRoundControl(field){
  const next={...current,[field]:!current[field]};
  try{await window.AIFootballTikTok.setRoundControls(next);}catch(e){console.error('Maç ayarı kaydedilemedi',e);}
  render();
+}
+async function finishActiveMatch(){
+ if(!adminAuthed||!window.AIFootballTikTok?.finishCurrentRound)return;
+ if(!confirm('Aktif maç mevcut skorla sona ersin mi? Oynanmamış şutlar sonraki maça aktarılacak.'))return;
+ const button=document.querySelector('.endBtn');if(button)button.disabled=true;
+ try{
+  const success=await window.AIFootballTikTok.finishCurrentRound();
+  if(!success)alert('Maç sonlandırılamadı. Maç bitmiş veya yetki doğrulanamamış olabilir.');
+  else{const message=$('adminSaveStatus');if(message)message.textContent='Maç sonlandı. Bekleyen şutlar korundu.';render();}
+ }catch(e){console.error(e);alert('Maç sonlandırılırken hata oluştu.');}
+ finally{if(button)button.disabled=false;}
 }
 async function startNextMatch(){
  if(!adminAuthed)return;
