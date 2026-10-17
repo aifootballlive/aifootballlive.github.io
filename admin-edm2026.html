@@ -7,6 +7,26 @@
 <title>AI Football Live Admin</title>
 <style>
 html,body{margin:0;height:100%;background:#0b1020;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box}.box{background:#151c31;border:1px solid #2b3556;border-radius:14px;padding:22px;max-width:360px;width:100%;box-sizing:border-box}h1{font-size:20px;margin:0 0 8px;text-align:center}p{font-size:13px;color:#aab2c8;margin:0 0 16px;text-align:center}.field{margin:10px 0}.field label{display:block;font-size:12px;color:#aab2c8;margin-bottom:5px}.field input{width:100%;box-sizing:border-box;border:1px solid #2b3556;background:#0d1425;color:#fff;border-radius:9px;padding:11px 12px;font-size:15px}.btn{width:100%;border:0;border-radius:9px;padding:11px 12px;background:#148b70;color:#fff;font-weight:800;font-size:14px;margin-top:8px}.btn:disabled{opacity:.6}.msg{min-height:20px;font-size:12px;text-align:center;margin-top:12px;color:#ffb4b4}.ok{color:#8be0c5}
+
+/* Pointer cursor only on active interactive elements, not on decorative text. */
+a[href],
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+[onclick]:not(:disabled),
+label[for],
+label:has(input[type="checkbox"]:not(:disabled)),
+label:has(input[type="radio"]:not(:disabled)),
+input:is([type="checkbox"],[type="radio"],[type="range"],[type="submit"],[type="button"],[type="reset"]):not(:disabled),
+select:not(:disabled),
+summary {
+  cursor: pointer !important;
+}
+button:disabled,
+input:disabled,
+select:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed !important;
+}
 </style>
 </head>
 <body>
