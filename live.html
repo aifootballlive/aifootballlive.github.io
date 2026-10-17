@@ -854,6 +854,124 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  }
 }
 
+
+/* Live broadcast readability and color-coded team scorecards. */
+.wrap{--readable-card-top:10.5%;--readable-card-height:clamp(238px,42cqw,470px)}
+.wrap>.liveArenaName,.wrap.adminView>.liveArenaName{
+ top:6.7%!important;z-index:9;padding:4px 8px!important;
+ font-size:clamp(17px,3.35cqw,36px)!important;
+ font-weight:1000!important;white-space:nowrap!important;
+ max-width:98%!important;letter-spacing:-.03em;text-shadow:0 2px 4px #000;
+ border-color:#deb962;background:rgba(5,14,29,.95)
+}
+.wrap .broadcastControls{gap:clamp(2px,.5cqw,8px)!important;left:2%!important;right:2%!important}
+.wrap .broadcastControls>.panel,
+.wrap.adminView .broadcastControls>.panel,
+.wrap:not(.adminView) .broadcastControls>.panel{
+ height:var(--readable-card-height)!important;padding:clamp(3px,.6cqw,7px)!important;
+ position:relative!important;overflow:hidden;border-radius:clamp(5px,1cqw,10px)!important;
+ border:2px solid var(--team-accent)!important;
+ background:linear-gradient(180deg,var(--team-dark) 0%,#10172a 54%,#08111f 100%)!important;
+ box-shadow:0 2px 8px #000b,inset 0 0 12px var(--team-glow)!important
+}
+.wrap .broadcastControls .teamA{--team-accent:#ffdc37;--team-dark:#12356e;--team-glow:#edd64e40}
+.wrap .broadcastControls .teamB{--team-accent:#f6d454;--team-dark:#a82838;--team-glow:#f0444b48}
+.wrap .broadcastControls .teamC{--team-accent:#edf2ff;--team-dark:#303742;--team-glow:#f2f5ff30}
+.wrap .broadcastControls .teamD{--team-accent:#51b6e8;--team-dark:#632139;--team-glow:#6db5f640}
+.wrap .broadcastControls>.panel .panelHead.teamScore,
+.wrap .broadcastControls>.panel .panelHead{
+ height:clamp(105px,12.6cqw,142px)!important;
+ grid-template-rows:clamp(45px,6.5cqw,73px) minmax(50px,auto)!important;
+ grid-template-columns:minmax(0,38%) minmax(0,62%)!important;
+ justify-items:center!important;align-items:center!important;
+ width:100%;background:linear-gradient(140deg,var(--team-dark),#101827a8)!important;
+ border-bottom:2px solid var(--team-accent);margin:0 0 5px!important;
+ padding:1px 2px 5px;gap:0 1px!important;
+}
+.wrap .broadcastControls>.panel .teamLogo{
+ width:clamp(33px,6.2cqw,65px)!important;height:clamp(37px,6.3cqw,68px)!important;
+ object-fit:contain;filter:drop-shadow(0 2px 3px #000);
+}
+.wrap .broadcastControls>.panel .teamScore .num{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ color:#fff!important;font-size:clamp(37px,6.2cqw,68px)!important;line-height:.95!important;
+ text-shadow:1px 2px 1px #000,0 0 7px var(--team-accent)
+}
+.wrap .broadcastControls>.panel .teamScore .num::before{
+ content:"GOL";display:block;font-size:clamp(12px,1.75cqw,20px)!important;
+ color:#fff2ad;line-height:1.3;letter-spacing:.06em;text-shadow:0 1px 3px #000
+}
+.wrap .broadcastControls>.panel .teamTitle{
+ grid-column:1/-1!important;font-size:clamp(17px,3.5cqw,38px)!important;
+ line-height:1.06!important;font-weight:1000!important;letter-spacing:-.02em!important;
+ overflow-wrap:normal!important;word-break:normal!important;hyphens:none!important;
+ text-align:center!important;color:#fff!important;text-shadow:1px 2px 3px #000!important;
+ padding:0 1px;white-space:normal!important;
+}
+.wrap .broadcastControls>.panel .buttons{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:clamp(2px,.4cqw,6px)!important;width:100%;
+}
+.wrap .broadcastControls>.panel .giftbtn.shot{
+ display:flex!important;flex-direction:column!important;
+ height:clamp(66px,11cqw,125px)!important;min-height:clamp(66px,11cqw,125px)!important;
+ gap:2px!important;padding:3px 1px!important;border:1px solid #8da5c2!important;
+ border-radius:7px!important;background:#16233c!important;
+ color:#fff!important;box-shadow:inset 0 1px 2px #ffffff26!important;
+}
+.wrap .broadcastControls>.panel .giftbtn.shot:hover{background:#263e5c!important}
+.wrap .broadcastControls>.panel .giftVisual,
+.wrap .broadcastControls>.panel .giftVisual svg{
+ display:block!important;width:clamp(32px,6.6cqw,72px)!important;
+ height:clamp(36px,7cqw,76px)!important;line-height:normal!important;
+ margin:0 auto;flex:none;filter:drop-shadow(0 1px 3px #000)
+}
+.wrap .broadcastControls>.panel .giftEffect{
+ font-size:clamp(13px,2.6cqw,28px)!important;line-height:1.1!important;
+ font-weight:1000!important;white-space:nowrap!important;text-align:center;
+ text-shadow:1px 2px 2px #000!important;
+}
+.wrap .broadcastControls>.panel .coin,.wrap .broadcastControls>.panel .sectionLabel{display:none!important}
+.wrap .broadcastControls>.panel .adminTeamQueue{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ position:absolute!important;bottom:clamp(3px,.6cqw,7px)!important;left:3px!important;right:3px!important;
+ min-height:clamp(37px,5.4cqw,58px)!important;overflow:hidden;
+ padding:2px 5px!important;gap:2px!important;margin:0!important;
+ background:rgba(1,8,19,.95)!important;border:1px solid var(--team-accent)!important;
+ border-radius:5px!important;color:#fff!important;
+ font-size:clamp(12px,2.35cqw,25px)!important;line-height:1.05!important;
+ font-weight:950!important;white-space:normal!important;
+}
+.wrap .broadcastControls>.panel .adminTeamQueue strong{
+ font-size:clamp(24px,4.4cqw,46px)!important;color:#fff!important;
+ line-height:1!important;text-shadow:0 0 5px #fff7;
+}
+@keyframes queueShimmer{
+ 0%{box-shadow:0 0 0 0 var(--team-accent);filter:brightness(1)}
+ 20%{box-shadow:0 0 14px 5px var(--team-accent);filter:brightness(1.8)}
+ 55%{box-shadow:0 0 20px 6px var(--team-accent);filter:brightness(1.45)}
+ 100%{box-shadow:0 0 0 0 transparent;filter:brightness(1)}
+}
+.wrap .broadcastControls>.panel .adminTeamQueue.queueSpark{
+ animation:queueShimmer 1.05s ease-out 2!important;
+}
+.wrap .broadcastControls>.panel .adminTeamQueue.queueSpark strong{
+ color:#ffe886!important;text-shadow:0 0 9px #fff,0 0 15px var(--team-accent)!important;
+}
+.wrap>.matchClockHud,.wrap:not(.adminView)>.matchClockHud,.wrap.adminView>.matchClockHud{
+ top:calc(var(--readable-card-top) + var(--readable-card-height) + 6px)!important;
+}
+.wrap>.matchClockHud .clockLabel{font-size:clamp(19px,3.45cqw,40px)!important;line-height:1.1!important}
+.wrap>.matchClockHud .clockDigits{font-size:clamp(39px,6.8cqw,77px)!important;line-height:1!important}
+.wrap>.leagueProfileHint{font-size:clamp(17px,3cqw,33px)!important}
+@media(max-width:380px){
+ .wrap .broadcastControls>.panel .teamTitle{font-size:16px!important}
+ .wrap .broadcastControls>.panel .giftEffect{font-size:12px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .wrap .broadcastControls>.panel .adminTeamQueue.queueSpark{animation:none!important;outline:3px solid var(--team-accent)}
+}
+
 </style>
 </head>
 <body>
@@ -861,7 +979,7 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
   <div id="matchClockHud" class="matchClockHud" data-phase="normal" role="timer" aria-label="Maçın bitmesine kalan süre"><span class="clockLabel">Maçın Bitmesine Kalan Süre</span><strong class="clockDigits">25:00</strong></div>
   
   
-  <div class="liveArenaName" id="liveArenaName">Doruk Arenası</div>
+  <div class="liveArenaName" id="liveArenaName">Doruk Arenası • MAÇ SKORU</div>
   <div class="leagueProfileHint" id="leagueProfileHint">Lig tablosu için profilimizdeki bağlantıyı açın</div>
   <button class="liveStartButton" id="liveStartButton" type="button" onclick="startNextMatch()">MAÇI BAŞLAT</button>
   <div class="matchResultBanner" id="matchResultBanner" hidden aria-live="polite">
@@ -900,30 +1018,38 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
 <div class="frontKeeperCard"><div class="frontKeeperTop"><span class="jerseyBadge"><span class="jersey miniJersey jD"></span></span><strong id="frontKeeperD">0</strong></div><div class="frontKeeperBar"><div class="frontKeeperFill" id="frontKeeperFillD"></div></div></div>
   </div>
   <div class="broadcastControls">
-  <section class="panel"><div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/altin-pusula.svg" alt="Altın Pusula simgesi"><div class="num" id="scoreA">0</div><div class="teamTitle">Altın Pusula</div></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
-    <button class="giftbtn shot" onclick="addShots('A',1)"><span class="giftVisual"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M12 6l3 2-1 4h-4L9 8l3-2zm-6 5l3 1 1 4-2 2c-1-2-2-4-2-7zm12 0c0 3-1 5-2 7l-2-2 1-4 3-1zM9 18l3-2 3 2-1 1H10l-1-1z" fill="#10182b"/></svg></span><span class="giftEffect">1 şut</span><span class="coin">10 jeton</span></button>
-    <button class="giftbtn shot" onclick="addShots('A',5)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M5 8h11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8z" fill="#d8ff68"/><path d="M16 10h2a3 3 0 0 1 0 6h-2" fill="none" stroke="#d8ff68" stroke-width="2"/><path d="M8 5c0-1 1-1 1-2M12 5c0-1 1-1 1-2" stroke="#fff" stroke-width="1.3"/></svg></span><span class="giftEffect">5 şut</span><span class="coin">50 jeton</span></button>
-    <button class="giftbtn shot" onclick="addShots('A',10)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M12 20S4.5 15.4 4.5 9.7A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.7C19.5 15.4 12 20 12 20z" fill="#ff6b8b" stroke="#fff" stroke-width="1.2"/></svg></span><span class="giftEffect">10 şut</span><span class="coin">100 jeton</span></button>
-    <button class="giftbtn shot" onclick="addShots('A',50)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M6 7h12v10H6z" fill="#a9f0c8" stroke="#fff" stroke-width="1.2"/><circle cx="12" cy="12" r="2.4" fill="#1a8f65"/></svg></span><span class="giftEffect">50 şut</span><span class="coin">500 jeton</span></button>
-  </div><div class="sectionLabel">KALECİ SAVUNMA HEDİYELERİ</div><div class="buttons">
-    <button class="giftbtn def" onclick="addKeeper('A',1)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars"><span></span></span></span><span class="giftEffect">+1 güç</span><span class="coin">10 jeton</span></button>
-    <button class="giftbtn def" onclick="addKeeper('A',5)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s2"><span></span><span></span></span></span></span><span class="giftEffect">+5 güç</span><span class="coin">50 jeton</span></button>
-    <button class="giftbtn def" onclick="addKeeper('A',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
-    <button class="giftbtn def" onclick="addKeeper('A',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
-  </div><div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueA">0</strong></div></section>
-  <section class="panel"><div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/kizil-kivilcim.svg" alt="Kızıl Kıvılcım simgesi"><div class="num" id="scoreB">0</div><div class="teamTitle">Kızıl Kıvılcım</div></div><div class="sectionLabel">ŞUT HEDİYELERİ</div><div class="buttons">
-    <button class="giftbtn shot" onclick="addShots('B',1)"><span class="giftVisual"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M12 6l3 2-1 4h-4L9 8l3-2zm-6 5l3 1 1 4-2 2c-1-2-2-4-2-7zm12 0c0 3-1 5-2 7l-2-2 1-4 3-1zM9 18l3-2 3 2-1 1H10l-1-1z" fill="#10182b"/></svg></span><span class="giftEffect">1 şut</span><span class="coin">10 jeton</span></button>
-    <button class="giftbtn shot" onclick="addShots('B',5)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M5 8h11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8z" fill="#d8ff68"/><path d="M16 10h2a3 3 0 0 1 0 6h-2" fill="none" stroke="#d8ff68" stroke-width="2"/></svg></span><span class="giftEffect">5 şut</span><span class="coin">50 jeton</span></button>
-    <button class="giftbtn shot" onclick="addShots('B',10)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M12 20S4.5 15.4 4.5 9.7A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.7C19.5 15.4 12 20 12 20z" fill="#ff6b8b" stroke="#fff" stroke-width="1.2"/></svg></span><span class="giftEffect">10 şut</span><span class="coin">100 jeton</span></button>
-    <button class="giftbtn shot" onclick="addShots('B',50)"><span class="giftVisual"><svg viewBox="0 0 24 24"><path d="M6 7h12v10H6z" fill="#a9f0c8" stroke="#fff" stroke-width="1.2"/><circle cx="12" cy="12" r="2.4" fill="#1a8f65"/></svg></span><span class="giftEffect">50 şut</span><span class="coin">500 jeton</span></button>
-  </div><div class="sectionLabel">KALECİ SAVUNMA HEDİYELERİ</div><div class="buttons">
-    <button class="giftbtn def" onclick="addKeeper('B',1)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars"><span></span></span></span><span class="giftEffect">+1 güç</span><span class="coin">10 jeton</span></button>
-    <button class="giftbtn def" onclick="addKeeper('B',5)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s2"><span></span><span></span></span></span></span><span class="giftEffect">+5 güç</span><span class="coin">50 jeton</span></button>
-    <button class="giftbtn def" onclick="addKeeper('B',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
-    <button class="giftbtn def" onclick="addKeeper('B',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
-  </div><div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueB">0</strong></div></section>
-  <section class="panel"><div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/gece-yildizi.svg" alt="Gece Yıldızı simgesi"><div class="num" id="scoreC">0</div><div class="teamTitle">Gece Yıldızı</div></div><div class="sectionLabel">GECE YILDIZI</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('C',1)" aria-label="Gece Yıldızı şut"><span class="giftVisual">⚽</span><span class="giftEffect">Şut</span><span class="coin">Finger Heart</span></button></div><div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueC">0</strong></div></section>
-  <section class="panel"><div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/bordo-dalga.svg" alt="Bordo Dalga simgesi"><div class="num" id="scoreD">0</div><div class="teamTitle">Bordo Dalga</div></div><div class="sectionLabel">BAĞLI HEDİYE</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('D',1)"><span class="giftVisual">GG</span><span class="giftEffect">1 şut</span><span class="coin">GG</span></button></div><div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueD">0</strong></div></section>
+    <section class="panel teamA" aria-label="Altın Pusula skor ve şut hediyeleri">
+      <div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/altin-pusula.svg" alt="Altın Pusula logosu"><div class="num" id="scoreA">0</div><div class="teamTitle">Altın Pusula</div></div>
+      <div class="buttons">
+        <button type="button" class="giftbtn shot" onclick="addShots('A',1)" aria-label="Altın Pusula için 1 şut"><span class="giftVisual"></span><span class="giftEffect">1 ŞUT</span></button>
+        <button type="button" class="giftbtn shot" onclick="addShots('A',5)" aria-label="Altın Pusula için 5 şut"><span class="giftVisual"></span><span class="giftEffect">5 ŞUT</span></button>
+      </div>
+      <div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueA">0</strong></div>
+    </section>
+    <section class="panel teamB" aria-label="Kızıl Kıvılcım skor ve şut hediyeleri">
+      <div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/kizil-kivilcim.svg" alt="Kızıl Kıvılcım logosu"><div class="num" id="scoreB">0</div><div class="teamTitle">Kızıl Kıvılcım</div></div>
+      <div class="buttons">
+        <button type="button" class="giftbtn shot" onclick="addShots('B',1)" aria-label="Kızıl Kıvılcım için 1 şut"><span class="giftVisual"></span><span class="giftEffect">1 ŞUT</span></button>
+        <button type="button" class="giftbtn shot" onclick="addShots('B',5)" aria-label="Kızıl Kıvılcım için 5 şut"><span class="giftVisual"></span><span class="giftEffect">5 ŞUT</span></button>
+      </div>
+      <div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueB">0</strong></div>
+    </section>
+    <section class="panel teamC" aria-label="Gece Yıldızı skor ve şut hediyeleri">
+      <div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/gece-yildizi.svg" alt="Gece Yıldızı logosu"><div class="num" id="scoreC">0</div><div class="teamTitle">Gece Yıldızı</div></div>
+      <div class="buttons">
+        <button type="button" class="giftbtn shot" onclick="addShots('C',1)" aria-label="Gece Yıldızı için 1 şut"><span class="giftVisual"></span><span class="giftEffect">1 ŞUT</span></button>
+        <button type="button" class="giftbtn shot" onclick="addShots('C',5)" aria-label="Gece Yıldızı için 5 şut"><span class="giftVisual"></span><span class="giftEffect">5 ŞUT</span></button>
+      </div>
+      <div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueC">0</strong></div>
+    </section>
+    <section class="panel teamD" aria-label="Bordo Dalga skor ve şut hediyeleri">
+      <div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/bordo-dalga.svg" alt="Bordo Dalga logosu"><div class="num" id="scoreD">0</div><div class="teamTitle">Bordo Dalga</div></div>
+      <div class="buttons">
+        <button type="button" class="giftbtn shot" onclick="addShots('D',1)" aria-label="Bordo Dalga için 1 şut"><span class="giftVisual"></span><span class="giftEffect">1 ŞUT</span></button>
+        <button type="button" class="giftbtn shot" onclick="addShots('D',5)" aria-label="Bordo Dalga için 5 şut"><span class="giftVisual"></span><span class="giftEffect">5 ŞUT</span></button>
+      </div>
+      <div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueD">0</strong></div>
+    </section>
   </div>
   <div class="matchControls" id="matchControls" aria-label="Bekleyen şutlar ve ses"><div class="queues"></div></div>
   <div id="event" hidden aria-hidden="true">Hazır</div><div class="note">Tüm cihazlar aynı canlı maç durumunu gösterir.</div>
@@ -993,7 +1119,7 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v179.js?v=179"></script>
+<script src="./tiktok-shared-v181.js?v=181"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -1065,7 +1191,7 @@ function previewAdminDraft(){
   if(queue!==null){const node=$('frontQueue'+t);if(node)node.textContent=String(queue);}
  }
  const arena=adminPreviewArenaName(),title=$('liveArenaName');
- if(arena&&title&&title.textContent!==arena)title.textContent=arena;
+ if(arena&&title&&title.textContent!==arena+' • MAÇ SKORU')title.textContent=arena+' • MAÇ SKORU';
  const hint=$('adminPreviewHint');
  if(hint){
   const normal=read('setMatchMinutes',1,120),extra=read('setOvertimeMinutes',0,30),
@@ -1378,11 +1504,28 @@ async function restoreDefaultSettings(){
   log('Tüm ayarlar varsayılana döndürüldü');
 }
 async function toggleRoundControl(field){
- if(!adminAuthed||!window.AIFootballTikTok?.getRoundControls)return;
+ if(!adminAuthed||!window.AIFootballTikTok?.getRoundControls||!['autoMatches','manualMatchStart'].includes(field))return;
+ const id=field==='autoMatches'?'autoMatchesToggle':'manualMatchStartToggle';
+ const button=$(id);
+ if(button?.disabled)return;
  const current=window.AIFootballTikTok.getRoundControls();
- const next={...current,[field]:!current[field]};
- try{await window.AIFootballTikTok.setRoundControls(next);}catch(e){console.error('Maç ayarı kaydedilemedi',e);}
- render();
+ const requested=!current[field];
+ if(button)button.disabled=true;
+ try{
+  const saved=await window.AIFootballTikTok.setRoundControls({[field]:requested});
+  const verified=window.AIFootballTikTok.getRoundControls();
+  if(!saved||verified[field]!==requested)throw Error('Maç kontrolü veritabanına kaydedilemedi');
+  const message=$('adminSaveStatus');
+  if(message)message.textContent=field==='autoMatches'
+   ?(requested?'Otomatik sonraki maç başlatma açıldı.':'Otomatik sonraki maç başlatma kapatıldı; mevcut maç süresi bitene kadar devam eder.')
+   :(requested?'Yeni maçı yönetici başlatacak.':'Yönetici başlatma zorunluluğu kaldırıldı.');
+ }catch(error){
+  console.error('Maç ayarı kaydedilemedi',error);
+  alert('Maç kontrolü kaydedilemedi. İnternet bağlantısını ve yönetici yetkisini kontrol edin.');
+ }finally{
+  if(button)button.disabled=false;
+  render();
+ }
 }
 async function finishActiveMatch(){
  if(!adminAuthed||!window.AIFootballTikTok?.finishCurrentRound)return;
@@ -1399,7 +1542,7 @@ async function startNextMatch(){
  if(!adminAuthed)return;
  try{
   const started=await window.AIFootballTikTok?.startNextMatch?.();
-  if(!started)alert('Yeni maç, üç dakikalık aradan sonra yönetici tarafından başlatılabilir.');
+  if(!started)alert('Kazanan ve lig ekranı için ayarlanan süreler dolmadan yeni maç başlatılamaz.');
  }catch(e){console.error('Maç başlatılamadı',e);}
 }
 async function toggleGiftProcessing(){
