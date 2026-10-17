@@ -431,7 +431,9 @@ body.settingsMode .adminActions button,body.settingsMode .adminRoundControls but
   <label class="adminToggle"><span>Gol spikeri aktif</span><input id="setAnnouncerEnabled" type="checkbox" checked></label>
   <label class="adminToggle"><span>Gol konfeti / efekt</span><input id="setGoalFxEnabled" type="checkbox" checked></label>
 </div></div>
-<div class="adminSection"><div class="adminSectionTitle">3D SAHNE AYARLARI</div><div class="adminGrid">
+<div class="adminSection"><div class="adminSectionTitle">GÖRÜNTÜ ÖNİZLEMESİ</div>
+ <p class="giftToggleHelp">Kamera yakınlığı ve stadyum parlaklığı kaydırılırken video önizlemesinde hemen uygulanır. Mevcut sahne hazır MP4 video olduğu için kale, top ve futbolcular ayrı nesneler değildir; kale/top boyutunu tek başına değiştirmek bu sürümde mümkün değildir.</p></div>
+ <div class="adminSection"><div class="adminSectionTitle">3D SAHNE AYARLARI</div><div class="adminGrid">
   <div class="adminField"><label>Kamera uzaklığı <span class="adminValue" id="valCameraZoom">100%</span></label><input id="setCameraZoom" type="range" min="75" max="140" value="100" oninput="syncAdminValue('CameraZoom',this.value,'%')"></div>
   <div class="adminField"><label>Stadyum parlaklığı <span class="adminValue" id="valStadiumExposure">116%</span></label><input id="setStadiumExposure" type="range" min="70" max="150" value="116" oninput="syncAdminValue('StadiumExposure',this.value,'%')"></div>
   <div class="adminField"><label>Bekleme hareketi <span class="adminValue" id="valIdleMotion">100%</span></label><input id="setIdleMotion" type="range" min="0" max="150" value="100" oninput="syncAdminValue('IdleMotion',this.value,'%')"></div>
@@ -442,7 +444,7 @@ body.settingsMode .adminActions button,body.settingsMode .adminRoundControls but
   <label class="adminToggle"><span>Bekleyen şut kutuları</span><input id="setShowQueues" type="checkbox" checked></label>
   <label class="adminToggle"><span>Olay / durum satırı</span><input id="setShowStatus" type="checkbox" checked></label>
 </div></div>
-<div class="adminActions"><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div>
+<div class="adminActions"><div id="adminSaveStatus" role="status" style="color:#81e2bb;font-size:14px;font-weight:800"></div><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div>
 <div class="adminRoundControls">
   <button id="autoMatchesToggle" type="button" onclick="toggleRoundControl('autoMatches')">OTOMATİK MAÇLAR: AÇIK</button>
   <button id="manualMatchStartToggle" type="button" onclick="toggleRoundControl('manualMatchStart')">MAÇI ADMİN BAŞLATSIN: KAPALI</button>
@@ -755,7 +757,10 @@ async function applyAdminSettings(){
   if(timingResult===false){log('Maç süreleri kaydedilemedi');return;}
   if(!window.AIFootballTikTok?.active)await db.from('goalkeepers').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
   if(!window.AIFootballTikTok?.active)await db.from('goalkeeper_opponent_state').update({initial_power:state.startKeeper}).eq('game_id',ids.game);
-  applyRuntimeSettings();render();closeAdmin();log('Tüm admin ayarları kaydedildi')
+  applyRuntimeSettings();render();
+  if(!document.body.classList.contains('settingsMode'))closeAdmin();
+  else{const saveNote=$('adminSaveStatus');if(saveNote)saveNote.textContent='Ayarlar kaydedildi';}
+  log('Tüm admin ayarları kaydedildi')
 }
 async function restoreDefaultSettings(){
   if(!adminAuthed)return;
