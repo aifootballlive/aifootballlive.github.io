@@ -367,6 +367,32 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:12px}
 #adminRefresh:not([hidden]){display:inline-flex!important;align-items:center;justify-content:center;
  padding:5px!important;min-width:28px;min-height:28px}
 #adminRefresh svg{display:block}
+
+/* Readable upper administrator strip: previous values were title 12px,
+   connection 7px, admin button 9px, and refresh glyph 18px. */
+.wrap.adminView>.head{height:auto;min-height:38px;z-index:12;
+  padding:4px 6px;gap:7px;background:rgba(7,16,33,.93);
+  border:1px solid #465e7e;border-radius:8px}
+.wrap.adminView>.head .title{font-size:16px!important;line-height:19px!important;
+  font-weight:900;white-space:nowrap;flex-shrink:0}
+.wrap.adminView>.headRight{gap:7px;min-width:0}
+.wrap.adminView>.headRight .sub{font-size:11px!important;line-height:13px!important;
+  max-width:120px;min-width:0;font-weight:700;color:#e0ebff;text-align:right;
+  overflow-wrap:break-word}
+.wrap.adminView>.headRight .adminOpen{font-size:12px!important;line-height:16px!important;
+  min-height:36px;border-radius:7px;padding:7px 8px;white-space:nowrap}
+#adminRefresh:not([hidden]){min-width:38px!important;min-height:38px!important;padding:5px!important}
+#adminRefresh svg{width:24px;height:24px}
+@media(max-width:440px){
+ .wrap.adminView>.head{padding:3px 4px;gap:4px}
+ .wrap.adminView>.head .title{font-size:14px!important}
+ .wrap.adminView>.headRight{gap:4px}
+ .wrap.adminView>.headRight .sub{font-size:10px!important;line-height:12px!important;max-width:90px}
+ .wrap.adminView>.headRight .adminOpen{font-size:11px!important;padding:6px}
+ #adminRefresh:not([hidden]){min-width:34px!important;min-height:34px!important}
+ #adminRefresh svg{width:22px;height:22px}
+}
+
 body.settingsMode>.leagueDrawer.show{width:min(55vw,900px);margin:0}
 .adminPreviewHint{margin:10px 0 0;padding:10px 12px;border:1px solid #527291;
  background:#1c314a;border-radius:8px;color:#d9f0ff;font-size:14px!important;font-weight:800;line-height:20px!important}
