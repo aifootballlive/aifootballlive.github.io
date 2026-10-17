@@ -19,6 +19,20 @@ Repo: https://github.com/aifootballlive/aifootballlive.github.io
 - Admin oturumunda Supabase Auth kullanıcı ID doğrulaması var. Daha önceki sahte localStorage güvenilir cihaz işareti kaldırıldı. Ancak sunucu taraflı allowlist, MFA ve RLS denetimi tamamlanmadı.
 - Kontrollü JS senaryo testleri başarılı: boş kuyrukta 25. dakikada kapanmama, 30. dakikada bitirme, toplam 180 saniye sonuç arası ve ayrı ayarlanmış 2+3 dakika ile zamanlama. Canlı TikTok/telefon görsel ve FPS testi henüz yapılmadı.
 
+## 17.10.2026 — Sağ panel iyileştirmesi
+
+Bu tur tamamlananlar:
+- Ana live.html'den Admin Ayarları açıldığında yeni sekme yerine **aynı sayfada, sağdaki panel** açılıyor; aynı video/durum korunuyor. KAPAT ile panel kapanıp sol canlı yayın görünümüne dönülüyor.
+- Admin paneli başlığında LİG TABLOSU düğmesi; tıklayınca ayrı sekme yerine aynı sağ panelde league.html görüntüleniyor, AYARLAR ile geri dönülebiliyor.
+- Yönetici/YÖNETİCİ üst bağlantısı ve tekrarlı admin sayfası linki kaldırıldı. YENİLE yazısı yerine yenileme SVG ikonu konuldu; oturumsuz izleyicilere yenile/admin kontrolleri gizli kalıyor.
+- İşlevsiz hazır-video ayarları (kale boyutu, top boyutu, bekleme hareketi, eski 3D sahne etiketi, sahne durum satırı, ayrı konfeti miktarı, bekleyen kutusu toggle) yönetici formundan kaldırıldı. Yakınlık ve parlaklık kontrolü tutuldu.
+- ADMIN AYARLARI tipografisi yaklaşık 15–18 piksel yapıldı; form ve tuşlar iki sütuna düzenlendi. Kayıt tuşu tam genişlik, sıfırla/sonlandır yan yana, varsayılan/yeni maç yan yana, otomatik/manuel yan yana, şut durdur/oturumu kapat yan yana.
+- **AKTİF MAÇI SONLANDIR** düğmesi eklendi. Yönetici onayı sonrası mevcut maç derhal bitiyor, lig sonucu kaydediliyor. Bekleyen tüm şutlar, rezerv şut ve tamamlanmamış aktif şut sonraki maç için korunuyor (gerçek zamanlı/DB ve yetkilendirme testleri hâlâ gerekli).
+- Ayrı admin-settings.html adresi geriye uyumluluk için hâlâ var, ancak ana yayındaki buton artık bu adresi yeni sekmede açmıyor.
+- Sözdizimi ve statik kontroller başarılı, aktif maç sonlandırma için iki kaydın olmaması ve bekleyen şutların saklanması senaryo testi geçti.
+
+Bu turda gerçek TikTok mobil görüntü/FPS, canlı Supabase yetkisi ve failover, gerçek yönetici telefon/PC beyaz liste testleri yapılmadı.
+
 ## Work modunda kalan işler (öncelikli)
 
 1. GERÇEK MOBİL GÖRSEL QA: Kullanıcının 17 Ekim TikTok önizlemesindeki "Oyun Sıralaması" etiketinin hemen altında kartların başladığını, sayaç kalenin üst direğini/oyuncuları kapatmadığını, Türkçe metin ve takım adlarının sığdığını gerçek 9:16 mobil ekran ve TikTok Live Studio üzerinde doğrula. Gerekirse CSS'yi son piksel ayarlarıyla düzelt.
