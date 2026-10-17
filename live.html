@@ -435,7 +435,8 @@ select:disabled,
 /* Large-type mode: roughly double the previously tiny 7–12px labels.
    Keep the 9:16 broadcast in four compact columns, with responsive wraps. */
 .wrap{--readable-card-top:10%;--readable-card-height:clamp(190px,min(49vw,27dvh),230px)}
-.wrap>.head,.wrap.adminView>.head{
+.wrap:not(.adminView)>.head{display:none!important}
+.wrap.adminView>.head{
  display:flex!important;top:.6%!important;left:2%!important;right:2%!important;
  height:auto!important;min-height:48px;z-index:12;
  gap:7px;padding:6px;border-radius:8px;background:rgba(7,16,33,.94);
@@ -571,7 +572,7 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  #adminRefresh:not([hidden]){min-width:34px!important;min-height:34px!important}
  #adminRefresh svg{width:23px!important;height:23px!important}
  .wrap>.liveArenaName,.wrap.adminView>.liveArenaName{top:7.3%!important;font-size:17px!important}
- .wrap .broadcastControls .teamTitle{font-size:15px!important}
+ .wrap .broadcastControls .teamTitle{font-size:clamp(14px,4vw,18px)!important}
  .wrap .broadcastControls .teamScore .num{font-size:29px!important}
  .wrap .broadcastControls .giftEffect{font-size:16px!important}
  .wrap .broadcastControls .panel .adminTeamQueue{font-size:12px!important}
