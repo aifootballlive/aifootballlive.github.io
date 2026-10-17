@@ -19,7 +19,7 @@
  const normalMs=m=>timingFor(m).normalMinutes*60000;
  const overtimeMs=m=>timingFor(m).overtimeMinutes*60000;
  // Automatic start is opt-in. Missing/legacy flags always require an admin.
- function autoMatchEnabled(m){return m?.autoMatches===true&&m?.manualMatchStart!==true;}
+ function autoMatchEnabled(m){return m?.autoMatches===true&&m?.autoStartV2===true&&m?.manualMatchStart!==true;}
  // The combined winner + league screen is one uninterrupted duration.
  // An in-progress result keeps its deadline even if future settings change.
  function breakDeadlines(m){
@@ -655,6 +655,8 @@
    if(!admin()||!next||typeof next!=='object'||typeof next.autoMatches!=='boolean')return false;
    return change(m=>{
     m.autoMatches=next.autoMatches;
+    // Explicit activation is required after migration; old default-ON data cannot restart rounds.
+    m.autoStartV2=next.autoMatches;
     // Legacy second toggle was redundant and could silently override the auto setting.
     m.manualMatchStart=!next.autoMatches;
    },false);
