@@ -166,10 +166,20 @@ html,body{background:#050a12}
 .adminFrontKeeper .keeperGroupTitle{grid-column:1/-1;color:#e7edf7;font-size:11px;font-weight:900;line-height:16px;padding:0 3px;text-shadow:0 1px 3px #000}
 .wrap.adminView>.adminFrontKeeper{height:54px;grid-template-rows:16px 32px;row-gap:4px}
 .wrap.adminView>.matchControls{top:calc(var(--hud-start) + 238px)}
+
+/* Public match clock and per-team waiting shots: compact, video-friendly HUD. */
+.matchClockHud{position:absolute;z-index:8;top:1.2%;left:50%;transform:translateX(-50%);max-width:93%;min-width:98px;padding:4px 9px;border:1px solid #6c7890;border-radius:8px;background:rgba(5,10,18,.88);color:#fff;font-size:13px;line-height:18px;font-weight:900;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums;pointer-events:none;text-shadow:0 1px 2px #000}
+.matchClockHud[data-phase="overtime"]{color:#ffe58c}
+.matchClockHud[data-phase="result"]{color:#fff;font-size:11px;white-space:normal;min-width:165px}
+.wrap.adminView .matchClockHud{top:36px}
+.wrap .broadcastControls .panel .adminTeamQueue{display:flex;position:absolute;bottom:4px;left:4px;right:4px;align-items:center;justify-content:space-between;gap:3px;padding:2px 4px;margin:0;border-top:1px solid #394458;background:rgba(8,16,29,.76);border-radius:4px;color:#dae3f1;font-size:9px;line-height:16px;font-weight:800;white-space:nowrap}
+.wrap .broadcastControls .panel .adminTeamQueue strong{font-size:15px;line-height:17px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums}
+.wrap:not(.adminView) .broadcastControls .panel{height:147px}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div id="matchClockHud" class="matchClockHud" data-phase="normal" role="timer" aria-label="Maç süresi">MAÇ 25:00</div>
   <section id="actorAdjust" class="actorAdjust" hidden aria-label="Oyuncu yerleşimi">
     <div class="actorAdjustTop">
       <button id="actorAdjustToggle" aria-expanded="false" aria-controls="actorAdjustBody">Yerleşim ▾</button>
@@ -262,7 +272,7 @@ html,body{background:#050a12}
 </div></div>
 <div class="adminActions"><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v159.js?v=159"></script>
+<script src="./tiktok-shared-v160.js?v=160"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
