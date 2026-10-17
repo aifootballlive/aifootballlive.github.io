@@ -1012,6 +1012,74 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  }
 }
 
+
+/* Combined result/league board: one 60-second (configurable) presentation. */
+.wrap>.roundSummary,
+.wrap.adminView>.roundSummary{
+ position:absolute!important;top:42%!important;bottom:7%!important;
+ left:2%!important;right:2%!important;z-index:24!important;
+ display:flex!important;flex-direction:column!important;gap:clamp(4px,.9cqw,11px)!important;
+ padding:clamp(7px,1.4cqw,17px)!important;
+ border:2px solid #e0b96c!important;border-radius:12px!important;
+ background:rgba(5,14,30,.96)!important;
+ box-shadow:0 7px 25px #000d, inset 0 0 28px #213b6480!important;
+ overflow:hidden!important;
+}
+.wrap>.roundSummary[hidden],.wrap>.roundWaiting[hidden]{display:none!important}
+.roundSummary>.matchResultBanner,
+.roundSummary>.leagueBreakPanel{
+ display:block!important;position:relative!important;inset:auto!important;
+ left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+ transform:none!important;width:100%!important;max-width:none!important;
+ max-height:none!important;height:auto!important;min-height:0!important;
+ margin:0!important;padding:0!important;border:0!important;
+ border-radius:0!important;background:transparent!important;
+ box-shadow:none!important;overflow:visible!important;pointer-events:none!important
+}
+.roundSummary>.matchResultBanner[hidden],.roundSummary>.leagueBreakPanel[hidden]{display:none!important}
+.roundSummary>.matchResultBanner{flex:0 0 auto!important;text-align:center!important;
+ padding:2px 0 clamp(5px,1cqw,10px)!important;border-bottom:1px solid #e0b96c!important}
+.roundSummary .resultSectionTitle{font-size:clamp(13px,2.6cqw,27px)!important;
+ color:#ffde96;font-weight:1000;letter-spacing:.09em}
+.roundSummary .resultWinner{font-size:clamp(20px,4.6cqw,50px)!important;line-height:1.12!important;
+ color:#fff3bd!important;font-weight:1000!important;text-shadow:0 3px 6px #000!important}
+.roundSummary .resultScores{font-size:clamp(10px,1.85cqw,20px)!important;line-height:1.22!important;
+ font-weight:850!important;margin:5px 0!important;overflow-wrap:anywhere}
+.roundSummary .resultNext{font-size:clamp(12px,2.3cqw,25px)!important;color:#ffdf8c!important;
+ line-height:1.18!important;font-weight:950!important;margin:3px 0!important}
+.roundSummary>.leagueBreakPanel{flex:1 1 auto!important;overflow:hidden!important;text-align:center!important;
+ display:flex!important;flex-direction:column!important;justify-content:space-between!important}
+.roundSummary .leagueBreakHeader{font-size:clamp(18px,3.9cqw,40px)!important;
+ line-height:1.12!important;margin:1px 0!important;color:#ffde96!important}
+.roundSummary .leagueBreakSeason{font-size:clamp(11px,2cqw,22px)!important;
+ font-weight:850!important;margin:2px 0 4px!important}
+.roundSummary .leagueBreakPanel table{font-size:clamp(11px,2.2cqw,23px)!important;
+ table-layout:fixed!important;width:100%!important;border-collapse:collapse!important}
+.roundSummary .leagueBreakPanel th,.roundSummary .leagueBreakPanel td{
+ padding:clamp(4px,1.1cqw,11px) 2px!important;line-height:1.15!important;
+ font-weight:900!important;border-bottom:1px solid #425672!important;
+ word-break:normal!important;overflow-wrap:anywhere!important}
+.roundSummary .leagueBreakPanel th:first-child,
+.roundSummary .leagueBreakPanel td:first-child{width:39%!important;text-align:left!important}
+.roundSummary .leagueBreakPanel .breakLogo{width:clamp(14px,3cqw,32px)!important;
+ height:clamp(18px,3.5cqw,38px)!important;margin-right:3px!important}
+.roundSummary .leagueNext{font-size:clamp(13px,2.7cqw,29px)!important;
+ font-weight:1000!important;margin:8px 0 0!important;color:#fff1ac!important}
+.wrap>.roundWaiting,.wrap.adminView>.roundWaiting{
+ position:absolute!important;top:53%!important;left:4%!important;right:4%!important;
+ transform:translateY(-50%)!important;z-index:24!important;
+ border:2px solid #d5ac63;border-radius:13px;
+ background:rgba(5,15,32,.96);box-shadow:0 6px 25px #000b;
+ padding:clamp(20px,4cqw,47px) clamp(10px,2cqw,25px)!important;
+ display:flex!important;flex-direction:column!important;gap:clamp(14px,3cqw,30px)!important;
+ text-align:center!important;color:#fff!important
+}
+.roundWaiting strong{font-size:clamp(22px,4.8cqw,52px);color:#ffda7b;line-height:1.1}
+.roundWaiting span{font-size:clamp(18px,4cqw,44px);font-weight:950;line-height:1.25}
+.adminRoundControls{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px}
+.adminRoundControls #startNextMatchButton{grid-column:auto!important;background:#70522d!important}
+.adminRoundControls #startNextMatchButton:disabled{opacity:.45!important;cursor:not-allowed!important}
+
 </style>
 </head>
 <body>
@@ -1022,17 +1090,28 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
   <div class="liveArenaName" id="liveArenaName">Doruk Arenası • MAÇ SKORU</div>
   <div class="leagueProfileHint" id="leagueProfileHint">Lig tablosu için profilimizdeki bağlantıyı açın</div>
   <button class="liveStartButton" id="liveStartButton" type="button" onclick="startNextMatch()">MAÇI BAŞLAT</button>
-  <div class="matchResultBanner" id="matchResultBanner" hidden aria-live="polite">
-    <div id="roundConfetti" class="roundConfetti" aria-hidden="true"></div>
-    <div class="resultWinner"></div><div class="resultScores"></div><div class="resultNext"></div>
-  </div>
-  <section id="leagueBreakPanel" class="leagueBreakPanel" hidden aria-label="Lig arası">
-    <div class="leagueBreakHeader">LİG PUAN DURUMU</div>
-    <div class="leagueBreakSeason" id="leagueBreakSeason">DORUK ARENASI</div>
-    <table aria-label="Puan durumu"><thead><tr><th>TAKIM</th><th>G</th><th>GOL</th><th>PUAN</th><th>KUPA</th></tr></thead>
-    <tbody id="leagueBreakRows"></tbody></table>
-    <div class="leagueNext">YENİ MAÇ 02:00 SONRA</div>
+  <section id="roundSummary" class="roundSummary" hidden aria-label="Kazanan ve lig puan durumu">
+    <div class="matchResultBanner" id="matchResultBanner" hidden aria-live="polite">
+      <div id="roundConfetti" class="roundConfetti" aria-hidden="true"></div>
+      <div class="resultSectionTitle">MAÇ SONUCU</div>
+      <div class="resultWinner"></div>
+      <div class="resultScores"></div>
+      <div class="resultNext"></div>
+    </div>
+    <section id="leagueBreakPanel" class="leagueBreakPanel" hidden aria-label="Lig puan durumu">
+      <div class="leagueBreakHeader">LİG PUAN DURUMU</div>
+      <div class="leagueBreakSeason" id="leagueBreakSeason">DORUK ARENASI</div>
+      <table aria-label="Puan durumu">
+        <thead><tr><th>TAKIM</th><th>G</th><th>GOL</th><th>PUAN</th><th>KUPA</th></tr></thead>
+        <tbody id="leagueBreakRows"></tbody>
+      </table>
+      <div class="leagueNext">SONUÇ EKRANI 01:00</div>
+    </section>
   </section>
+  <div id="roundWaiting" class="roundWaiting" hidden aria-live="polite">
+    <strong>MAÇ TAMAMLANDI</strong>
+    <span>YÖNETİCİNİN MAÇI BAŞLATMASI BEKLENİYOR</span>
+  </div>
   <section id="actorAdjust" class="actorAdjust" hidden aria-label="Oyuncu yerleşimi">
     <div class="actorAdjustTop">
       <button id="actorAdjustToggle" aria-expanded="false" aria-controls="actorAdjustBody">Yerleşim ▾</button>
@@ -1106,14 +1185,13 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
   <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jD"></span></span><span>BEKLEYEN ŞUT</span></div><input id="setQueueD" type="number" min="0" max="10000" step="1" aria-label="D bekleyen şut"></div>
 </div>
 <div class="adminSection"><div class="adminSectionTitle">GÜNCEL SKORLAR (ATILAN GOL)</div><div class="adminGrid"><div class="adminField"><label>Altın Pusula gol sayısı</label><input id="setScoreA" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>Kızıl Kıvılcım gol sayısı</label><input id="setScoreB" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>Gece Yıldızı gol sayısı</label><input id="setScoreC" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>Bordo Dalga gol sayısı</label><input id="setScoreD" type="number" min="0" max="1000000" step="1"></div></div></div>
-<div class="adminSection"><div class="adminSectionTitle">MAÇ, UZATMA VE ARA SÜRELERİ</div><div class="adminGrid">
+<div class="adminSection"><div class="adminSectionTitle">MAÇ VE SONUÇ EKRANI SÜRELERİ</div><div class="adminGrid">
   <div class="adminField"><label>Normal maç süresi (dakika)</label><input id="setMatchMinutes" type="number" min="1" max="120" step="1" value="25"></div>
   <div class="adminField"><label>Uzatma süresi (dakika)</label><input id="setOvertimeMinutes" type="number" min="0" max="30" step="1" value="5"></div>
-  <div class="adminField"><label>Kazanan ekranı (saniye)</label><input id="setWinnerSeconds" type="number" min="10" max="600" step="1" value="60"></div>
-  <div class="adminField"><label>Lig ekranı (saniye)</label><input id="setLeagueSeconds" type="number" min="10" max="900" step="1" value="120"></div>
+  <div class="adminField"><label>Kazanan + lig ekranı (saniye)</label><input id="setResultSeconds" type="number" min="10" max="900" step="1" value="60"></div>
   <div class="adminField"><label>Aktif arena adı</label><input id="setArenaName" type="text" value="Doruk Arenası" maxlength="48"></div>
   <div class="adminField"><label>Yayın ve spiker dili</label><select id="setBroadcastLanguage"><option value="tr">Türkçe</option><option value="en">English</option></select></div>
-  </div><p class="giftToggleHelp">Maç normal sürenin tamamını ve ardından uzatmayı oynar. Sonraki maç, kazanan ekranı + lig ekranından sonra başlar.</p>
+  </div><p class="giftToggleHelp">Maç normal süreyi ve uzatmayı tamamlar. Kazanan ve lig tablosu birlikte seçilen süre kadar görünür. Otomatik maç başlatma kapalıysa yeni maç yalnızca yönetici düğmesiyle başlar.</p>
  <p id="adminPreviewHint" class="adminPreviewHint" role="status" aria-live="off">Ayarları değiştirerek soldaki önizlemeyi kontrol edebilirsin. Kaydetmek için AYARLARI UYGULA'ya bas.</p>
 </div>
 <div class="adminSection"><div class="adminSectionTitle">OYUN AYARLARI</div><div class="adminGrid">
@@ -1144,10 +1222,10 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
   
   
 </div></div>
-<div class="adminActions"><div id="adminSaveStatus" role="status" style="color:#81e2bb;font-size:14px;font-weight:800"></div><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn endBtn" onclick="finishActiveMatch()">AKTİF MAÇI SONLANDIR</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">VARSAYILAN AYARLAR</button><button id="startNextMatchButton" class="adminBtn" type="button" onclick="startNextMatch()">YENİ MAÇI BAŞLAT</button></div>
+<div class="adminActions"><div id="adminSaveStatus" role="status" style="color:#81e2bb;font-size:14px;font-weight:800"></div><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn endBtn" onclick="finishActiveMatch()">AKTİF MAÇI SONLANDIR</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">VARSAYILAN AYARLAR</button></div>
 <div class="adminRoundControls">
-  <button id="autoMatchesToggle" type="button" onclick="toggleRoundControl('autoMatches')">OTOMATİK MAÇLAR: AÇIK</button>
-  <button id="manualMatchStartToggle" type="button" onclick="toggleRoundControl('manualMatchStart')">MAÇI ADMİN BAŞLATSIN: KAPALI</button>
+  <button id="autoMatchesToggle" type="button" data-enabled="false" onclick="toggleRoundControl('autoMatches')">OTOMATİK MAÇ BAŞLATMA: KAPALI</button>
+  <button id="startNextMatchButton" type="button" onclick="startNextMatch()" disabled>YENİ MAÇI BAŞLAT</button>
 </div>
 <div class="adminSecondaryActions">
  <button id="giftProcessingToggle" data-paused="false" type="button" onclick="toggleGiftProcessing()">ŞUT OYNATMAYI DURDUR</button>
@@ -1159,7 +1237,7 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v183.js?v=183"></script>
+<script src="./tiktok-shared-v184.js?v=184"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -1235,9 +1313,9 @@ function previewAdminDraft(){
  const hint=$('adminPreviewHint');
  if(hint){
   const normal=read('setMatchMinutes',1,120),extra=read('setOvertimeMinutes',0,30),
-   winner=read('setWinnerSeconds',10,600),league=read('setLeagueSeconds',10,900);
+   result=read('setResultSeconds',10,900);
   hint.textContent='Önizleme • Maç '+(normal??'–')+' dk + '+(extra??'–')+
-   ' dk uzatma • Kazanan '+(winner??'–')+' sn • Lig '+(league??'–')+
+   ' dk uzatma • Kazanan + lig birlikte '+(result??'–')+
    ' sn. Gerçek maç sayacı kaydedilince güncellenir.';
  }
 }
@@ -1256,9 +1334,9 @@ function fillAdminSettings(){
   const set=(id,v)=>{const e=$(id);if(e)e.value=v},check=(id,v)=>{const e=$(id);if(e)e.checked=!!v};
   for(const t of ['A','B','C','D']){set('setInitialKeeper'+t,initialKeeper(t));set('setQueue'+t,state[t].queue);set('setScore'+t,state[t].score);}
   adminEditBaseline={initial:Object.fromEntries(['A','B','C','D'].map(t=>[t,initialKeeper(t)])),queues:Object.fromEntries(['A','B','C','D'].map(t=>[t,state[t].queue])),scores:Object.fromEntries(['A','B','C','D'].map(t=>[t,state[t].score]))};
-  const times=window.AIFootballTikTok?.getTimings?.()||{normalMinutes:25,overtimeMinutes:5,winnerSeconds:60,leagueSeconds:120,arenaName:'Doruk Arenası',language:'tr'};
+  const times=window.AIFootballTikTok?.getTimings?.()||{normalMinutes:25,overtimeMinutes:5,resultSeconds:60,arenaName:'Doruk Arenası',language:'tr'};
   set('setMatchMinutes',times.normalMinutes);set('setOvertimeMinutes',times.overtimeMinutes);
-  set('setWinnerSeconds',times.winnerSeconds);set('setLeagueSeconds',times.leagueSeconds);
+  set('setResultSeconds',times.resultSeconds);
   set('setArenaName',times.arenaName);set('setBroadcastLanguage',times.language);
   set('setKeeperCost',state.keeperCost);set('setShotDelay',state.shotDelay);
   set('setSoundMaster',state.soundMaster);set('setSoundCrowd',state.soundCrowd);set('setSoundEffects',state.soundEffects);set('setSoundGoal',state.soundGoal);
@@ -1279,9 +1357,12 @@ function render(){
    startButton.hidden=!canStart;
   }
   const ctrl=window.AIFootballTikTok?.getRoundControls?.();
-  const auto=$('autoMatchesToggle'),manual=$('manualMatchStartToggle');
-  if(auto){auto.textContent='OTOMATİK MAÇLAR: '+(ctrl?.autoMatches!==false?'AÇIK':'KAPALI');auto.dataset.enabled=String(ctrl?.autoMatches!==false);}
-  if(manual){manual.textContent='MAÇI ADMİN BAŞLATSIN: '+(ctrl?.manualMatchStart===true?'AÇIK':'KAPALI');manual.dataset.enabled=String(ctrl?.manualMatchStart===true);}
+  const auto=$('autoMatchesToggle');
+  if(auto){
+   const enabled=ctrl?.autoMatches===true;
+   auto.textContent='OTOMATİK MAÇ BAŞLATMA: '+(enabled?'AÇIK':'KAPALI');
+   auto.dataset.enabled=String(enabled);
+  }
   const pauseButton=$('giftProcessingToggle');
   if(pauseButton){
    const paused=window.AIFootballTikTok?.getGiftProcessingPaused?.()===true;
@@ -1525,7 +1606,7 @@ async function applyAdminSettings(){
   const {error}=window.AIFootballTikTok?.active?await window.AIFootballTikTok.saveRules(gameRules,changedKeeper,changedQueues,changedScores):await db.from('games').update({rules:gameRules}).eq('id',ids.game);if(error){console.error(error);log('Ayarlar kaydedilemedi');return}
   const timingResult=await window.AIFootballTikTok?.setTimings?.({
    normalMinutes:num('setMatchMinutes',25,1,120),overtimeMinutes:num('setOvertimeMinutes',5,0,30),
-   winnerSeconds:num('setWinnerSeconds',60,10,600),leagueSeconds:num('setLeagueSeconds',120,10,900),
+   resultSeconds:num('setResultSeconds',60,10,900),
    arenaName:$('setArenaName')?.value?.trim()||'Doruk Arenası',
    language:$('setBroadcastLanguage')?.value==='en'?'en':'tr'
   });
@@ -1547,28 +1628,24 @@ async function restoreDefaultSettings(){
   log('Tüm ayarlar varsayılana döndürüldü');
 }
 async function toggleRoundControl(field){
- if(!adminAuthed||!window.AIFootballTikTok?.getRoundControls||!['autoMatches','manualMatchStart'].includes(field))return;
- const id=field==='autoMatches'?'autoMatchesToggle':'manualMatchStartToggle';
- const button=$(id);
+ if(!adminAuthed||field!=='autoMatches'||!window.AIFootballTikTok?.getRoundControls)return;
+ const button=$('autoMatchesToggle');
  if(button?.disabled)return;
- const current=window.AIFootballTikTok.getRoundControls();
- const requested=!current[field];
+ const previous=window.AIFootballTikTok.getRoundControls().autoMatches===true;
+ const requested=!previous;
  if(button)button.disabled=true;
  try{
-  const saved=await window.AIFootballTikTok.setRoundControls({[field]:requested});
-  const verified=window.AIFootballTikTok.getRoundControls();
-  if(!saved||verified[field]!==requested)throw Error('Maç kontrolü veritabanına kaydedilemedi');
+  const saved=await window.AIFootballTikTok.setRoundControls({autoMatches:requested});
+  const verified=window.AIFootballTikTok.getRoundControls().autoMatches===true;
+  if(!saved||verified!==requested)throw Error('Maç kontrolü veritabanına kaydedilemedi');
   const message=$('adminSaveStatus');
-  if(message)message.textContent=field==='autoMatches'
-   ?(requested?'Otomatik sonraki maç başlatma açıldı.':'Otomatik sonraki maç başlatma kapatıldı; mevcut maç süresi bitene kadar devam eder.')
-   :(requested?'Yeni maçı yönetici başlatacak.':'Yönetici başlatma zorunluluğu kaldırıldı.');
+  if(message)message.textContent=requested?
+   'Otomatik maç başlatma AÇILDI. Sonuç süresi bittiğinde yeni maç başlar.':
+   'Otomatik maç başlatma KAPATILDI. Yeni maç yalnızca yönetici tarafından başlatılır.';
  }catch(error){
   console.error('Maç ayarı kaydedilemedi',error);
-  alert('Maç kontrolü kaydedilemedi. İnternet bağlantısını ve yönetici yetkisini kontrol edin.');
- }finally{
-  if(button)button.disabled=false;
-  render();
- }
+  alert('Otomatik maç ayarı kaydedilemedi. Yönetici yetkisini ve bağlantıyı kontrol edin.');
+ }finally{if(button)button.disabled=false;render();}
 }
 async function finishActiveMatch(){
  if(!adminAuthed||!window.AIFootballTikTok?.finishCurrentRound)return;
