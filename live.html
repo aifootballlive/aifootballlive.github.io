@@ -1459,6 +1459,113 @@ body:not(.drawerMode):not(.settingsMode)>.wrap>.matchClockHud{
  display:none!important;visibility:hidden!important;pointer-events:none!important;
 }
 
+
+/* Safe inset from TikTok live title; integrated transparent header. */
+.wrap{--readable-card-top:9.65%}
+.wrap.adminView>.head,
+body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head{
+ position:absolute!important;display:flex!important;top:5.35%!important;
+ left:1%!important;right:1%!important;width:98%!important;
+ min-height:0!important;height:auto!important;padding:0 2px!important;
+ margin:0!important;align-items:center!important;justify-content:space-between!important;
+ gap:2px!important;background:transparent!important;border:0!important;
+ border-radius:0!important;box-shadow:none!important;z-index:15!important;
+ pointer-events:none!important;
+}
+.wrap.adminView>.head .title,
+body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head .title{
+ font-size:clamp(11px,2.2cqw,24px)!important;line-height:1.15!important;
+ font-weight:1000!important;letter-spacing:-.025em!important;
+ text-shadow:0 2px 4px #000,0 0 9px #000!important;
+ max-width:29%!important;min-width:0!important;
+ white-space:nowrap!important;overflow:hidden!important;
+}
+.wrap.adminView>.headRight,
+body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.headRight{
+ gap:clamp(2px,.35cqw,6px)!important;max-width:38%!important;
+ min-width:0!important;flex-wrap:nowrap!important;pointer-events:auto!important;
+}
+.wrap.adminView>.headRight .sub,
+.wrap.adminView>.headRight #connectionStatus{display:none!important}
+.wrap.adminView>.headRight .adminOpen,
+body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.headRight .adminOpen{
+ background:transparent!important;border:0!important;box-shadow:none!important;
+ color:#fff!important;text-shadow:0 2px 4px #000,0 0 7px #000!important;
+ font-size:clamp(11px,2.15cqw,23px)!important;font-weight:1000!important;
+ min-height:clamp(29px,4.6cqw,48px)!important;height:auto!important;
+ padding:3px 4px!important;
+}
+.wrap.adminView>.headRight #adminRefresh,
+body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.headRight #adminRefresh{
+ min-width:clamp(26px,4.7cqw,52px)!important;
+ width:clamp(26px,4.7cqw,52px)!important;
+}
+.wrap.adminView>.headRight #adminRefresh svg{
+ width:clamp(20px,3.1cqw,34px)!important;
+ height:clamp(20px,3.1cqw,34px)!important;
+}
+.wrap>.liveArenaName,.wrap.adminView>.liveArenaName,
+body:not(.drawerMode):not(.settingsMode)>.wrap>.liveArenaName{
+ position:absolute!important;display:flex!important;flex-direction:column!important;
+ align-items:center!important;justify-content:center!important;
+ top:5.35%!important;left:50%!important;right:auto!important;
+ transform:translateX(-50%)!important;width:38%!important;max-width:38%!important;
+ min-height:0!important;height:auto!important;padding:0 1px!important;
+ margin:0!important;border:0!important;background:transparent!important;
+ box-shadow:none!important;border-radius:0!important;
+ overflow:visible!important;white-space:nowrap!important;
+ color:#fff3bd!important;z-index:16!important;text-align:center!important;
+}
+.wrap>.liveArenaName .arenaTitle{
+ display:block!important;font-size:clamp(12px,2.5cqw,28px)!important;
+ font-weight:1000!important;line-height:1.13!important;
+ letter-spacing:-.03em!important;text-shadow:0 2px 3px #000,0 0 10px #000!important;
+ white-space:nowrap!important;
+}
+.wrap>.liveArenaName .arenaScoreCaption{
+ display:block!important;font-size:clamp(10px,1.8cqw,21px)!important;
+ line-height:1.16!important;letter-spacing:.05em!important;
+ font-weight:1000!important;color:#f5d480!important;
+ text-shadow:0 2px 4px #000,0 0 9px #000!important;
+}
+.wrap>.broadcastControls,.wrap.adminView>.broadcastControls,
+.wrap:not(.adminView)>.broadcastControls{top:var(--readable-card-top)!important}
+.wrap>.leagueProfileHint,.wrap.adminView>.leagueProfileHint,
+body:not(.drawerMode):not(.settingsMode)>.wrap>.leagueProfileHint{
+ top:calc(var(--readable-card-top) + var(--readable-card-height) + 4px)!important;
+}
+.wrap>.matchClockHud,.wrap.adminView>.matchClockHud,
+body:not(.drawerMode):not(.settingsMode)>.wrap>.matchClockHud{
+ top:calc(var(--readable-card-top) + var(--readable-card-height) + clamp(34px,5.4cqw,60px))!important;
+}
+@media screen and (max-width:600px){
+ body:not(.drawerMode):not(.settingsMode)>.wrap{
+  --readable-card-top:9.65%;
+  --readable-card-height:clamp(165px,46cqw,182px);
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head{
+  top:5.35%!important;min-height:0!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head .title{
+  font-size:11px!important;max-width:29%!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.headRight{
+  max-width:38%!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.headRight .adminOpen{
+  font-size:10px!important;padding:3px 2px!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap>.liveArenaName{top:5.35%!important}
+ body:not(.drawerMode):not(.settingsMode)>.wrap>.liveArenaName .arenaTitle{font-size:12px!important}
+ body:not(.drawerMode):not(.settingsMode)>.wrap>.liveArenaName .arenaScoreCaption{font-size:10px!important}
+ body:not(.drawerMode):not(.settingsMode)>.wrap>.leagueProfileHint{
+  top:calc(var(--readable-card-top) + var(--readable-card-height) + 4px)!important;
+ }
+ body:not(.drawerMode):not(.settingsMode)>.wrap>.matchClockHud{
+  top:calc(var(--readable-card-top) + var(--readable-card-height) + 34px)!important;
+ }
+}
+
 </style>
 </head>
 <body>
@@ -1469,7 +1576,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap>.matchClockHud{
  </div>
   
   
-  <div class="liveArenaName" id="liveArenaName">Doruk Arenası • MAÇ SKORU</div>
+  <div class="liveArenaName" id="liveArenaName" aria-label="Arena ve maç skorları"><span class="arenaTitle">Doruk Arenası</span><span class="arenaScoreCaption">MAÇ SKORLARI</span></div>
   <div class="leagueProfileHint" id="leagueProfileHint">Lig tablosu için profilimizdeki linke tıklayın</div>
   <section id="roundSummary" class="roundSummary" hidden aria-label="Kazanan ve lig puan durumu">
     <div class="matchResultBanner" id="matchResultBanner" hidden aria-live="polite">
@@ -1504,7 +1611,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap>.matchClockHud{
     <div id="actorAdjustStatus" class="actorAdjustStatus" role="status"></div>
   </section>
 
-  <div class="head"><div class="title">AI Football Live</div><div class="headRight"><div class="sub" id="connectionStatus">Bağlanıyor...</div><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile" title="Sayfayı yenile"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.8 9a7 7 0 0 1 12.8-2L20 12M4 12l1.4 5a7 7 0 0 0 12.8-2"/></svg></button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN AYARLARI</button></div></div>
+  <div class="head"><div class="title">AI Football Live</div><div class="headRight"><span id="connectionStatus" hidden aria-hidden="true"></span><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile" title="Sayfayı yenile"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.8 9a7 7 0 0 1 12.8-2L20 12M4 12l1.4 5a7 7 0 0 0 12.8-2"/></svg></button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN AYARLARI</button></div></div>
 
   <div class="adminFrontKeeper" id="adminFrontKeeper">
     <div class="keeperGroupTitle">Kalan kaleci güçleri</div>
@@ -1613,7 +1720,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap>.matchClockHud{
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v188.js?v=189"></script>
+<script src="./tiktok-shared-v190.js?v=190"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -1685,7 +1792,7 @@ function previewAdminDraft(){
   if(queue!==null){const node=$('frontQueue'+t);if(node)node.textContent=String(queue);}
  }
  const arena=adminPreviewArenaName(),title=$('liveArenaName');
- if(arena&&title&&title.textContent!==arena+' • MAÇ SKORU')title.textContent=arena+' • MAÇ SKORU';
+ const text=title?.querySelector('.arenaTitle');if(arena&&text&&text.textContent!==arena)text.textContent=arena;
  const hint=$('adminPreviewHint');
  if(hint){
   const normal=read('setMatchMinutes',1,120),extra=read('setOvertimeMinutes',0,30),
