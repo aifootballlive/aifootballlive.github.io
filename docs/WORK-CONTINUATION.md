@@ -49,3 +49,11 @@ Bu turda gerçek TikTok mobil görüntü/FPS, canlı Supabase yetkisi ve failove
 
 ## Sonraki oturum talimatı
 Önce GitHub varsayılan branch güncel dosyalarını oku; eski sürüme geri dönme. Öncelik cihaz/oturum güvenliği ve gerçek TikTok mobil yerleşimidir. Düzenlemeleri canlıya geçirmeden syntax + simülasyon + mümkünse gerçek ekran QA yap. Yapamadığın testi yapmış gibi raporlama. Her turun sonunda Work görev listesini yeniden güncelle.
+
+
+## 17.10.2026 — Chat modunda ek iyileştirme (Work'e taşınacak tamamlanmış kod)
+- Eski `admin-settings.html` artık ayrı bir oyun yüklemez; `live.html#admin` sayfasına yönlendirir. Ana sayfa yetkili adminse aynı sayfada paneli açar, değilse Supabase admin girişine yönlendirir. Böylece eskiden ikinci video/leader instance yaratan adres korunup hafifletildi.
+- Ana yönetim panelinde skor, bekleyen şut ve arena adı yerel önizlemeye anında yansır; normal/uzatma/kazanan/lig süreleri değişirken admin önizleme özeti güncellenir. Her karakter girişinde DB yazılmaz; AYARLARI UYGULA kalıcı kayıttır.
+- Ses ayarı toggles anlık denenir, panel kapatılırsa kaydedilmemiş genel sunum ayarları son kayıtlı duruma döner. Kaydedilen ana ses açık/kapalı ayarı artık sayfa yenilemede zorla true yapılmaz.
+- Lig iframesi panel kapatılırken veya ayarlara geri dönülürken boşaltılır; gizli arka plan güncellemesi azalır.
+- Güncel dosyalar: live.html, tiktok-shared-v179.js; admin-settings.html yalnız legacy redirect. Kontrollü JS önizleme ve sözdizimi testleri başarılı; gerçek Live Studio/tel cihaz performansı doğrulanmadı.
