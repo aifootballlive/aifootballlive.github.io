@@ -262,7 +262,7 @@ html,body{background:#050a12}
 </div></div>
 <div class="adminActions"><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">TÜM AYARLARI VARSAYILANA DÖNDÜR</button></div><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v151.js?v=151"></script>
+<script src="./tiktok-shared-v152.js?v=152"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -410,6 +410,7 @@ function handleEventRow(row,animate=true){if(window.AIFootballTikTok?.active)ret
 async function getAuth(){const {data}=await db.auth.getUser();adminAuthed=!!(data&&data.user&&data.user.id===ADMIN_UID);render();setConn()}
 async function loadRemote(force=false){if(window.AIFootballTikTok?.active)return;if(polling||(!force&&state.busy)||document.hidden)return;polling=true;try{const {data:g,error:ge}=await db.from('games').select('id,rules').eq('name','AI Football Live').limit(1).single();if(ge)throw ge;ids.game=g.id;applyRules(g.rules);const {data:teams,error:te}=await db.from('teams').select('id,name,score').eq('game_id',ids.game);if(te)throw te;const a=teams.find(x=>x.name==='Sarı-Lacivert'),b=teams.find(x=>x.name==='Sarı-Kırmızı');if(!a||!b)throw new Error('Takımlar bulunamadı');ids.team.A=a.id;ids.team.B=b.id;state.A.score=a.score||0;state.B.score=b.score||0;const {data:gks,error:gke}=await db.from('goalkeepers').select('id,team_id').eq('game_id',ids.game);if(gke)throw gke;for(const gk of gks){if(gk.team_id===ids.team.A)ids.goalkeeper.A=gk.id;if(gk.team_id===ids.team.B)ids.goalkeeper.B=gk.id}const {data:kss,error:kse}=await db.from('goalkeeper_opponent_state').select('id,goalkeeper_id,power').eq('game_id',ids.game);if(kse)throw kse;for(const ks of kss){if(ks.goalkeeper_id===ids.goalkeeper.A){ids.keeperState.A=ks.id;state.keeper.A=Number(ks.power)}if(ks.goalkeeper_id===ids.goalkeeper.B){ids.keeperState.B=ks.id;state.keeper.B=Number(ks.power)}}const {data:pending,error:pe}=await db.from('pending_shots').select('attacking_team_id').eq('game_id',ids.game).eq('status','pending');if(pe)throw pe;state.A.queue=pending.filter(x=>x.attacking_team_id===ids.team.A).length;state.B.queue=pending.filter(x=>x.attacking_team_id===ids.team.B).length;const {data:last}=await db.from('game_events').select('id,event_type,attacking_team_id,defending_team_id,created_at').eq('game_id',ids.game).order('created_at',{ascending:false}).limit(1);render();if(last&&last[0])handleEventRow(last[0],false);setConn()}catch(e){console.error(e);$('connectionStatus').textContent='Bağlantı hatası'}finally{polling=false;if(window.AIFootballTikTok?.active)window.AIFootballTikTok.restore()}}
 const localShotQueue=[];let localShotBusy=false;
+window.AIFootballLocalShotsPending=()=>localShotQueue.length>0;
 async function waitFor3D(){
   const started=Date.now();
   while(Date.now()-started<5000){
@@ -444,7 +445,7 @@ async function runLocalShotQueue(){
       render();window.AIFootballTikTok?.onShotResolved();
       try{window.AIFootball3D?.finishShot(t,result)}catch(e){}
       await window.AIFootball3D?.waitForShot?.(t);
-      await sleep(Math.max(900,Number(state.shotDelay)||3000));
+      // A queued shot starts immediately after the previous clip, with no idle break.
     }
   }finally{localShotBusy=false}
 }
@@ -520,6 +521,6 @@ render();boot();
 <script id="instantSyncFix" src="./instant-sync.js?v=94"></script>
 <script id="stadiumAudioScript" src="./stadium-audio-clean.js?v=47"></script>
 
-<script id="game3dScript" src="./scene-video-v150.js?v=150"></script>
+<script id="game3dScript" src="./scene-video-v152.js?v=152"></script>
 </body>
 </html>
