@@ -1090,6 +1090,47 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
 .roundSummary .leagueBreakPanel th:nth-child(7){font-size:clamp(9px,1.45cqw,16px)!important}
 .roundSummary .leagueBreakPanel th:nth-child(8){font-size:clamp(9px,1.45cqw,16px)!important}
 
+
+/* The Start Match control belongs on the MAIN ADMIN preview, never in settings.
+   Disabled state remains visible so it is clear where to start the next game. */
+.wrap.adminView>.liveStartButton{
+ position:absolute!important;
+ inset:auto 5% 1.2% 5%!important;
+ width:90%!important;max-width:none!important;
+ z-index:40!important;display:flex!important;flex-direction:column!important;
+ align-items:center!important;justify-content:center!important;
+ gap:3px!important;min-height:clamp(62px,8cqw,92px)!important;
+ padding:8px 12px!important;border:3px solid #a5f3bc!important;
+ border-radius:12px!important;
+ background:linear-gradient(180deg,#228a55,#115b38)!important;
+ box-shadow:0 6px 22px #000b,0 0 18px #19c07088!important;
+ color:#fff!important;text-shadow:0 2px 2px #0007!important;
+ cursor:pointer!important;
+}
+.wrap.adminView>.liveStartButton .startMatchAction{
+ font-size:clamp(21px,4.3cqw,43px)!important;
+ line-height:1.08!important;font-weight:1000!important;
+ letter-spacing:.02em!important;
+}
+.wrap.adminView>.liveStartButton .startMatchHint{
+ font-size:clamp(11px,2.05cqw,20px)!important;
+ line-height:1.13!important;font-weight:850!important;opacity:.98;
+}
+.wrap.adminView>.liveStartButton:disabled{
+ background:linear-gradient(180deg,#344051,#182438)!important;
+ border-color:#9aabc3!important;
+ box-shadow:0 3px 11px #0007!important;cursor:not-allowed!important;
+ opacity:.9!important;
+}
+.wrap.adminView>.liveStartButton[hidden]{display:none!important}
+body.drawerMode .wrap>.liveStartButton,
+body.settingsMode .wrap>.liveStartButton{display:none!important}
+.adminRoundControls{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+.adminRoundControls #autoMatchesToggle{
+ width:100%!important;min-height:56px!important;
+ padding:12px!important;text-align:center!important;font-size:15px!important;
+}
+
 </style>
 </head>
 <body>
@@ -1099,7 +1140,7 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
   
   <div class="liveArenaName" id="liveArenaName">Doruk Arenası • MAÇ SKORU</div>
   <div class="leagueProfileHint" id="leagueProfileHint">Lig tablosu için profilimizdeki bağlantıyı açın</div>
-  <button class="liveStartButton" id="liveStartButton" type="button" onclick="startNextMatch()">MAÇI BAŞLAT</button>
+  <button class="liveStartButton" id="liveStartButton" type="button" onclick="startNextMatch()" disabled hidden aria-describedby="liveStartHint"><span class="startMatchAction">MAÇI BAŞLAT</span><span class="startMatchHint" id="liveStartHint">Maç bilgisi yükleniyor</span></button>
   <section id="roundSummary" class="roundSummary" hidden aria-label="Kazanan ve lig puan durumu">
     <div class="matchResultBanner" id="matchResultBanner" hidden aria-live="polite">
       <div id="roundConfetti" class="roundConfetti" aria-hidden="true"></div>
@@ -1234,8 +1275,7 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
 </div></div>
 <div class="adminActions"><div id="adminSaveStatus" role="status" style="color:#81e2bb;font-size:14px;font-weight:800"></div><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn endBtn" onclick="finishActiveMatch()">AKTİF MAÇI SONLANDIR</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">VARSAYILAN AYARLAR</button></div>
 <div class="adminRoundControls">
-  <button id="autoMatchesToggle" type="button" data-enabled="false" onclick="toggleRoundControl('autoMatches')">OTOMATİK MAÇ BAŞLATMA: KAPALI</button>
-  <button id="startNextMatchButton" type="button" onclick="startNextMatch()" disabled>YENİ MAÇI BAŞLAT</button>
+  <button id="autoMatchesToggle" type="button" data-enabled="false" onclick="toggleRoundControl('autoMatches')">MAÇLAR OTOMATİK DEVAM ETSİN: KAPALI</button>
 </div>
 <div class="adminSecondaryActions">
  <button id="giftProcessingToggle" data-paused="false" type="button" onclick="toggleGiftProcessing()">ŞUT OYNATMAYI DURDUR</button>
@@ -1247,7 +1287,7 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v184.js?v=185"></script>
+<script src="./tiktok-shared-v185.js?v=186"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -1355,22 +1395,39 @@ function fillAdminSettings(){
   syncAdminValue('SoundMaster',state.soundMaster,'%');syncAdminValue('SoundCrowd',state.soundCrowd,'%');syncAdminValue('SoundEffects',state.soundEffects,'%');syncAdminValue('SoundGoal',state.soundGoal,'%');
   syncAdminValue('CameraZoom',state.cameraZoom,'%');syncAdminValue('StadiumExposure',state.stadiumExposure,'%');
 }
+// Independent main-page match launch; visible only to the logged-in admin.
+function syncMainMatchStart(){
+ const button=$('liveStartButton');
+ if(!button)return;
+ button.hidden=!adminAuthed;
+ if(!adminAuthed)return;
+ const clock=window.AIFootballTikTok?.getMatchClock?.();
+ const ends=window.AIFootballTikTok?.getBreakDeadlines?.();
+ const hasEnded=Number.isFinite(clock?.finishedAt);
+ const deadline=Number(ends?.summaryUntil);
+ const now=Date.now();
+ const ready=hasEnded&&Number.isFinite(deadline)&&deadline>0&&now>=deadline;
+ button.disabled=!ready;
+ const hint=$('liveStartHint');
+ let status='Maç bilgisi yükleniyor';
+ if(clock&&!hasEnded)status='Aktif maç devam ediyor';
+ else if(hasEnded&&!ready){
+  const remaining=Math.ceil(Math.max(0,deadline-now)/1000);
+  status='Sonuç ekranı: '+String(Math.floor(remaining/60)).padStart(2,'0')+':'+String(remaining%60).padStart(2,'0');
+ }else if(ready)status='Yeni maçı başlatmak için dokunun';
+ if(hint&&hint.textContent!==status)hint.textContent=status;
+ button.title=status;
+ button.setAttribute('aria-disabled',String(!ready));
+}
+window.AIFootballUpdateMainMatchLaunch=syncMainMatchStart;
 function render(){
   document.querySelector('.wrap').classList.toggle('adminView',adminAuthed);
-  const startButton=$('liveStartButton');
-  if(startButton){
-   const timing=window.AIFootballTikTok?.getMatchClock?.();
-   const endOfBreak=window.AIFootballTikTok?.getBreakDeadlines?.()?.leagueUntil;
-   const canStart=!!adminAuthed&&!!timing?.finishedAt&&
-    Number.isFinite(endOfBreak)&&Date.now()>=endOfBreak&&
-    window.AIFootballTikTok?.getStatus?.().leader===true;
-   startButton.hidden=!canStart;
-  }
+  syncMainMatchStart();
   const ctrl=window.AIFootballTikTok?.getRoundControls?.();
   const auto=$('autoMatchesToggle');
   if(auto){
    const enabled=ctrl?.autoMatches===true;
-   auto.textContent='OTOMATİK MAÇ BAŞLATMA: '+(enabled?'AÇIK':'KAPALI');
+   auto.textContent='MAÇLAR OTOMATİK DEVAM ETSİN: '+(enabled?'AÇIK':'KAPALI');
    auto.dataset.enabled=String(enabled);
   }
   const pauseButton=$('giftProcessingToggle');
@@ -1650,8 +1707,8 @@ async function toggleRoundControl(field){
   if(!saved||verified!==requested)throw Error('Maç kontrolü veritabanına kaydedilemedi');
   const message=$('adminSaveStatus');
   if(message)message.textContent=requested?
-   'Otomatik maç başlatma AÇILDI. Sonuç süresi bittiğinde yeni maç başlar.':
-   'Otomatik maç başlatma KAPATILDI. Yeni maç yalnızca yönetici tarafından başlatılır.';
+   'Otomatik devam AÇIK: maç bitince sonuç ekranından sonra yeni maç başlar.':
+   'Otomatik devam KAPALI: maç bitince yeni maç yalnızca ana ekrandaki butonla başlar.';
  }catch(error){
   console.error('Maç ayarı kaydedilemedi',error);
   alert('Otomatik maç ayarı kaydedilemedi. Yönetici yetkisini ve bağlantıyı kontrol edin.');
@@ -1670,10 +1727,22 @@ async function finishActiveMatch(){
 }
 async function startNextMatch(){
  if(!adminAuthed)return;
+ const button=$('liveStartButton');
+ if(button?.disabled)return;
+ if(button)button.disabled=true;
  try{
-  const started=await window.AIFootballTikTok?.startNextMatch?.();
-  if(!started)alert('Kazanan ve lig ekranı için ayarlanan süreler dolmadan yeni maç başlatılamaz.');
- }catch(e){console.error('Maç başlatılamadı',e);}
+  if(typeof window.AIFootballTikTok?.startNextMatch!=='function')throw new Error('Maç motoru hazır değil');
+  const started=await window.AIFootballTikTok.startNextMatch();
+  if(!started){
+   alert('Yeni maç henüz başlatılamıyor. Mevcut maçın ve 60 saniyelik sonuç ekranının bitmesini bekleyin.');
+   return;
+  }
+  const message=$('adminSaveStatus');
+  if(message)message.textContent='Yeni maç yönetici tarafından başlatıldı.';
+ }catch(e){
+  console.error('Maç başlatılamadı',e);
+  alert('Maç başlatılamadı. Bağlantı ve yönetici oturumunu kontrol edin.');
+ }finally{syncMainMatchStart();render();}
 }
 async function toggleGiftProcessing(){
  if(!adminAuthed||!window.AIFootballTikTok?.active)return;
