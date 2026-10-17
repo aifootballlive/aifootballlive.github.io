@@ -696,6 +696,102 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
   padding:3px 4px!important;
 }
 .wrap>.leagueProfileHint{font-size:23px!important;line-height:1.08!important}
+
+/*
+ * Full-HD portrait source typography.
+ * OBS Browser Source at 1080x1920 is downscaled to ~390px in the TikTok phone.
+ * Fixed 24px browser-source labels become ~9px in the phone preview. Font sizes
+ * must instead scale against the actual 9:16 .wrap width, not desktop viewport.
+ * Modern OBS Chromium supports CSS container query units (cqw).
+ */
+.wrap{container-type:inline-size;--readable-card-height:clamp(230px,37.5cqw,420px)}
+.wrap>.broadcastControls .panel,
+.wrap:not(.adminView)>.broadcastControls .panel,
+.wrap.adminView>.broadcastControls .panel{
+ height:var(--readable-card-height)!important;min-width:0;
+}
+.wrap .broadcastControls .panelHead.teamScore,
+.wrap .broadcastControls .panelHead{
+ height:clamp(100px,13cqw,145px)!important;
+ grid-template-columns:minmax(0,36%) minmax(0,64%)!important;
+ grid-template-rows:minmax(38px,4.5cqw) minmax(58px,8cqw)!important;
+}
+.wrap .broadcastControls .teamLogo{
+ width:clamp(31px,6.5cqw,73px)!important;
+ height:clamp(35px,6.6cqw,74px)!important;max-width:100%;
+}
+.wrap .broadcastControls .teamTitle,
+.wrap.adminView .broadcastControls .teamTitle,
+.wrap:not(.adminView) .broadcastControls .teamTitle{
+ font-size:clamp(18px,3.85cqw,44px)!important;
+ line-height:1.05!important;font-weight:950!important;
+ letter-spacing:-.02em!important;text-shadow:0 1px 1px #0009;
+ white-space:normal!important;overflow-wrap:normal;word-break:normal;
+ text-wrap:balance;
+}
+.wrap .broadcastControls .teamScore .num,
+.wrap.adminView .broadcastControls .teamScore .num{
+ font-size:clamp(35px,5.9cqw,65px)!important;line-height:1!important;
+}
+.wrap .broadcastControls .giftbtn{
+ height:clamp(51px,10.6cqw,119px)!important;
+ min-height:clamp(51px,10.6cqw,119px)!important;
+ gap:clamp(1px,.8cqw,7px)!important;
+}
+.wrap .broadcastControls .giftVisual,
+.wrap .broadcastControls .giftVisual img{
+ height:clamp(27px,5.3cqw,60px)!important;
+ line-height:clamp(27px,5.3cqw,60px)!important;
+}
+.wrap .broadcastControls .giftEffect,
+.wrap.adminView .broadcastControls .giftEffect{
+ font-size:clamp(18px,3.25cqw,36px)!important;
+ line-height:1.05!important;font-weight:950!important;
+ text-shadow:0 1px 1px #0008;
+}
+.wrap .broadcastControls .panel .adminTeamQueue,
+.wrap.adminView .broadcastControls .panel .adminTeamQueue{
+ font-size:clamp(13px,2.8cqw,31px)!important;
+ line-height:1.05!important;
+ padding:clamp(3px,.6cqw,7px)!important;
+ min-height:clamp(43px,6.7cqw,73px)!important;
+ background:rgba(5,12,25,.94)!important;
+ white-space:normal!important;overflow-wrap:normal;word-break:normal;
+}
+.wrap .broadcastControls .panel .adminTeamQueue strong{
+ font-size:clamp(24px,4.1cqw,46px)!important;line-height:1!important;
+}
+.wrap>.liveArenaName,.wrap.adminView>.liveArenaName{
+ font-size:clamp(21px,3.7cqw,42px)!important;
+}
+.wrap>.matchClockHud,.wrap:not(.adminView)>.matchClockHud,
+.wrap.adminView>.matchClockHud{
+ top:calc(var(--readable-card-top) + var(--readable-card-height) + clamp(4px,.6cqw,8px))!important;
+}
+.wrap>.matchClockHud .clockLabel{
+ font-size:clamp(20px,3.55cqw,40px)!important;line-height:1.08!important;
+}
+.wrap>.matchClockHud .clockDigits{
+ font-size:clamp(42px,6.65cqw,76px)!important;line-height:1!important;
+}
+.wrap>.leagueProfileHint{
+ font-size:clamp(19px,3.0cqw,34px)!important;
+ line-height:1.12!important;
+ bottom:2.8%!important;
+}
+.wrap.adminView>.head .title{
+ font-size:clamp(19px,3.1cqw,35px)!important;
+}
+.wrap.adminView>.headRight .sub{
+ font-size:clamp(13px,2.05cqw,23px)!important;
+}
+.wrap.adminView>.headRight .adminOpen{
+ font-size:clamp(15px,2.05cqw,23px)!important;
+}
+@media(max-width:400px){
+ .wrap .broadcastControls .teamTitle{font-size:18px!important}
+ .wrap .broadcastControls .giftEffect{font-size:18px!important}
+}
 </style>
 </head>
 <body>
