@@ -1761,6 +1761,42 @@ body.settingsMode>.leagueDrawer:not(.show){
  body.drawerMode .leagueDrawer iframe{height:calc(100% - 50px)!important}
 }
 
+
+/* FIX: interactive header buttons stopped receiving pointer/touch events
+   because .head used pointer-events:none and the previous .headRight
+   pointer-events:auto selector incorrectly targeted a direct child of .wrap.
+   Keep the header background click-through, but explicitly restore
+   pointer events to its actual nested control group and buttons. */
+.wrap.adminView>.head{
+ pointer-events:none!important;
+}
+.wrap.adminView>.head>.headRight,
+body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{
+ position:relative!important;z-index:45!important;
+ pointer-events:auto!important;
+ display:flex!important;align-items:center!important;
+}
+.wrap.adminView>.head>.headRight>#adminRefresh,
+.wrap.adminView>.head>.headRight>#adminOpen,
+body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight>#adminRefresh,
+body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight>#adminOpen{
+ position:relative!important;z-index:46!important;
+ pointer-events:auto!important;touch-action:manipulation!important;
+ cursor:pointer!important;flex-shrink:0!important;
+ -webkit-tap-highlight-color:rgba(255,255,255,.18);
+}
+.wrap.adminView>.head>.headRight>#adminRefresh:not([hidden]),
+.wrap.adminView>.head>.headRight>#adminOpen{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ min-height:38px!important;
+}
+.wrap.adminView>.head>.headRight>#adminRefresh[hidden]{display:none!important;}
+/* The central arena label must not intercept taps near the right controls. */
+.wrap>.liveArenaName,.wrap>.liveArenaName *,
+.wrap.adminView>.liveArenaName,.wrap.adminView>.liveArenaName *{
+ pointer-events:none!important;
+}
+
 </style>
 </head>
 <body>
