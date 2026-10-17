@@ -188,11 +188,18 @@ html,body{background:#050a12}
 #giftProcessingToggle[data-paused="true"]{background:#20513f;border-color:#50a88b}
 #giftProcessingToggle:disabled{opacity:.6}
 .giftToggleHelp{color:#b8c9df;font-size:11px;line-height:1.5;margin:5px 3px 12px}
+/* Keep sign-in reachable before authentication; do not cover scores or the clock. */
+.accountPageLink{position:absolute;z-index:9;top:8px;left:4%;padding:6px 8px;border:1px solid #6d839a;border-radius:6px;background:rgba(8,18,35,.94);color:#fff;text-decoration:none;font-size:11px;line-height:16px;font-weight:900}
+.wrap.adminView>.accountPageLink{display:none}
+.wrap:not(.adminView){--hud-start:48px}
+.wrap:not(.adminView)>.leaguePageLink{top:8px}
+.wrap:not(.adminView)>.matchClockHud{top:8px;max-width:calc(100% - 160px);min-width:0;font-size:11px;line-height:14px;padding:5px;white-space:normal}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div id="matchClockHud" class="matchClockHud" data-phase="normal" role="timer" aria-label="Maç süresi">MAÇ 25:00</div>
+  <a id="accountAccess" class="accountPageLink" href="./admin-edm2026.html" target="_top">HESABIM</a>
   <a class="leaguePageLink" href="./league.html" target="_blank" rel="noopener" aria-label="Lig tablosunu görüntüle">LİG</a>
   <div class="matchResultBanner" id="matchResultBanner" hidden aria-live="polite">
     <div class="resultWinner"></div><div class="resultScores"></div><div class="resultNext"></div>
