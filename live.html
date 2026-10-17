@@ -725,8 +725,13 @@ $('actorSave').onclick=async()=>{
 new ResizeObserver(resizeActorPanel).observe($('actorAdjust'));
 
 function log(m){const el=$('event');el.dataset.matchMessage=m;el.replaceChildren();const team=/Altın Pusula|Sarı-Lacivert/i.test(m)?'A':/Kızıl Kıvılcım|Sarı-Kırmızı/i.test(m)?'B':null;if(team){const icon=document.createElement('span');icon.className='jersey queueJersey j'+team;el.appendChild(icon);}el.appendChild(document.createTextNode(m.replace(/Altın Pusula|Kızıl Kıvılcım|Sarı-Lacivert|Sarı-Kırmızı/gi,'').trim()));}function setConn(){const live=realtimeStatus==='SUBSCRIBED';$('connectionStatus').textContent=(live?'Canlı bağlı':'Bağlı')+(adminAuthed?' • Admin':'')}
+function releaseLeagueDrawer(){
+ const iframe=$('leagueDrawerFrame');
+ if(iframe?.hasAttribute('src'))iframe.removeAttribute('src');
+}
 function openAdmin(){
  if(!adminAuthed)return;
+ releaseLeagueDrawer();
  fillAdminSettings();
  $('leagueDrawer').classList.remove('show');$('leagueDrawer').setAttribute('aria-hidden','true');
  document.body.classList.add('drawerMode');
@@ -747,6 +752,7 @@ function closeAdmin(){
  if(document.body.classList.contains('settingsMode')){location.replace('./live.html');return;}
  $('adminOverlay').classList.remove('show');
  $('leagueDrawer').classList.remove('show');$('leagueDrawer').setAttribute('aria-hidden','true');
+ releaseLeagueDrawer();
  // Restore unsaved presentation settings to the last persisted game configuration.
  applyRules(gameRules);
  document.body.classList.remove('drawerMode');
