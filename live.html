@@ -602,6 +602,60 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  body.drawerMode .adminStat .statLabel{font-size:21px!important}
 }
 
+
+/* 2026-10-17 portrait HUD typography hotfix.
+   The TikTok/OBS source commonly renders a 430px portrait frame inside a
+   wide desktop browser, so viewport-based @media cannot control font size. */
+.wrap{--readable-card-height:clamp(202px,min(47vw,27dvh),219px)}
+.wrap .broadcastControls .panelHead.teamScore,
+.wrap .broadcastControls .panelHead{
+ height:91px!important;
+ grid-template-rows:36px minmax(51px,auto)!important;
+}
+.wrap .broadcastControls .teamTitle,
+.wrap.adminView .broadcastControls .teamTitle,
+.wrap:not(.adminView) .broadcastControls .teamTitle{
+ font-size:20px!important;line-height:1.13!important;
+ font-weight:950!important;letter-spacing:0!important;
+ max-width:100%;white-space:normal!important;
+ overflow-wrap:anywhere;word-break:normal;
+}
+.wrap .broadcastControls .teamScore .num,
+.wrap.adminView .broadcastControls .teamScore .num{font-size:36px!important;line-height:1!important}
+.wrap .broadcastControls .giftbtn{
+ height:52px!important;min-height:52px!important;
+}
+.wrap .broadcastControls .giftVisual,
+.wrap .broadcastControls .giftVisual img{
+ height:30px!important;line-height:30px!important;
+}
+.wrap .broadcastControls .giftEffect,
+.wrap.adminView .broadcastControls .giftEffect{
+ font-size:20px!important;line-height:1.08!important;
+ white-space:normal!important;
+}
+.wrap .broadcastControls .panel .adminTeamQueue,
+.wrap.adminView .broadcastControls .panel .adminTeamQueue{
+ font-size:16px!important;line-height:1.1!important;
+ white-space:normal!important;overflow-wrap:anywhere;
+ min-height:43px;padding:4px 3px!important;
+}
+.wrap .broadcastControls .panel .adminTeamQueue strong{font-size:25px!important}
+.wrap>.liveArenaName,.wrap.adminView>.liveArenaName{font-size:21px!important}
+.wrap>.matchClockHud .clockLabel{font-size:20px!important;line-height:1.13!important}
+.wrap>.matchClockHud .clockDigits{font-size:39px!important;line-height:1.03!important}
+.wrap>.leagueProfileHint{font-size:19px!important;line-height:1.2!important}
+.wrap.adminView>.head .title{font-size:19px!important}
+.wrap.adminView>.headRight .sub{font-size:13px!important;line-height:1.18!important}
+.wrap.adminView>.headRight .adminOpen{font-size:15px!important}
+#adminRefresh svg{width:26px!important;height:26px!important}
+@media(max-width:370px){
+ .wrap{--readable-card-height:215px}
+ .wrap .broadcastControls .teamTitle{font-size:18px!important}
+ .wrap .broadcastControls .panelHead.teamScore,
+ .wrap .broadcastControls .panelHead{height:96px!important}
+ .wrap .broadcastControls .giftEffect{font-size:18px!important}
+}
 </style>
 </head>
 <body>
