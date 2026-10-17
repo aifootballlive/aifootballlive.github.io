@@ -1240,6 +1240,22 @@ body.settingsMode .wrap>.liveStartButton{display:none!important}
  }
 }
 
+
+/* Critical: an element with [hidden] must stay hidden in administrator mode.
+   An older .wrap.adminView > .roundWaiting rule had equal specificity
+   and forced display:flex despite the hidden attribute. This caused the
+   false "match finished" overlay on top of a running match timer. */
+.wrap>.roundWaiting[hidden],
+.wrap.adminView>.roundWaiting[hidden],
+.wrap>.roundSummary[hidden],
+.wrap.adminView>.roundSummary[hidden],
+.wrap>.roundSummary .matchResultBanner[hidden],
+.wrap>.roundSummary .leagueBreakPanel[hidden]{
+ display:none!important;
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+
 </style>
 </head>
 <body>
@@ -1396,7 +1412,7 @@ body.settingsMode .wrap>.liveStartButton{display:none!important}
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v185.js?v=186"></script>
+<script src="./tiktok-shared-v186.js?v=187"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
