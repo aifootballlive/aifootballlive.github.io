@@ -34,7 +34,7 @@ async function finishIfAdmin(user){
  const {data,error}=await db.auth.getUser();
  if(error||data?.user?.id!==ADMIN_UID){show('Kimlik doğrulaması teyit edilemedi.');return false;}
  show('Giriş başarılı. Oyun açılıyor…',true);
- setTimeout(()=>location.replace('./live.html'),350);return true;
+ setTimeout(()=>location.replace(new URLSearchParams(location.search).get('next')==='settings'?'./admin-settings.html':'./live.html'),350);return true;
 }
 function showProfile(user){const isAdmin=!!(user&&user.id===ADMIN_UID);form.hidden=isAdmin;document.getElementById('profile').hidden=!isAdmin;document.getElementById('profileEmail').textContent=isAdmin?(user.email||'Admin hesabı'):'';}
 (async()=>{try{const {data}=await db.auth.getUser();showProfile(data&&data.user);}catch(e){show('Oturum kontrol edilemedi. Tekrar deneyebilirsin.')}})();
