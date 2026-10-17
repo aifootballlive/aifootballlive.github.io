@@ -328,7 +328,7 @@ html,body{background:#050a12}
     <button class="giftbtn def" onclick="addKeeper('B',10)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars s3"><span></span><span></span><span></span></span></span></span><span class="giftEffect">+10 güç</span><span class="coin">100 jeton</span></button>
     <button class="giftbtn def" onclick="addKeeper('B',50)"><span class="powerVisual"><svg class="shieldSvg" viewBox="0 0 24 24"><path d="M12 2l7 3v6c0 4.5-2.7 8-7 11-4.3-3-7-6.5-7-11V5l7-3z" fill="#fff"/><path d="M12 5v13" stroke="#e53935" stroke-width="2.2"/></svg><span class="powerStars max"><span></span></span></span></span><span class="giftEffect">+50 güç</span><span class="coin">500 jeton</span></button>
   </div><div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueB">0</strong></div></section>
-  <section class="panel"><div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/gece-yildizi.svg" alt="Gece Yıldızı simgesi"><div class="num" id="scoreC">0</div><div class="teamTitle">Gece Yıldızı</div></div><div class="sectionLabel">BJK</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('C',1)" aria-label="BJK şut"><span class="giftVisual">⚽</span><span class="giftEffect">Şut</span><span class="coin">Finger Heart</span></button></div><div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueC">0</strong></div></section>
+  <section class="panel"><div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/gece-yildizi.svg" alt="Gece Yıldızı simgesi"><div class="num" id="scoreC">0</div><div class="teamTitle">Gece Yıldızı</div></div><div class="sectionLabel">GECE YILDIZI</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('C',1)" aria-label="Gece Yıldızı şut"><span class="giftVisual">⚽</span><span class="giftEffect">Şut</span><span class="coin">Finger Heart</span></button></div><div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueC">0</strong></div></section>
   <section class="panel"><div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/bordo-dalga.svg" alt="Bordo Dalga simgesi"><div class="num" id="scoreD">0</div><div class="teamTitle">Bordo Dalga</div></div><div class="sectionLabel">BAĞLI HEDİYE</div><div class="buttons"><button class="giftbtn shot" onclick="addShots('D',1)"><span class="giftVisual">GG</span><span class="giftEffect">1 şut</span><span class="coin">GG</span></button></div><div class="adminTeamQueue">Bekleyen şut <strong id="frontQueueD">0</strong></div></section>
   </div>
   <div class="matchControls" id="matchControls" aria-label="Bekleyen şutlar ve ses"><div class="queues"></div></div>
@@ -344,7 +344,7 @@ html,body{background:#050a12}
   <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jC"></span></span><span>BEKLEYEN ŞUT</span></div><input id="setQueueC" type="number" min="0" max="10000" step="1" aria-label="C bekleyen şut"></div>
   <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jD"></span></span><span>BEKLEYEN ŞUT</span></div><input id="setQueueD" type="number" min="0" max="10000" step="1" aria-label="D bekleyen şut"></div>
 </div>
-<div class="adminSection"><div class="adminSectionTitle">GÜNCEL SKORLAR (ATILAN GOL)</div><div class="adminGrid"><div class="adminField"><label>FB gol sayısı</label><input id="setScoreA" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>GS gol sayısı</label><input id="setScoreB" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>BJK gol sayısı</label><input id="setScoreC" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>TS gol sayısı</label><input id="setScoreD" type="number" min="0" max="1000000" step="1"></div></div></div>
+<div class="adminSection"><div class="adminSectionTitle">GÜNCEL SKORLAR (ATILAN GOL)</div><div class="adminGrid"><div class="adminField"><label>Altın Pusula gol sayısı</label><input id="setScoreA" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>Kızıl Kıvılcım gol sayısı</label><input id="setScoreB" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>Gece Yıldızı gol sayısı</label><input id="setScoreC" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>Bordo Dalga gol sayısı</label><input id="setScoreD" type="number" min="0" max="1000000" step="1"></div></div></div>
 <div class="adminSection"><div class="adminSectionTitle">OYUN AYARLARI</div><div class="adminGrid">
 
   <div class="adminField"><label>Bir şut başına kaleci güç kaybı</label><input id="setKeeperCost" type="number" min="1" step="1"></div>
@@ -380,7 +380,7 @@ html,body{background:#050a12}
 <button id="giftProcessingToggle" data-paused="false" type="button" onclick="toggleGiftProcessing()">ŞUT OYNATMAYI DURDUR</button>
 <p class="giftToggleHelp">Gelen hediyeler kayıt edilip kuyruğa alınır, şutlar duraklatılır. TikTok'ta hediye gönderilmesini tamamen kapatmak için TikTok LIVE ayarlarından Allow Gifts seçeneğini kapatın.</p><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v171.js?v=171"></script>
+<script src="./tiktok-shared-v172.js?v=172"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -388,7 +388,7 @@ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Oftm7DRbr0Vdt9gTLFGAaw_LQq4PCnP';
 const ADMIN_UID='6893f884-6b91-4224-abaa-43f87df0966f';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const $=id=>document.getElementById(id),sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const nameOf=t=>({A:'Sarı-Lacivert',B:'Sarı-Kırmızı',C:'Siyah-Beyaz',D:'Bordo-Mavili'}[t]||t);
+const nameOf=t=>({A:'Altın Pusula',B:'Kızıl Kıvılcım',C:'Gece Yıldızı',D:'Bordo Dalga'}[t]||t);
 let adminAuthed=false,polling=false,gameRules={},audioCtx=null,realtimeStatus='';
 const DEFAULT_ADMIN_SETTINGS={shotThreshold:10,startKeeper:100,keeperCost:10,shotDelay:3000,soundMaster:88,soundCrowd:72,soundEffects:92,soundGoal:100,soundEnabled:true,crowdEnabled:true,announcerEnabled:true,goalFxEnabled:true,cameraZoom:100,stadiumExposure:116,idleMotion:100,ballSize:100,goalSize:100,confettiAmount:70,sceneLabel:true,showQueues:true,showStatus:true};
 let state={...DEFAULT_ADMIN_SETTINGS,A:{score:0,queue:0},B:{score:0,queue:0},C:{score:0,queue:0},D:{score:0,queue:0},keeper:{A:100,B:100,C:100,D:100},lastTeam:'B',busy:false};
@@ -516,7 +516,7 @@ $('actorSave').onclick=async()=>{
 };
 new ResizeObserver(resizeActorPanel).observe($('actorAdjust'));
 
-function log(m){const el=$('event');el.dataset.matchMessage=m;el.replaceChildren();const team=/Sarı-Lacivert/i.test(m)?'A':/Sarı-Kırmızı/i.test(m)?'B':null;if(team){const icon=document.createElement('span');icon.className='jersey queueJersey j'+team;el.appendChild(icon);}el.appendChild(document.createTextNode(m.replace(/Sarı-Lacivert|Sarı-Kırmızı/gi,'').trim()));}function setConn(){const live=realtimeStatus==='SUBSCRIBED';$('connectionStatus').textContent=(live?'Canlı bağlı':'Bağlı')+(adminAuthed?' • Admin':'')}
+function log(m){const el=$('event');el.dataset.matchMessage=m;el.replaceChildren();const team=/Altın Pusula|Sarı-Lacivert/i.test(m)?'A':/Kızıl Kıvılcım|Sarı-Kırmızı/i.test(m)?'B':null;if(team){const icon=document.createElement('span');icon.className='jersey queueJersey j'+team;el.appendChild(icon);}el.appendChild(document.createTextNode(m.replace(/Altın Pusula|Kızıl Kıvılcım|Sarı-Lacivert|Sarı-Kırmızı/gi,'').trim()));}function setConn(){const live=realtimeStatus==='SUBSCRIBED';$('connectionStatus').textContent=(live?'Canlı bağlı':'Bağlı')+(adminAuthed?' • Admin':'')}
 function openAdmin(){if(adminAuthed){fillAdminSettings();$('adminOverlay').classList.add('show')}}function closeAdmin(){$('adminOverlay').classList.remove('show')}
 function initAudio(){try{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume()}catch(e){}}
 function playGoalSound(){try{initAudio();if(!audioCtx)return;const now=audioCtx.currentTime;[392,523,659,784].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=i<2?'square':'sawtooth';o.frequency.setValueAtTime(f,now+i*.11);g.gain.setValueAtTime(.0001,now+i*.11);g.gain.exponentialRampToValueAtTime(.16,now+i*.11+.02);g.gain.exponentialRampToValueAtTime(.0001,now+i*.11+.22);o.connect(g);g.connect(audioCtx.destination);o.start(now+i*.11);o.stop(now+i*.11+.24)})}catch(e){}}
@@ -691,6 +691,7 @@ render();boot();
 <script id="stadiumAudioScript" src="./stadium-audio-v165.js?v=165"></script>
 
 <script src="./scene-audio-cues-v165.js?v=165"></script>
+<script src="./round-finale-v172.js?v=172"></script>
 <script id="game3dScript" src="./scene-video-v158.js?v=158"></script>
 </body>
 </html>
