@@ -900,7 +900,13 @@ async function boot(){
  db.auth.onAuthStateChange((event,session)=>{if(event!=='INITIAL_SESSION')authGeneration++;if(event==='SIGNED_OUT')applyAuthRole(null);else if(session?.user)applyAuthRole(session.user);else if(event==='INITIAL_SESSION'&&!adminAuthed)applyAuthRole(null);});
  const recheck=()=>{if(!document.hidden)getAuth().catch(()=>{});};
  window.addEventListener('focus',recheck);window.addEventListener('online',recheck);document.addEventListener('visibilitychange',recheck);
- await getAuth();if(window.AIFootballTikTok?.active){await loadTikTokPresentation();window.AIFootballTikTok.activate();return;}await loadRemote(true);setupRealtime();setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
+ await getAuth();
+ if(location.hash==='#admin'){
+  history.replaceState(null,'',location.pathname+location.search);
+  if(!adminAuthed){location.replace('./admin-edm2026.html?next=settings');return;}
+  openAdmin();
+ }
+ if(window.AIFootballTikTok?.active){await loadTikTokPresentation();window.AIFootballTikTok.activate();return;}await loadRemote(true);setupRealtime();setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
 render();boot();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=94"></script>
