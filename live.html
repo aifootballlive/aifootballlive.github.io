@@ -364,10 +364,17 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:12px}
 .adminActions .endBtn{background:#a04e23;border:1px solid #eaaa5c;color:#fff;border-radius:8px;font-weight:900}
 .adminRoundControls{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .adminRoundControls button,#giftProcessingToggle{font-size:14px!important;line-height:18px;min-height:46px;padding:9px 5px}
-#adminRefresh{display:inline-flex!important;align-items:center;justify-content:center;
+#adminRefresh:not([hidden]){display:inline-flex!important;align-items:center;justify-content:center;
  padding:5px!important;min-width:28px;min-height:28px}
 #adminRefresh svg{display:block}
 body.settingsMode>.leagueDrawer.show{width:min(55vw,900px);margin:0}
+#adminRefresh[hidden]{display:none!important}
+.adminActions #startNextMatchButton{background:#70522d;border:1px solid #b58e57;border-radius:8px;color:#fff;font-weight:900}
+.adminSecondaryActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
+.adminSecondaryActions #giftProcessingToggle,.adminSecondaryActions .logoutBtn{
+ margin:0;min-width:0;width:100%;min-height:47px;padding:8px 5px;font-size:14px!important;
+ line-height:18px;font-weight:900;border-radius:8px}
+.adminActions button:disabled,.adminSecondaryActions button:disabled{opacity:.5;cursor:wait}
 @media(max-width:800px){
  body.drawerMode{display:block!important;padding:8px}
  body.drawerMode>.wrap{width:min(100%,290px)!important;margin:0 auto 12px!important}
@@ -498,14 +505,16 @@ body.settingsMode>.leagueDrawer.show{width:min(55vw,900px);margin:0}
   
   
 </div></div>
-<div class="adminActions"><div id="adminSaveStatus" role="status" style="color:#81e2bb;font-size:14px;font-weight:800"></div><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn endBtn" onclick="finishActiveMatch()">AKTİF MAÇI SONLANDIR</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">VARSAYILAN AYARLAR</button></div>
+<div class="adminActions"><div id="adminSaveStatus" role="status" style="color:#81e2bb;font-size:14px;font-weight:800"></div><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn endBtn" onclick="finishActiveMatch()">AKTİF MAÇI SONLANDIR</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">VARSAYILAN AYARLAR</button><button id="startNextMatchButton" class="adminBtn" type="button" onclick="startNextMatch()">YENİ MAÇI BAŞLAT</button></div>
 <div class="adminRoundControls">
   <button id="autoMatchesToggle" type="button" onclick="toggleRoundControl('autoMatches')">OTOMATİK MAÇLAR: AÇIK</button>
   <button id="manualMatchStartToggle" type="button" onclick="toggleRoundControl('manualMatchStart')">MAÇI ADMİN BAŞLATSIN: KAPALI</button>
-  <button id="startNextMatchButton" type="button" onclick="startNextMatch()">YENİ MAÇI BAŞLAT</button>
 </div>
-<button id="giftProcessingToggle" data-paused="false" type="button" onclick="toggleGiftProcessing()">ŞUT OYNATMAYI DURDUR</button>
-<p class="giftToggleHelp">Gelen hediyeler kayıt edilip kuyruğa alınır, şutlar duraklatılır. TikTok'ta hediye gönderilmesini tamamen kapatmak için TikTok LIVE ayarlarından Allow Gifts seçeneğini kapatın.</p><button class="adminBtn logoutBtn" onclick="logoutAdmin()">ADMİN OTURUMUNU KAPAT</button></div></section></div>
+<div class="adminSecondaryActions">
+ <button id="giftProcessingToggle" data-paused="false" type="button" onclick="toggleGiftProcessing()">ŞUT OYNATMAYI DURDUR</button>
+ <button class="adminBtn logoutBtn" onclick="logoutAdmin()">OTURUMU KAPAT</button>
+</div>
+<p class="giftToggleHelp">Şutlar durdurulduğunda gelen hediyeler kuyruğa eklenir. TikTok'ta hediye gönderimini tamamen kapatmak için LIVE ayarlarından hediye seçeneğini kapatmalısın.</p></div></section></div>
 <aside id="leagueDrawer" class="leagueDrawer" aria-label="Lig puan durumu" aria-hidden="true">
  <div class="leagueDrawerHead"><strong>LİG TABLOSU</strong><div class="drawerHeaderActions"><button type="button" class="drawerTab" onclick="openAdmin()">AYARLAR</button><button type="button" class="closeBtn" onclick="closeAdmin()">KAPAT</button></div></div>
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
