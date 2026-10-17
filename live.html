@@ -1080,6 +1080,16 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
 .adminRoundControls #startNextMatchButton{grid-column:auto!important;background:#70522d!important}
 .adminRoundControls #startNextMatchButton:disabled{opacity:.45!important;cursor:not-allowed!important}
 
+
+/* Extended standings table matches the standalone league: O G B M GOL PUAN KUPA. */
+.roundSummary .leagueBreakPanel th:first-child,
+.roundSummary .leagueBreakPanel td:first-child{width:34%!important}
+.roundSummary .leagueBreakPanel th,
+.roundSummary .leagueBreakPanel td{font-size:clamp(9px,1.65cqw,18px)!important;padding:clamp(3px,.8cqw,9px) 1px!important}
+.roundSummary .leagueBreakPanel td:first-child{font-size:clamp(10px,1.95cqw,20px)!important;font-weight:950!important}
+.roundSummary .leagueBreakPanel th:nth-child(7){font-size:clamp(9px,1.45cqw,16px)!important}
+.roundSummary .leagueBreakPanel th:nth-child(8){font-size:clamp(9px,1.45cqw,16px)!important}
+
 </style>
 </head>
 <body>
@@ -1102,7 +1112,7 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
       <div class="leagueBreakHeader">LİG PUAN DURUMU</div>
       <div class="leagueBreakSeason" id="leagueBreakSeason">DORUK ARENASI</div>
       <table aria-label="Puan durumu">
-        <thead><tr><th>TAKIM</th><th>G</th><th>GOL</th><th>PUAN</th><th>KUPA</th></tr></thead>
+        <thead><tr><th>TAKIM</th><th>O</th><th>G</th><th>B</th><th>M</th><th>GOL</th><th>PUAN</th><th>KUPA</th></tr></thead>
         <tbody id="leagueBreakRows"></tbody>
       </table>
       <div class="leagueNext">SONUÇ EKRANI 01:00</div>
@@ -1237,7 +1247,7 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v184.js?v=184"></script>
+<script src="./tiktok-shared-v184.js?v=185"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
