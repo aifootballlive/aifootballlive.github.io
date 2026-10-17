@@ -431,6 +431,160 @@ select:disabled,
 [aria-disabled="true"] {
   cursor: not-allowed !important;
 }
+
+/* Large-type mode: roughly double the previously tiny 7–12px labels.
+   Keep the 9:16 broadcast in four compact columns, with responsive wraps. */
+.wrap{--readable-card-top:10%;--readable-card-height:clamp(190px,min(49vw,27dvh),230px)}
+.wrap>.head,.wrap.adminView>.head{
+ display:flex!important;top:.6%!important;left:2%!important;right:2%!important;
+ height:auto!important;min-height:48px;z-index:12;
+ gap:7px;padding:6px;border-radius:8px;background:rgba(7,16,33,.94);
+ border:1px solid #536985;
+}
+.wrap>.head .title,.wrap.adminView>.head .title{
+ font-size:clamp(17px,2.1vw,24px)!important;line-height:1.15!important;
+ font-weight:950;white-space:nowrap;flex-shrink:0;
+}
+.wrap>.headRight,.wrap.adminView>.headRight{min-width:0;gap:5px;justify-content:flex-end}
+.wrap>.headRight .sub,.wrap.adminView>.headRight .sub{
+ font-size:clamp(11px,1.4vw,17px)!important;line-height:1.2!important;
+ font-weight:800;color:#e8f3ff;overflow-wrap:anywhere;max-width:115px;
+}
+.wrap>.headRight .adminOpen,.wrap.adminView>.headRight .adminOpen{
+ font-size:clamp(13px,1.5vw,18px)!important;line-height:1.2!important;
+ min-height:42px;padding:8px 7px;white-space:nowrap;
+}
+#adminRefresh:not([hidden]){min-width:43px!important;min-height:43px!important}
+#adminRefresh svg{width:29px!important;height:29px!important}
+.wrap>.liveArenaName,.wrap.adminView>.liveArenaName{
+ top:6.2%!important;font-size:clamp(17px,2.5vw,24px)!important;
+ line-height:1.18;padding:4px 8px;max-width:94%;overflow:hidden;
+ text-overflow:ellipsis;
+}
+.wrap>.broadcastControls,.wrap:not(.adminView)>.broadcastControls,
+.adminFrontKeeper:not(.show)~.broadcastControls{
+ top:var(--readable-card-top)!important;gap:4px;
+}
+.wrap>.broadcastControls .panel,.wrap:not(.adminView) .broadcastControls .panel,
+.wrap.adminView .broadcastControls .panel{
+ height:var(--readable-card-height)!important;padding:6px 3px!important;
+ overflow:hidden;min-width:0;
+}
+.wrap .broadcastControls .panelHead.teamScore,.wrap .broadcastControls .panelHead{
+ grid-template-columns:minmax(24px,38%) minmax(0,1fr)!important;
+ grid-template-rows:40px minmax(43px,auto)!important;
+ height:86px!important;margin-bottom:0!important;
+}
+.wrap .broadcastControls .teamLogo{max-width:100%;width:39px;height:40px}
+.wrap .broadcastControls .teamScore .num{font-size:clamp(28px,3.7vw,39px)!important}
+.wrap .broadcastControls .teamTitle{
+ font-size:clamp(15px,2vw,21px)!important;line-height:1.15!important;
+ letter-spacing:0;max-width:100%;overflow-wrap:break-word;
+}
+.wrap .broadcastControls .giftbtn{height:68px!important;min-height:68px!important;padding:2px 1px!important}
+.wrap .broadcastControls .giftVisual,
+.wrap .broadcastControls .giftVisual img{height:42px!important;line-height:42px!important}
+.wrap .broadcastControls .giftEffect{font-size:clamp(17px,2vw,22px)!important;line-height:1.12!important}
+.wrap .broadcastControls .panel .adminTeamQueue{
+ font-size:clamp(12px,1.55vw,17px)!important;line-height:1.15!important;
+ white-space:normal;gap:4px;padding:5px 2px;bottom:3px;
+}
+.wrap .broadcastControls .panel .adminTeamQueue strong{font-size:clamp(21px,2.7vw,28px)!important;line-height:1.1!important}
+.wrap>.matchClockHud,.wrap:not(.adminView)>.matchClockHud,.wrap.adminView>.matchClockHud{
+ top:calc(var(--readable-card-top) + var(--readable-card-height) + 23px)!important;
+ padding:5px 6px!important;
+}
+.matchClockHud .clockLabel{font-size:clamp(18px,2.3vw,24px)!important;line-height:1.15!important}
+.matchClockHud .clockDigits{font-size:clamp(36px,4.1vw,48px)!important;line-height:1.06!important}
+.wrap>.adminFrontKeeper{top:calc(var(--readable-card-top) + var(--readable-card-height) + 90px)!important}
+.wrap>.matchControls,.adminFrontKeeper:not(.show)~.matchControls{
+ top:calc(var(--readable-card-top) + var(--readable-card-height) + 85px)!important;
+}
+/* Move the league-profile notice away from team/arena names and match clock. */
+.wrap>.leagueProfileHint{
+ top:auto!important;bottom:1.5%!important;left:6%!important;right:6%!important;
+ padding:7px 9px;border:1px solid #6988aa;border-radius:8px;
+ font-size:clamp(16px,2.1vw,21px)!important;line-height:1.25!important;
+ background:rgba(7,16,34,.9);z-index:8;
+}
+.wrap:has(.leagueBreakPanel:not([hidden]))>.leagueProfileHint,
+.wrap:has(.matchResultBanner:not([hidden]))>.leagueProfileHint{display:none}
+.wrap .frontKeeperTop{font-size:16px!important}
+.wrap .frontKeeperTop strong{font-size:26px!important}
+.wrap .keeperGroupTitle{font-size:17px!important;line-height:20px!important}
+.wrap .frontKeeperCard{min-height:42px}
+.wrap .matchControls .queueLeft{font-size:13px!important}
+.wrap .matchControls .queueNum{font-size:23px!important}
+.matchResultBanner .resultWinner{font-size:clamp(26px,4vw,38px)!important}
+.matchResultBanner .resultScores,.matchResultBanner .resultNext{font-size:clamp(20px,2.5vw,26px)!important}
+.leagueBreakHeader{font-size:clamp(25px,3.5vw,34px)!important;line-height:1.15!important}
+.leagueBreakSeason{font-size:19px!important}
+.leagueBreakPanel table{font-size:clamp(15px,1.9vw,19px)!important}
+.leagueBreakPanel .leagueNext{font-size:24px!important}
+.wrap>.liveStartButton{font-size:18px!important;min-height:42px}
+
+/* Larger admin controls: allow 2-column form labels to wrap instead of truncating. */
+body.drawerMode .adminHead,body.settingsMode .adminHead,
+.adminHead{font-size:clamp(22px,2.6vw,29px)!important;line-height:1.3!important}
+.drawerTab,.closeBtn{font-size:clamp(18px,2.1vw,24px)!important;padding:12px 15px!important}
+body.drawerMode .adminSectionTitle,body.settingsMode .adminSectionTitle,
+.adminSectionTitle{font-size:clamp(24px,2.7vw,32px)!important;line-height:1.2!important}
+body.drawerMode .adminField label,body.settingsMode .adminField label,
+body.drawerMode .adminToggle,body.settingsMode .adminToggle,
+body.drawerMode .adminStat,body.settingsMode .adminStat,
+body.drawerMode .adminStat .statLabel,body.settingsMode .adminStat .statLabel{
+ font-size:clamp(23px,2.25vw,29px)!important;line-height:1.3!important;
+}
+.adminField label{white-space:normal;flex-wrap:wrap}
+.adminStat .statLabel{align-items:flex-start;white-space:normal;min-height:0}
+.adminStat .statLabel span:last-child{white-space:normal;overflow-wrap:anywhere}
+body.drawerMode .adminField input,body.drawerMode .adminField select,
+body.drawerMode .adminStat input,body.settingsMode .adminField input,
+body.settingsMode .adminField select,body.settingsMode .adminStat input,
+body.drawerMode .adminField input[type="text"]{
+ font-size:clamp(26px,2.7vw,34px)!important;line-height:1.2!important;
+ min-height:55px;padding:9px 10px;
+}
+.adminGrid{row-gap:16px;column-gap:12px}
+.adminStats{gap:12px}
+body.drawerMode .adminStat,body.settingsMode .adminStat{padding:14px}
+body.drawerMode .adminSection,body.settingsMode .adminSection{padding:18px;margin-top:14px}
+body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
+.adminToggle input{width:29px;height:29px;flex:none}
+.adminActions button,.adminRoundControls button,#giftProcessingToggle,
+.adminSecondaryActions #giftProcessingToggle,.adminSecondaryActions .logoutBtn{
+ font-size:clamp(20px,2.25vw,26px)!important;line-height:1.2!important;
+ min-height:62px!important;padding:12px 9px!important;
+ white-space:normal;
+}
+.adminPreviewHint,.giftToggleHelp{
+ font-size:clamp(20px,2vw,25px)!important;line-height:1.4!important;
+}
+.leagueDrawerHead{font-size:27px!important;min-height:76px}
+.leagueDrawer iframe{height:calc(100% - 76px)}
+@media(max-width:650px){
+ .wrap{--readable-card-top:12%;--readable-card-height:clamp(184px,min(49vw,26dvh),220px)}
+ .wrap>.head,.wrap.adminView>.head{flex-wrap:wrap;justify-content:space-between;gap:3px;min-height:45px}
+ .wrap>.head .title,.wrap.adminView>.head .title{font-size:17px!important}
+ .wrap>.headRight .sub,.wrap.adminView>.headRight .sub{font-size:11px!important;max-width:88px}
+ .wrap>.headRight .adminOpen,.wrap.adminView>.headRight .adminOpen{font-size:13px!important;min-height:34px;padding:5px}
+ #adminRefresh:not([hidden]){min-width:34px!important;min-height:34px!important}
+ #adminRefresh svg{width:23px!important;height:23px!important}
+ .wrap>.liveArenaName,.wrap.adminView>.liveArenaName{top:7.3%!important;font-size:17px!important}
+ .wrap .broadcastControls .teamTitle{font-size:15px!important}
+ .wrap .broadcastControls .teamScore .num{font-size:29px!important}
+ .wrap .broadcastControls .giftEffect{font-size:16px!important}
+ .wrap .broadcastControls .panel .adminTeamQueue{font-size:12px!important}
+ .wrap>.leagueProfileHint{font-size:15px!important}
+ .adminStats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .adminGrid{grid-template-columns:1fr}
+ .adminActions button,.adminRoundControls button,
+ .adminSecondaryActions #giftProcessingToggle,.adminSecondaryActions .logoutBtn{font-size:19px!important}
+ body.drawerMode .adminHead{flex-wrap:wrap;gap:10px}
+ body.drawerMode .adminField label,body.drawerMode .adminToggle,
+ body.drawerMode .adminStat .statLabel{font-size:21px!important}
+}
+
 </style>
 </head>
 <body>
