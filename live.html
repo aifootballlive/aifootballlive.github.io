@@ -1797,6 +1797,35 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight>#admin
  pointer-events:none!important;
 }
 
+
+/* Admin / guest round-end panel is visible ONLY for the real result phase.
+   Prevent a permanently dark empty sheet on returning to the normal tab
+   (older persisted admin UI state and CSS could ignore the hidden attribute).
+   The match engine synchronizes the explicit data-showing marker every tick. */
+.wrap>#roundSummary:not([data-showing="true"]),
+.wrap.adminView>#roundSummary:not([data-showing="true"]),
+.wrap>#roundSummary[hidden],
+.wrap.adminView>#roundSummary[hidden],
+.wrap>#roundSummary[aria-hidden="true"],
+.wrap.adminView>#roundSummary[aria-hidden="true"]{
+ display:none!important;
+ visibility:hidden!important;
+ opacity:0!important;
+ pointer-events:none!important;
+}
+.wrap>#roundSummary[data-showing="true"]:not([hidden]),
+.wrap.adminView>#roundSummary[data-showing="true"]:not([hidden]){
+ display:flex!important;
+ visibility:visible!important;
+ opacity:1!important;
+}
+/* Match time is shown when the referee has started the match regardless
+   of whether subsequent rounds are set to manual. */
+.wrap>.matchClockHud .clockDigits:not([hidden]),
+.wrap.adminView>.matchClockHud .clockDigits:not([hidden]){
+ visibility:visible!important;
+}
+
 </style>
 </head>
 <body>
@@ -1951,7 +1980,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight>#admin
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v190.js?v=190"></script>
+<script src="./tiktok-shared-v191.js?v=191"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2300,7 +2329,13 @@ async function runLocalShotQueue(){
     }
   }finally{localShotBusy=false}
 }
-function refreshAdminPage(){if(!adminAuthed)return;location.reload();}
+function refreshAdminPage(){
+ if(!adminAuthed)return;
+ // Refresh with a unique URL to bypass Chrome's cached GitHub Pages HTML.
+ const url=new URL('./live.html',location.href);
+ url.searchParams.set('refresh',String(Date.now()));
+ location.replace(url.href);
+}
 async function addShots(t,n){
   if(window.AIFootballTikTok?.active){
     // No changing button text and no async wait: optimistic queue update happens synchronously.
