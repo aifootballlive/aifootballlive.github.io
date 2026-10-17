@@ -1119,7 +1119,7 @@ body.drawerMode .adminBody,body.settingsMode .adminBody{padding:16px}
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v181.js?v=181"></script>
+<script src="./tiktok-shared-v182.js?v=182"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -1232,7 +1232,10 @@ function render(){
   const startButton=$('liveStartButton');
   if(startButton){
    const timing=window.AIFootballTikTok?.getMatchClock?.();
-   const canStart=!!adminAuthed&&!!timing?.finishedAt&&window.AIFootballTikTok?.getStatus?.().leader===true;
+   const endOfBreak=window.AIFootballTikTok?.getBreakDeadlines?.()?.leagueUntil;
+   const canStart=!!adminAuthed&&!!timing?.finishedAt&&
+    Number.isFinite(endOfBreak)&&Date.now()>=endOfBreak&&
+    window.AIFootballTikTok?.getStatus?.().leader===true;
    startButton.hidden=!canStart;
   }
   const ctrl=window.AIFootballTikTok?.getRoundControls?.();
