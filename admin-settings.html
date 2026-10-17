@@ -810,5 +810,11 @@ render();boot();
 <script src="./scene-audio-cues-v165.js?v=165"></script>
 <script src="./round-finale-v173.js?v=173"></script>
 <script id="game3dScript" src="./scene-video-v159.js?v=159"></script>
+<script>
+/* This is an administration preview, not the audio source for the live broadcast. */
+window.addEventListener('load',()=>{
+ if(document.body.classList.contains('settingsMode'))window.AIFootballAudio?.disableSound?.();
+});
+</script>
 </body>
 </html>
