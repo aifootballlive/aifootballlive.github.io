@@ -261,7 +261,7 @@
    if(!matchRunning(m)||!target||target.startsAt!==payload.startsAt||hasVideoCompletionProof(m,target))return false;
    // The HTMLVideoElement 'ended' event plus actual end mediaTime is the
    // authoritative proof of spending a shot, not a guessed timeout.
-   target.videoStartedAt||=Date.now()-Math.min(payload.duration*1000,60000);
+   target.videoStartedAt||=Math.max(target.startsAt,Date.now()-Math.min(payload.duration*1000,60000));
    target.videoFinishedAt=Date.now();
   },false).catch(e=>console.warn('Video bitiş onayı yazılamadı',e))
    .finally(()=>videoAckInFlight.delete('finish:'+payload.cueId));
@@ -751,7 +751,8 @@
    if(!hasVideoCompletionProof(match,cue)){
     // A started or preloaded clip is NOT yet a spent shot. If it never fully
     // plays, requeue it intact; a video timer is never enough to spend a gift.
-    const expires=Math.max(cue.endsAt+6500,(cue.videoStartedAt||0)+12000);
+    const clipDuration=Math.max(1500,cue.endsAt-cue.startsAt);
+    const expires=Math.max(cue.endsAt+8000,(cue.videoStartedAt||0)+clipDuration+9000);
     if(now>=expires){
      await change(m=>{
       if(m.cue?.id!==cue.id||hasVideoCompletionProof(m,m.cue))return false;
@@ -775,6 +776,15 @@
      m.nextCue=null;
     }
     m.cue.finishedAt=Date.now();m.cooldownUntil=0;
+   });
+   return;
+  }
+  // Recover a clip flagged finished by older engines before real
+  // end-of-video accounting was introduced. Never silently erase it.
+  if(match.cue?.finishedAt&&!hasVideoCompletionProof(match,match.cue)){
+   await change(m=>{
+    if(!m.cue?.finishedAt||hasVideoCompletionProof(m,m.cue))return false;
+    returnUnplayedCues(m);return true;
    });
    return;
   }
