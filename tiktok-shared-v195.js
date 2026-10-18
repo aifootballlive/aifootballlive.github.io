@@ -298,7 +298,7 @@
     counts[gift.team]+=Math.max(1,Math.floor(Number(gift.count)||1));
   }
   // Optimistic UI: count unconfirmed requests and not-yet-flushed button bursts immediately.
-  for(const r of pendingRequests.values(){
+  for(const r of pendingRequests.values()){
    const p=r.payload;
    if(!match.commandReceipts?.includes(p.id)&&counts[p.team]!==undefined)counts[p.team]+=p.count;
   }
