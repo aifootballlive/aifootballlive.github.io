@@ -1987,7 +1987,16 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 #broadcastViewport .leagueProfileHint{font-size:clamp(10px,2.6cqw,14px)!important;line-height:1.1!important;padding:2px!important}
 #broadcastViewport>#matchClockHud:not([data-phase="result"]){padding:2px 4px!important}
 
-#broadcastViewport:not(.adminView) .broadcastControls>.panel .adminTeamQueue{display:none!important}
+/* Queue totals are public match data, visible in normal, private, OBS and admin views. */
+#broadcastViewport:not(.adminView) .broadcastControls>.panel .adminTeamQueue,
+#broadcastViewport.adminView .broadcastControls>.panel .adminTeamQueue{
+ display:flex!important;
+ visibility:visible!important;
+ opacity:1!important;
+ align-items:center!important;
+ justify-content:space-between!important;
+ min-width:0!important;
+}
 #broadcastViewport:not(.adminView) .broadcastControls>.panel .giftbtn:disabled{opacity:1!important;filter:none!important}
 
 /* Compact team-specific queue clearing controls, settings only. */
