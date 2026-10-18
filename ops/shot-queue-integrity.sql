@@ -49,5 +49,5 @@ begin
 end;$fn$;
 revoke all on function private.shot_complete(jsonb,jsonb,boolean),private.shot_pending(jsonb),private.validate_shot_queue(jsonb,jsonb),private.guard_shot_queue() from public,anon;
 grant execute on function private.shot_complete(jsonb,jsonb,boolean),private.shot_pending(jsonb),private.validate_shot_queue(jsonb,jsonb),private.guard_shot_queue() to authenticated;
--- Activate only after compatible frontend publication:
--- create trigger preserve_unplayed_shots before update of rules on public.games for each row execute function private.guard_shot_queue();
+-- Activated after v204 frontend publication on 2026-10-19:
+create trigger preserve_unplayed_shots before update of rules on public.games for each row execute function private.guard_shot_queue();

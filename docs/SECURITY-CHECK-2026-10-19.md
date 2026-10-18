@@ -15,3 +15,8 @@ Project verified through the connected Ai Football Live Supabase account: LiveFo
 - Only PC+phone trusted-device enforcement is still not deployed. MFA does not itself implement a two-device allowlist. Independent gift collection/provider verification remains pending.
 
 References: [Supabase password security](https://supabase.com/docs/guides/auth/password-security), [Supabase MFA](https://supabase.com/docs/guides/auth/auth-mfa).
+
+## Queue correctness protection activated
+- After HTTP verification of the fixed live.html serving v204, applied activate_unplayed_shot_integrity_guard. public.games trigger preserve_unplayed_shots is enabled. It rejects decreases without a matching full-playback receipt or an explicit admin reset/resize marker. This is correctness protection under existing owner RLS, not a substitute for authentication or a device allowlist.
+- Fixture-only SQL verification passed after activation. No production queues/scores were modified. Reload old admin/source pages once so explicit admin edits use the new protocol.
+- Final MFA check still found zero verified factors; user enrollment remains required. Security advisor still reports only leaked-password protection disabled on the Free plan.

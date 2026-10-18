@@ -383,7 +383,7 @@
   void number.offsetWidth;
   number.classList.add('queueSpark');
  }
- 
+
  function pendingShotCounts(m){
   const counts={A:0,B:0,C:0,D:0};if(!m)return counts;
   for(const job of m.jobs||[])if(job&&counts[job.team]!==undefined)counts[job.team]+=Math.max(1,Math.floor(Number(job.count)||1));
