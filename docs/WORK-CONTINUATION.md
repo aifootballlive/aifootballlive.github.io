@@ -114,3 +114,9 @@ Current upstream behavior preserved: combined winner+league results duration (de
 - Shortened team confirmation: Şutlar maç başlayınca otomatik başlayacaktır. Three seconds, under correct card; per-team persisted notice ids handle coalesced updates with multiple recipient teams.
 - New shot-accounting-v198 controlled tests: legacy/manual/countdown keep all 20 shots for 20 ticks each; no keeper debit; invalid ACK rejected; one valid playback ACK spends exactly one; unseen deadline/cancel preserves active+reserved shots. Shared/countdown regressions, browser notice/geometry, cold/delayed-storage fallback and Chrome/Edge 16 native cached clip switches passed.
 - Existing open admin/TikTok source pages must reload to run these fixes; old running browser code cannot be replaced by a GitHub deployment alone. Server-enforced version fencing remains outside available management access.
+
+
+## 18.10.2026 — Clear admin header row (v199 layout)
+- Refresh now uses a balanced two-arrow SVG. Admin controls anchor to the top of the portrait frame with >=12px clearance above team cards; equal button height retained. At narrow <=360px widths the arena text moves left to clear buttons. Controls remain admin-only.
+- Also fixed a visually confirmed timer/winner overlap: results board anchors below the result countdown. Full standings use the lower result area; keeper controls hide only during results, redundant inline score/countdown text is omitted (scores remain in standings, countdown remains in HUD). No clipped standings rows.
+- Chrome layout checks at 320/360/390/449/1280: control-card gap, button top/height, actual title/arena text bounds versus controls, winner below timer, all four standings rows inside results board; four independent timed notices remain valid. Screenshot inspected at 320 and 390. Current layout module broadcast-layout-v199.js; shared/video engines unchanged v198/v196.

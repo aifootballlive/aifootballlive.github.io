@@ -1939,6 +1939,15 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight>#admin
 .teamGiftNotice{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:45;background:#0c1e35;color:#fff2ca;border:1px solid #e5bc63;border-radius:8px;padding:7px 5px;text-align:center;font-size:clamp(11px,2.6cqw,22px);font-weight:800;line-height:1.25;box-shadow:0 3px 12px #0008;pointer-events:none}
 .teamGiftNotice[hidden]{display:none!important}
 
+
+/* Admin controls have their own upper row, clear of team cards. */
+body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{position:absolute!important;right:0!important;left:auto!important;transform:none!important;bottom:auto!important}
+
+.wrap>#roundSummary[data-showing="true"]{bottom:12px!important;max-height:none!important}
+.wrap:has(>#matchClockHud[data-phase="result"])>.adminFrontKeeper{visibility:hidden!important;pointer-events:none!important}
+#roundSummary .leagueNext,#roundSummary .resultScores{display:none!important}
+
+@media(max-width:360px){body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.liveArenaName{margin-left:-30px!important}}
 </style>
 </head>
 <body>
@@ -1985,7 +1994,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight>#admin
     <div id="actorAdjustStatus" class="actorAdjustStatus" role="status"></div>
   </section>
 
-  <div class="head"><div class="title">AI Football Live</div><div class="headRight"><span id="connectionStatus" hidden aria-hidden="true"></span><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile" title="Sayfayı yenile"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M21 13a9 9 0 1 1-9-9c2.62 0 5.04 1.11 6.73 2.88L21 8"/></svg></button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN AYARLARI</button></div></div>
+  <div class="head"><div class="title">AI Football Live</div><div class="headRight"><span id="connectionStatus" hidden aria-hidden="true"></span><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile" title="Sayfayı yenile"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-5V2M4 17h5v5"/><path d="M5.2 9a7.5 7.5 0 0 1 12.4-4.5L20 7M4 17l2.4 2.5A7.5 7.5 0 0 0 18.8 15"/></svg></button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN AYARLARI</button></div></div>
 
   <div class="adminFrontKeeper" id="adminFrontKeeper">
     <div class="keeperGroupTitle">Kalan kaleci güçleri</div>
@@ -2094,7 +2103,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight>#admin
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./broadcast-layout-v195.js"></script>
+<script src="./broadcast-layout-v199.js"></script>
 <script src="./tiktok-shared-v198.js?v=198"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
