@@ -134,3 +134,9 @@ Current upstream behavior preserved: combined winner+league results duration (de
 ## 18.10.2026 — Floating gift confirmation (layout v201)
 - Per-team three-second gift notices now render above the hint/timer text. The card stacking context rises only while notices are visible; opaque notice background keeps text readable. Pointer events remain pass-through.
 - Removed notice-height contribution to HUD anchoring, so opening/closing a notice no longer moves other text/countdown. Layout test verifies stable HUD position, overlay stacking, independent expiry and existing header/results geometry at 320/360/390/449/1280. Screenshot inspected. Only layout changed; match/video/audio engines remain v200.
+
+
+## 18.10.2026 — Reproduced admin preview counter overwrite (v202 UI)
+- Reproduced the reported pre-match disappearance with an open admin panel: after a five-shot gift, canonical jobs and state.A.queue were 5 while frontQueueA and the stale setQueueA input displayed 0. render() called previewAdminDraft(), which overwrote the live counter using the old form value. This is a confirmed display bug independent of video accounting; no production data was modified to reproduce it.
+- Broadcast pending counters now always display live state, including while editing an unsaved queue draft. Admin fields that have not been edited track incoming live queue/score values, updating their edit baseline. Deliberate admin drafts stay in their own inputs; applying unrelated settings cannot reset newly arrived shots.
+- Chrome regression reproduces 0->5->10->15 gifts while panel open, unrelated input, explicit queue draft, more incoming gifts, close/reopen, unrelated settings save. Every shot preserved and live counter stable. Existing v200 manual/countdown/frame-proof accounting tests remain passing. Match/video/audio engines unchanged; only inline UI fixed.
