@@ -65,7 +65,7 @@ function armFirstFrame(deck){
 let warmedCueKey=null,queuedPreparation=null;
 function reportRealVideoFrame(deck,frameConfirmed){
  // A buffered/loaded video or an invisible background tab does not spend a shot.
- if(!shot?.cueId||shotVideo!==deck||document.hidden||deck.paused||deck.readyState<2)return;
+ if(!shot?.cueId||shotVideo!==deck||document.hidden||deck.paused||deck.readyState<2||deck.seeking||deck.style.opacity!=='1')return;
  if(!frameConfirmed&&deck.currentTime<0.08)return;
  const now=Date.now();
  if(shot.lastFrameReportAt&&now-shot.lastFrameReportAt<1200)return;
