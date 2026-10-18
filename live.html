@@ -2108,6 +2108,8 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 <div class="adminActions"><div id="adminSaveStatus" role="status" style="color:#81e2bb;font-size:14px;font-weight:800"></div><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn endBtn" onclick="finishActiveMatch()">AKTİF MAÇI SONLANDIR</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">VARSAYILAN AYARLAR</button></div>
 <div class="adminRoundControls">
   <button id="autoMatchesToggle" type="button" data-enabled="false" onclick="toggleRoundControl('autoMatches')">MAÇLAR OTOMATİK DEVAM ETSİN: KAPALI</button>
+  <button id="guestTrialToggle" type="button" data-enabled="false" onclick="toggleGuestTrial()">MİSAFİR DENEME ŞUTLARI: KAPALI</button>
+  <p class="giftToggleHelp">Güvenlik için varsayılan KAPALI. Sadece arkadaş denemelerinde geçici açın; canlı yayından önce kapatın. Genel erişime açık testler sunucu tarafında ayrıca sınırlandırılmalıdır.</p>
 </div>
 <div class="adminSecondaryActions">
  <button id="giftProcessingToggle" data-paused="false" type="button" onclick="toggleGiftProcessing()">ŞUT OYNATMAYI DURDUR</button>
@@ -2120,7 +2122,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
 <script src="./broadcast-layout-v201.js"></script>
-<script src="./tiktok-shared-v202.js?v=202"></script>
+<script src="./tiktok-shared-v203.js?v=203"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2259,13 +2261,20 @@ function render(){
   document.querySelector('.wrap').classList.toggle('adminView',adminAuthed);
   // Guests (including incognito browsers) may send TEST shots. Admin-only
   // actions remain inaccessible without authenticated administrator login.
+  const sharedStatus=window.AIFootballTikTok?.getStatus?.();
   const guestReady=window.AIFootballTikTok?.active===true&&
-   window.AIFootballTikTok?.getStatus?.()?.shared===true;
+   sharedStatus?.shared===true&&sharedStatus?.guestTrialEnabled===true;
   document.querySelectorAll('.broadcastControls .shot').forEach(button=>{
    button.disabled=!(adminAuthed||guestReady);
    button.title=adminAuthed?'Deneme şutu ekle':guestReady?'Takımına deneme şutu gönder':'Ortak maç bağlantısı bekleniyor';
   });
   syncMainMatchStart();
+  const guestToggle=$('guestTrialToggle');
+  if(guestToggle){
+   const enabled=window.AIFootballTikTok?.getGuestTrialEnabled?.()===true;
+   guestToggle.dataset.enabled=String(enabled);
+   guestToggle.textContent='MİSAFİR DENEME ŞUTLARI: '+(enabled?'AÇIK':'KAPALI');
+  }
   const ctrl=window.AIFootballTikTok?.getRoundControls?.();
   const auto=$('autoMatchesToggle');
   if(auto){
@@ -2439,9 +2448,9 @@ async function getAuth(){
    if(!local.data?.session){if(!local.error)applyAuthRole(null);return;}
    const {data,error}=await db.auth.getUser();
    if(generation!==authGeneration)return;
-   if(error){if(error.status===401||error.status===403||error.name==='AuthSessionMissingError')applyAuthRole(null);else console.warn('Admin oturumu yeniden kontrol edilecek');return;}
+   if(error){applyAuthRole(null);console.warn('Admin oturumu sunucuda doğrulanamadı');return;}
    applyAuthRole(data?.user);
-  }catch(error){console.warn('Oturum bağlantısı yeniden denenecek');}
+  }catch(error){applyAuthRole(null);console.warn('Oturum doğrulanamadı, yönetim kilitlendi');}
  })().finally(()=>authCheck=null);return authCheck;
 }
 async function loadRemote(force=false){if(window.AIFootballTikTok?.active)return;if(polling||(!force&&state.busy)||document.hidden)return;polling=true;try{const {data:g,error:ge}=await db.from('games').select('id,rules').eq('name','AI Football Live').limit(1).single();if(ge)throw ge;ids.game=g.id;applyRules(g.rules);const {data:teams,error:te}=await db.from('teams').select('id,name,score').eq('game_id',ids.game);if(te)throw te;const a=teams.find(x=>x.name==='Sarı-Lacivert'),b=teams.find(x=>x.name==='Sarı-Kırmızı');if(!a||!b)throw new Error('Takımlar bulunamadı');ids.team.A=a.id;ids.team.B=b.id;state.A.score=a.score||0;state.B.score=b.score||0;const {data:gks,error:gke}=await db.from('goalkeepers').select('id,team_id').eq('game_id',ids.game);if(gke)throw gke;for(const gk of gks){if(gk.team_id===ids.team.A)ids.goalkeeper.A=gk.id;if(gk.team_id===ids.team.B)ids.goalkeeper.B=gk.id}const {data:kss,error:kse}=await db.from('goalkeeper_opponent_state').select('id,goalkeeper_id,power').eq('game_id',ids.game);if(kse)throw kse;for(const ks of kss){if(ks.goalkeeper_id===ids.goalkeeper.A){ids.keeperState.A=ks.id;state.keeper.A=Number(ks.power)}if(ks.goalkeeper_id===ids.goalkeeper.B){ids.keeperState.B=ks.id;state.keeper.B=Number(ks.power)}}const {data:pending,error:pe}=await db.from('pending_shots').select('attacking_team_id').eq('game_id',ids.game).eq('status','pending');if(pe)throw pe;state.A.queue=pending.filter(x=>x.attacking_team_id===ids.team.A).length;state.B.queue=pending.filter(x=>x.attacking_team_id===ids.team.B).length;const {data:last}=await db.from('game_events').select('id,event_type,attacking_team_id,defending_team_id,created_at').eq('game_id',ids.game).order('created_at',{ascending:false}).limit(1);render();if(last&&last[0])handleEventRow(last[0],false);setConn()}catch(e){console.error(e);$('connectionStatus').textContent='Bağlantı hatası'}finally{polling=false;if(window.AIFootballTikTok?.active)window.AIFootballTikTok.restore()}}
@@ -2562,6 +2571,25 @@ async function restoreDefaultSettings(){
   await applyAdminSettings();
   log('Tüm ayarlar varsayılana döndürüldü');
 }
+async function toggleGuestTrial(){
+ if(!adminAuthed||!window.AIFootballTikTok?.setGuestTrialEnabled)return;
+ const button=$('guestTrialToggle');
+ if(!button||button.disabled)return;
+ const enabled=window.AIFootballTikTok.getGuestTrialEnabled()===true;
+ const requested=!enabled;
+ if(requested&&!confirm('Misafir şut tuşlarını herkese açmak istiyor musunuz? Test bitince kapatmalısınız.'))return;
+ button.disabled=true;
+ try{
+  const saved=await window.AIFootballTikTok.setGuestTrialEnabled(requested);
+  const actual=window.AIFootballTikTok.getGuestTrialEnabled()===true;
+  if(!saved||actual!==requested)throw Error('Test izni kaydedilemedi');
+  const note=$('adminSaveStatus');
+  if(note)note.textContent=requested?'Misafir deneme şutları GEÇİCİ OLARAK AÇIK.':'Misafir deneme şutları kapatıldı.';
+ }catch(error){
+  console.error('Deneme ayarı',error);
+  alert('Misafir deneme ayarı kaydedilemedi. Sunucu erişimini kontrol edin.');
+ }finally{button.disabled=false;render();}
+}
 async function toggleRoundControl(field){
  if(!adminAuthed||field!=='autoMatches'||!window.AIFootballTikTok?.getRoundControls)return;
  const button=$('autoMatchesToggle');
@@ -2635,7 +2663,14 @@ function setupRealtime(){if(window.AIFootballTikTok?.active||!ids.game)return;co
 async function refreshAndResume(){if(document.hidden||(typeof localShotBusy!=='undefined'&&localShotBusy))return;await loadRemote(true);}
 async function loadTikTokPresentation(){try{const {data,error}=await db.from('games').select('rules').eq('name','AI Football Live').limit(1).single();if(error)throw error;if(data?.rules)applyRules(data.rules);if(window.AIFootballTikTok?.active)window.AIFootballTikTok.restore();}catch(e){console.warn('TikTok presentation settings unavailable',e)}}
 async function boot(){
- db.auth.onAuthStateChange((event,session)=>{if(event!=='INITIAL_SESSION')authGeneration++;if(event==='SIGNED_OUT')applyAuthRole(null);else if(session?.user)applyAuthRole(session.user);else if(event==='INITIAL_SESSION'&&!adminAuthed)applyAuthRole(null);});
+ db.auth.onAuthStateChange((event,session)=>{
+  if(event==='SIGNED_OUT'){authGeneration++;applyAuthRole(null);return;}
+  if(event==='INITIAL_SESSION'){if(!session)applyAuthRole(null);return;}
+  // Cached session claims cannot directly open the admin panel. Verify
+  // the current user through Supabase Auth before restoring any controls.
+  authGeneration++;applyAuthRole(null);
+  setTimeout(()=>getAuth().catch(()=>applyAuthRole(null)),0);
+ });
  const recheck=()=>{if(!document.hidden)getAuth().catch(()=>{});};
  window.addEventListener('focus',recheck);window.addEventListener('online',recheck);document.addEventListener('visibilitychange',recheck);
  await getAuth();
