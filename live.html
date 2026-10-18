@@ -1952,6 +1952,17 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 /* Gift notices float above the HUD without moving its text or timer. */
 .wrap>.broadcastControls:has(.teamGiftNotice:not([hidden])){z-index:70!important}
 .teamGiftNotice{z-index:71!important;background:#0c1e35!important}
+
+/* Guest testing: enable real 1/5 shot gift buttons in both ordinary and
+   private Chrome/Safari tabs without opening any administrator controls. */
+.wrap:not(.adminView) .broadcastControls .giftbtn.shot:not(:disabled){
+ cursor:pointer!important;touch-action:manipulation!important;
+ pointer-events:auto!important;opacity:1!important;
+}
+.wrap:not(.adminView) .broadcastControls .giftbtn.shot:disabled{
+ opacity:.52!important;cursor:not-allowed!important;
+}
+
 </style>
 </head>
 <body>
@@ -2109,7 +2120,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
 <script src="./broadcast-layout-v201.js"></script>
-<script src="./tiktok-shared-v201.js?v=201"></script>
+<script src="./tiktok-shared-v202.js?v=202"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2246,7 +2257,14 @@ function syncMainMatchStart(){
 window.AIFootballUpdateMainMatchLaunch=syncMainMatchStart;
 function render(){
   document.querySelector('.wrap').classList.toggle('adminView',adminAuthed);
-  document.querySelectorAll('.broadcastControls .shot').forEach(button=>{button.disabled=!adminAuthed;});
+  // Guests (including incognito browsers) may send TEST shots. Admin-only
+  // actions remain inaccessible without authenticated administrator login.
+  const guestReady=window.AIFootballTikTok?.active===true&&
+   window.AIFootballTikTok?.getStatus?.()?.shared===true;
+  document.querySelectorAll('.broadcastControls .shot').forEach(button=>{
+   button.disabled=!(adminAuthed||guestReady);
+   button.title=adminAuthed?'Deneme şutu ekle':guestReady?'Takımına deneme şutu gönder':'Ortak maç bağlantısı bekleniyor';
+  });
   syncMainMatchStart();
   const ctrl=window.AIFootballTikTok?.getRoundControls?.();
   const auto=$('autoMatchesToggle');
@@ -2477,7 +2495,10 @@ function refreshAdminPage(){
 async function addShots(t,n){
   if(window.AIFootballTikTok?.active){
     // No changing button text and no async wait: optimistic queue update happens synchronously.
-    return window.AIFootballTikTok.manualShot(t,n);
+    const game=window.AIFootballTikTok;
+    const ok=adminAuthed?game.manualShot(t,n):game.guestShot?.(t,n);
+    if(!ok&&!adminAuthed)log('Şut gönderilemedi. Birkaç saniye bekleyip tekrar deneyin.');
+    return ok;
   }
   // Fail closed while the shared engine is missing; never consume a local preview queue.
   log('Maç bağlantısı hazırlanıyor. Lütfen sayfayı yenileyin.');return false;
