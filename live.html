@@ -1852,6 +1852,31 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{
  }
 }
 
+
+/* FINAL RESULT VISIBILITY GATE, shared by ADMIN and public/OBS screens.
+   The big dark scoreboard sheet can only exist during the REAL result phase.
+   Never let older mobile/admin CSS show it while waiting or playing. */
+.wrap > #roundSummary,
+.wrap.adminView > #roundSummary,
+body.drawerMode .wrap > #roundSummary,
+body.settingsMode .wrap > #roundSummary{
+ display:none!important;
+ visibility:hidden!important;
+ opacity:0!important;
+ pointer-events:none!important;
+}
+.wrap > #matchClockHud[data-phase="result"] ~ #roundSummary:not([hidden]):not([aria-hidden="true"]),
+.wrap.adminView > #matchClockHud[data-phase="result"] ~ #roundSummary:not([hidden]):not([aria-hidden="true"]),
+body.drawerMode .wrap > #matchClockHud[data-phase="result"] ~ #roundSummary:not([hidden]):not([aria-hidden="true"]),
+body.settingsMode .wrap > #matchClockHud[data-phase="result"] ~ #roundSummary:not([hidden]):not([aria-hidden="true"]){
+ display:flex!important;
+ visibility:visible!important;
+ opacity:1!important;
+ pointer-events:none!important;
+}
+/* The obsolete separate end-of-game screen is never rendered. */
+.wrap > #roundWaiting{display:none!important;}
+
 </style>
 </head>
 <body>
@@ -2006,7 +2031,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v191.js?v=191"></script>
+<script src="./tiktok-shared-v192.js?v=192"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
