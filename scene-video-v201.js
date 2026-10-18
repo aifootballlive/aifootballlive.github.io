@@ -60,8 +60,13 @@ function reportRealVideoFrame(deck,frameConfirmed){
  if(deck.currentTime<0.08||window.AIFootballTikTok?.getMatchState?.().running!==true)return;
  // Progress requires video time to advance through decoded frames. A jump
  // caused by seeking or an invisible preload is not a completed shot.
- if(!Number.isFinite(shot.firstObservedMediaTime))shot.firstObservedMediaTime=deck.currentTime;
- shot.maxObservedMediaTime=Math.max(shot.maxObservedMediaTime||0,deck.currentTime);
+ const last=shot.progressLastMediaTime;
+ if(Number.isFinite(last)){
+  const delta=deck.currentTime-last;
+  // Count genuine advancing decoded frames, not a large seek jump.
+  if(delta>0.015&&delta<0.9)shot.verifiedProgressSeconds=(shot.verifiedProgressSeconds||0)+delta;
+ }
+ shot.progressLastMediaTime=deck.currentTime;
  const now=Date.now();
  if(shot.lastFrameReportAt&&now-shot.lastFrameReportAt<1200)return;
  shot.lastFrameReportAt=now;
@@ -178,8 +183,7 @@ function endShot(force=false,naturalEnd=false){
  if(!force&&naturalEnd&&previous?.cueId&&shotVideo&&!document.hidden){
   const mediaTime=Number(shotVideo.currentTime),duration=Number(shotVideo.duration);
   if(Number.isFinite(duration)&&duration>0.5&&Number.isFinite(mediaTime)&&
-     mediaTime>=duration-0.3&&Number.isFinite(previous.firstObservedMediaTime)&&
-     previous.maxObservedMediaTime-previous.firstObservedMediaTime>=0.45)
+     mediaTime>=duration-0.3&&Number(previous.verifiedProgressSeconds||0)>=0.45)
    window.AIFootballTikTok?.onShotVideoFinished?.({
     cueId:previous.cueId,team:previous.team,startsAt:previous.cueStartsAt,
     mediaTime,duration,clockStartedAt:window.AIFootballTikTok?.getMatchClock?.()?.startedAt
