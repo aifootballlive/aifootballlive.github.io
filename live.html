@@ -1901,10 +1901,36 @@ body.settingsMode .wrap > #matchClockHud[data-phase="result"] ~ #roundSummary:no
 body .wrap>.leagueProfileHint,body .wrap.adminView>.leagueProfileHint{bottom:auto!important;height:auto!important;min-height:0!important;max-height:48px!important}
 .wrap .broadcastControls>.panel .panelHead.teamScore{height:15cqw!important}
 .wrap:not(.adminView) .broadcastControls .giftbtn:disabled{opacity:1!important;filter:none!important}
+
+/* Small, readable 3-second pre-match gift confirmation for all viewers. */
+.wrap>.pendingGiftNotice{
+ position:absolute!important;bottom:12.5%!important;
+ left:9%!important;right:9%!important;max-width:82%!important;
+ margin:0 auto!important;padding:clamp(5px,.9cqw,9px) clamp(7px,1.3cqw,15px)!important;
+ box-sizing:border-box!important;min-width:0!important;
+ border:1px solid rgba(253,223,130,.95)!important;
+ border-radius:9px!important;background:rgba(6,18,36,.94)!important;
+ box-shadow:0 3px 12px rgba(0,0,0,.55)!important;
+ font-size:clamp(11px,2.3cqw,23px)!important;font-weight:850!important;
+ line-height:1.25!important;color:#fff2ca!important;
+ text-align:center!important;z-index:41!important;
+ pointer-events:none!important;display:none!important;visibility:hidden!important;
+}
+.wrap>.pendingGiftNotice.visible:not([hidden]){
+ display:flex!important;align-items:center!important;justify-content:center!important;visibility:visible!important;
+}
+@media screen and (max-width:600px){
+ body:not(.drawerMode):not(.settingsMode)>.wrap>.pendingGiftNotice{
+  bottom:12.5%!important;left:8%!important;right:8%!important;
+  max-width:84%!important;font-size:12px!important;padding:6px 8px!important;
+ }
+}
+
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div id="pendingGiftNotice" class="pendingGiftNotice" hidden role="status" aria-live="polite" aria-atomic="true"></div>
   <div id="matchClockHud" class="matchClockHud" data-phase="manual" role="status" aria-label="Hakemin Maçı Başlatması Bekleniyor">
   <div class="clockStatus"><span class="clockLabel">Hakemin Maçı Başlatması Bekleniyor</span><strong class="clockDigits" hidden></strong></div>
   <button class="liveStartButton" id="liveStartButton" type="button" onclick="toggleMainMatch()" disabled hidden aria-label="Maçı başlat veya durdur"><span class="startMatchAction">BAŞLAT</span></button>
@@ -2056,7 +2082,7 @@ body .wrap>.leagueProfileHint,body .wrap.adminView>.leagueProfileHint{bottom:aut
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
 <script src="./broadcast-layout-v193.js"></script>
-<script src="./tiktok-shared-v195.js?v=196"></script>
+<script src="./tiktok-shared-v196.js?v=197"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2651,6 +2677,6 @@ render();boot();
 
 <script src="./scene-audio-cues-v165.js?v=165"></script>
 <script src="./round-finale-v193.js?v=193"></script>
-<script id="game3dScript" src="./scene-video-v159.js?v=159"></script>
+<script id="game3dScript" src="./scene-video-v160.js?v=160"></script>
 </body>
 </html>
