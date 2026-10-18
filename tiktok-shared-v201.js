@@ -247,6 +247,38 @@
    target.endsAt=Math.max(target.endsAt,target.videoStartedAt+1500);
   },false).catch(error=>console.warn('Video başlangıcı onaylanamadı',error)).finally(()=>videoAckInFlight.delete(payload.cueId));
  }
+ function acknowledgeVideoFinish(payload){
+  if(!admin()||!payload||typeof payload.cueId!=='string'||!Number.isFinite(payload.mediaTime)||
+   !Number.isFinite(payload.duration)||payload.duration<0.5||
+   payload.mediaTime<Math.max(0.4,payload.duration-0.3)||
+   payload.clockStartedAt!==match?.clock?.startedAt||
+   !matchRunning(match)||videoAckInFlight.has('finish:'+payload.cueId))return;
+  const cue=[match?.cue,match?.nextCue].find(c=>c?.id===payload.cueId);
+  if(!cue||cue.startsAt!==payload.startsAt||hasVideoCompletionProof(match,cue))return;
+  videoAckInFlight.add('finish:'+payload.cueId);
+  change(m=>{
+   const target=[m.cue,m.nextCue].find(c=>c?.id===payload.cueId);
+   if(!matchRunning(m)||!target||target.startsAt!==payload.startsAt||hasVideoCompletionProof(m,target))return false;
+   // The HTMLVideoElement 'ended' event plus actual end mediaTime is the
+   // authoritative proof of spending a shot, not a guessed timeout.
+   target.videoStartedAt||=Date.now()-Math.min(payload.duration*1000,60000);
+   target.videoFinishedAt=Date.now();
+  },false).catch(e=>console.warn('Video bitiş onayı yazılamadı',e))
+   .finally(()=>videoAckInFlight.delete('finish:'+payload.cueId));
+ }
+ function reportVideoFinish(payload){
+  if(!payload)return;
+  if(admin()){acknowledgeVideoFinish(payload);return;}
+  if(channelReady&&channel){
+   channel.send({type:'broadcast',event:'shot_video_finished',payload}).catch(e=>console.warn('Şut bitiş bildirimi',e));
+  }else if(row){
+   fetch(SUPABASE_URL+'/realtime/v1/api/broadcast',{
+    method:'POST',headers:{apikey:SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({messages:[{topic:'tiktok-match-v2-'+row.id,event:'shot_video_finished',payload,private:false}]}),
+    signal:requestSignal()
+   }).catch(e=>console.warn('Şut bitiş bildirimi gecikti',e));
+  }
+ }
  function reportVideoStart(payload){
   if(!payload)return;const cue=[match?.cue,match?.nextCue].find(c=>c?.id===payload.cueId);
   if(!cue||cue.startsAt!==payload.startsAt||hasVideoProof(match,cue)||!matchRunning(match))return;
@@ -484,6 +516,7 @@
    .on('broadcast',{event:'shot_request'},({payload})=>receiveRequest(payload))
    .on('broadcast',{event:'shot_request_batch'},({payload})=>{for(const p of payload?.requests||[])receiveRequest(p);})
    .on('broadcast',{event:'shot_video_started'},({payload})=>acknowledgeVideoStart(payload))
+   .on('broadcast',{event:'shot_video_finished'},({payload})=>acknowledgeVideoFinish(payload))
    .subscribe(status=>{
    if(channel!==subscribed)return;
    channelReady=status==='SUBSCRIBED';
@@ -861,6 +894,8 @@
    },false);
   },hasPendingShot(){return matchRunning(match)&&!!(match?.nextCue||hasPlayableJobs(match));},
   onShotVideoStarted(payload){reportVideoStart(payload);},
+  onShotVideoFinished(payload){reportVideoFinish(payload);},
+  getPendingQueue(){return pendingShotCounts(match);},
   activate:install,restore,onVideoEnded(startsAt){
    if(!matchRunning(match))return false;
    endedCues.add(startsAt);
