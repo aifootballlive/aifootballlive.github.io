@@ -1,0 +1,17 @@
+# Security verification — 19 October 2026
+
+Project verified through the connected Ai Football Live Supabase account: LiveFootballGame (xozzbaguihyhruloiqjm).
+
+## Verified on the live database
+- RLS is enabled on all eight public application tables. Existing mutation policies require the designated owner UID. Anonymous/public SELECT policies remain for broadcast data; gift_events has no public SELECT policy.
+- Legacy SECURITY DEFINER public_add_test_shots/public_add_test_keeper are not executable by anon or authenticated.
+- Applied remote migration enrolled_admin_mfa_write_enforcement. SQL retained in ops/enrolled-admin-mfa-enforcement.sql. 24 restrictive INSERT/UPDATE/DELETE policies across eight tables call a private, owner-scoped function. The private helper only reads verification status for auth.uid(), returns a boolean, uses empty search_path, and is not in an exposed schema. Public/anon execution revoked.
+- After the first verified MFA factor, management writes require AAL2, including previously signed-in AAL1 sessions. Before enrollment AAL1 remains allowed so the owner can complete setup; this is NOT evidence that MFA is already active.
+- Function checks for owner AAL2, non-owner AAL2 and anonymous identity passed. No production scores, queues, users or credentials were modified as tests.
+
+## Required user actions / remaining blockers
+- Auth account currently has zero enrolled/verified MFA factors. Open admin-security.html in the owner's signed-in browser, initiate setup, scan with the user's authenticator, and enter its first code on that page. Neither OTP nor setup secret should be posted in chat. Then verify live factor status and AAL1 rejection again through the management connection.
+- Organization plan is Free. Supabase leaked-password protection requires Pro or above; the security advisor still reports auth_leaked_password_protection. No paid upgrade was performed. A dashboard login page is open for the user; an attempted GitHub OAuth login was rejected by automatic review because the account was unspecified, and was not retried or bypassed.
+- Only PC+phone trusted-device enforcement is still not deployed. MFA does not itself implement a two-device allowlist. Independent gift collection/provider verification remains pending.
+
+References: [Supabase password security](https://supabase.com/docs/guides/auth/password-security), [Supabase MFA](https://supabase.com/docs/guides/auth/auth-mfa).

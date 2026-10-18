@@ -33,7 +33,7 @@ select:disabled,
 <div class="wrap"><div class="box">
 <h1>AI Football Live Admin</h1>
 <p>Oyun için oluşturulan admin e-posta adresin ve şifrenle giriş yap. GitHub / Supabase panel girişi ayrıdır.</p>
-<section id="profile" hidden><p><strong>Hesabım</strong></p><p id="profileEmail" style="overflow-wrap:anywhere"></p><p>Yetki: Admin</p><a class="btn" href="./live.html" style="display:block;box-sizing:border-box;text-align:center;text-decoration:none">Oyuna dön</a><button id="logoutBtn" class="btn" type="button" style="background:#a43c50">Çıkış yap</button></section>
+<section id="profile" hidden><p><strong>Hesabım</strong></p><p id="profileEmail" style="overflow-wrap:anywhere"></p><p>Yetki: Admin</p><a class="btn" href="./admin-security.html">İki aşamalı doğrulama</a><a class="btn" href="./live.html" style="display:block;box-sizing:border-box;text-align:center;text-decoration:none">Oyuna dön</a><button id="logoutBtn" class="btn" type="button" style="background:#a43c50">Çıkış yap</button></section>
 <form id="loginForm">
 <div class="field"><label for="email">E-posta</label><input id="email" type="email" autocomplete="username" required></div>
 <div class="field"><label for="password">Şifre</label><input id="password" type="password" autocomplete="current-password" required></div>
@@ -53,6 +53,9 @@ async function finishIfAdmin(user){
  // A browser storage flag is not device authentication. Recheck via the Auth server.
  const {data,error}=await db.auth.getUser();
  if(error||data?.user?.id!==ADMIN_UID){show('Kimlik doğrulaması teyit edilemedi.');return false;}
+ const {data:mfa,error:mfaError}=await db.auth.mfa.getAuthenticatorAssuranceLevel();
+ if(mfaError){show('İki aşamalı doğrulama kontrol edilemedi.');return false;}
+ if(mfa?.currentLevel!=='aal2'&&(mfa?.nextLevel==='aal2'||new URLSearchParams(location.search).get('next')==='security')){location.replace('./admin-security.html');return true;}
  show('Giriş başarılı. Oyun açılıyor…',true);
  setTimeout(()=>location.replace(new URLSearchParams(location.search).get('next')==='settings'?'./admin-settings.html':'./live.html'),350);return true;
 }
