@@ -58,6 +58,10 @@ function reportRealVideoFrame(deck,frameConfirmed){
  // A buffered/loaded video or an invisible background tab does not spend a shot.
  if(!shot?.cueId||shotVideo!==deck||document.hidden||deck.paused||deck.readyState<2||deck.seeking||deck.style.opacity!=='1')return;
  if(deck.currentTime<0.08||window.AIFootballTikTok?.getMatchState?.().running!==true)return;
+ // Progress requires video time to advance through decoded frames. A jump
+ // caused by seeking or an invisible preload is not a completed shot.
+ if(!Number.isFinite(shot.firstObservedMediaTime))shot.firstObservedMediaTime=deck.currentTime;
+ shot.maxObservedMediaTime=Math.max(shot.maxObservedMediaTime||0,deck.currentTime);
  const now=Date.now();
  if(shot.lastFrameReportAt&&now-shot.lastFrameReportAt<1200)return;
  shot.lastFrameReportAt=now;
@@ -152,7 +156,7 @@ function playShot(){
  if(!shot||!shotVideo)return;
  const target=shotVideo,elapsed=Math.max(0,(Date.now()-shot.syncStartedAt)/1000);
  const duration=Number.isFinite(target.duration)?target.duration:(durationByKey.get(target.dataset.clipKey)||0);
- if(duration>0&&elapsed>=duration){endShot();return;}
+ if(duration>0&&elapsed>=duration&&target.ended){endShot(false,true);return;}
  // Keep the current visible stream moving until a decoded replacement frame is ready.
  lastRepair=Date.now();
  target.muted=true;
@@ -173,7 +177,9 @@ function endShot(force=false,naturalEnd=false){
  const previous=shot;
  if(!force&&naturalEnd&&previous?.cueId&&shotVideo&&!document.hidden){
   const mediaTime=Number(shotVideo.currentTime),duration=Number(shotVideo.duration);
-  if(Number.isFinite(duration)&&duration>0.5&&Number.isFinite(mediaTime)&&mediaTime>=duration-0.3)
+  if(Number.isFinite(duration)&&duration>0.5&&Number.isFinite(mediaTime)&&
+     mediaTime>=duration-0.3&&Number.isFinite(previous.firstObservedMediaTime)&&
+     previous.maxObservedMediaTime-previous.firstObservedMediaTime>=0.45)
    window.AIFootballTikTok?.onShotVideoFinished?.({
     cueId:previous.cueId,team:previous.team,startsAt:previous.cueStartsAt,
     mediaTime,duration,clockStartedAt:window.AIFootballTikTok?.getMatchClock?.()?.startedAt
@@ -222,7 +228,7 @@ function maintainShot(){
  if(!shot||!shotVideo||document.hidden||repairing)return;
  const v=shotVideo;
  const expected=Math.max(0,(Date.now()-shot.syncStartedAt)/1000),duration=v.duration;
- if(Number.isFinite(duration)&&expected>=duration){endShot();return;}
+ if(Number.isFinite(duration)&&expected>=duration&&v.ended){endShot(false,true);return;}
  noteProgress(v);
  if(performance.now()-lastFrameAt>1500&&Date.now()-lastRecovery>1800&&!v.seeking){
   lastRecovery=Date.now();recoveryCount++;
