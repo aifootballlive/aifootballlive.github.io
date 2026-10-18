@@ -1948,6 +1948,10 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 #roundSummary .leagueNext,#roundSummary .resultScores{display:none!important}
 
 @media(max-width:360px){body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.liveArenaName{margin-left:-30px!important}}
+
+/* Gift notices float above the HUD without moving its text or timer. */
+.wrap>.broadcastControls:has(.teamGiftNotice:not([hidden])){z-index:70!important}
+.teamGiftNotice{z-index:71!important;background:#0c1e35!important}
 </style>
 </head>
 <body>
@@ -2104,7 +2108,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./broadcast-layout-v199.js"></script>
+<script src="./broadcast-layout-v201.js"></script>
 <script src="./tiktok-shared-v200.js?v=200"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>

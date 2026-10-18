@@ -129,3 +129,8 @@ Current upstream behavior preserved: combined winner+league results duration (de
 - Added independent Admin > Ses Ayarları > Yapay zekâ konuşmaları toggle, ai_speech_enabled saved rule, runtime preview, persisted reload, defaults enabled. Turning off immediately cancels playing/loading AI speech and browser fallback without muting crowd/ball effects. Existing goal shout checkbox renamed Gol sevinç sesi; speech volume is Spiker / konuşma sesi. Main sound mute still cancels everything.
 - Engines: stadium-audio-v200.js, round-finale-v200.js, scene-video-v200.js, tiktok-shared-v200.js. Existing shot accounting/countdown changes preserved. Layout still v199.
 - Chrome+Edge tests: 13 generated MP3 files (8 new + 4 winners + draw) decode/start, one simultaneous voice, toggle stops/persists/reopens, other sound remains enabled, preparation->kickoff, actual A-goal decoded frames invoke kick near 1.916s and goal near 3.4s, full mute; shared/carry/countdown regressions, layout and 16 media handoffs pass. Physical LIVE Studio audio routing/speaker listening and a real phone remain unverified; autoplay requires sound permission/user activation.
+
+
+## 18.10.2026 — Floating gift confirmation (layout v201)
+- Per-team three-second gift notices now render above the hint/timer text. The card stacking context rises only while notices are visible; opaque notice background keeps text readable. Pointer events remain pass-through.
+- Removed notice-height contribution to HUD anchoring, so opening/closing a notice no longer moves other text/countdown. Layout test verifies stable HUD position, overlay stacking, independent expiry and existing header/results geometry at 320/360/390/449/1280. Screenshot inspected. Only layout changed; match/video/audio engines remain v200.
