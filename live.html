@@ -2507,7 +2507,19 @@ async function getAuth(){
    const {data,error}=await db.auth.getUser();
    if(generation!==authGeneration)return;
    if(error){applyAuthRole(null);console.warn('Admin oturumu sunucuda doğrulanamadı');return;}
-   if(data?.user?.id===ADMIN_UID&&db.auth.mfa){const {data:mfa,error:mfaError}=await db.auth.mfa.getAuthenticatorAssuranceLevel();if(mfaError){applyAuthRole(null);return;}if(mfa?.nextLevel==='aal2'&&mfa.currentLevel!=='aal2'){applyAuthRole(null);location.replace('./admin-security.html');return;}}
+   // Never unlock the administrator from a password-only (AAL1) session.
+   // First-time admins enroll TOTP at admin-security.html, existing admins
+   // enter their authenticator code there. Auth and public scoreboard remain available.
+   if(data?.user?.id===ADMIN_UID){
+    if(!db.auth.mfa){applyAuthRole(null);return;}
+    const {data:mfa,error:mfaError}=await db.auth.mfa.getAuthenticatorAssuranceLevel();
+    if(mfaError){applyAuthRole(null);return;}
+    if(mfa?.currentLevel!=='aal2'){
+     applyAuthRole(null);
+     location.replace('./admin-security.html');
+     return;
+    }
+   }
    applyAuthRole(data?.user);
   }catch(error){applyAuthRole(null);console.warn('Oturum doğrulanamadı, yönetim kilitlendi');}
  })().finally(()=>authCheck=null);return authCheck;
