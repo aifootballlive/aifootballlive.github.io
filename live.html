@@ -1963,10 +1963,36 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
  opacity:.52!important;cursor:not-allowed!important;
 }
 
+
+/* Compact broadcast HUD stays above the goal crossbar. */
+#broadcastViewport>.broadcastControls{height:auto!important;min-height:0!important;bottom:auto!important;align-items:start!important}
+#broadcastViewport.adminView>.broadcastControls>.panel,#broadcastViewport:not(.adminView)>.broadcastControls>.panel{height:auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;gap:2px!important;padding:3px!important}
+#broadcastViewport .broadcastControls>.panel .panelHead.teamScore{height:14cqw!important;min-height:0!important;flex:0 0 14cqw!important}
+#broadcastViewport .broadcastControls>.panel .buttons{margin:0!important;padding:0!important;height:12cqw!important;min-height:0!important;flex:0 0 12cqw!important}
+#broadcastViewport .broadcastControls>.panel .adminTeamQueue{height:6cqw!important;min-height:0!important;flex:0 0 6cqw!important;margin:0!important}
+#broadcastViewport .leagueProfileHint{font-size:clamp(10px,2.6cqw,15px)!important;line-height:1.15!important;padding:3px!important}
+#broadcastViewport>#matchClockHud:not([data-phase="result"]){padding:3px 5px!important;min-height:0!important;line-height:1.1!important}
+#broadcastViewport>#matchClockHud:not([data-phase="result"]) .clockLabel{font-size:clamp(10px,2.5cqw,15px)!important;line-height:1.1!important}
+#broadcastViewport>#matchClockHud:not([data-phase="result"]) .clockDigits{font-size:clamp(18px,4.8cqw,28px)!important;line-height:1.05!important}
+#broadcastViewport .teamGiftNotice{font-size:clamp(10px,2.5cqw,18px)!important;line-height:1.15!important;padding:5px 3px!important}
+
+#broadcastViewport .broadcastControls>.panel .panelHead.teamScore{position:relative!important;inset:auto!important;transform:none!important;height:16.5cqw!important;flex-basis:16.5cqw!important;grid-template-rows:10cqw minmax(0,1fr)!important;margin:0!important;padding:0!important}
+#broadcastViewport .broadcastControls>.panel .buttons,#broadcastViewport .broadcastControls>.panel .adminTeamQueue{position:relative!important;inset:auto!important;transform:none!important}
+#broadcastViewport .broadcastControls>.panel .giftbtn.shot{height:12cqw!important;min-height:0!important;padding:1px!important;gap:0!important}
+#broadcastViewport .broadcastControls>.panel .teamTitle{font-size:clamp(10px,2.5cqw,14px)!important;line-height:1!important;overflow:hidden!important}
+#broadcastViewport .broadcastControls>.panel .teamLogo{width:clamp(20px,5.5cqw,32px)!important;height:clamp(23px,6cqw,36px)!important}
+#broadcastViewport .broadcastControls>.panel .teamScore .num{font-size:clamp(22px,6cqw,34px)!important;line-height:1!important}
+#broadcastViewport .broadcastControls>.panel .teamScore .num::before{font-size:clamp(8px,2cqw,11px)!important;line-height:1!important}
+#broadcastViewport .broadcastControls>.panel .adminTeamQueue{height:7cqw!important;flex-basis:7cqw!important;padding:1px 3px!important}
+#broadcastViewport .leagueProfileHint{font-size:clamp(10px,2.6cqw,14px)!important;line-height:1.1!important;padding:2px!important}
+#broadcastViewport>#matchClockHud:not([data-phase="result"]){padding:2px 4px!important}
+
+#broadcastViewport:not(.adminView) .broadcastControls>.panel .adminTeamQueue{display:none!important}
+#broadcastViewport:not(.adminView) .broadcastControls>.panel .giftbtn:disabled{opacity:1!important;filter:none!important}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" id="broadcastViewport">
   <div id="pendingGiftNotice" class="pendingGiftNotice" hidden role="status" aria-live="polite" aria-atomic="true"></div>
   <div id="matchClockHud" class="matchClockHud" data-phase="manual" role="status" aria-label="Hakemin Maçı Başlatması Bekleniyor">
   <div class="clockStatus"><span class="clockLabel">Hakemin Maçı Başlatması Bekleniyor</span><strong class="clockDigits" hidden></strong></div>
@@ -2009,7 +2035,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
     <div id="actorAdjustStatus" class="actorAdjustStatus" role="status"></div>
   </section>
 
-  <div class="head"><div class="title">AI Football Live</div><div class="headRight"><span id="connectionStatus" hidden aria-hidden="true"></span><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile" title="Sayfayı yenile"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-5V2M4 17h5v5"/><path d="M5.2 9a7.5 7.5 0 0 1 12.4-4.5L20 7M4 17l2.4 2.5A7.5 7.5 0 0 0 18.8 15"/></svg></button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN AYARLARI</button></div></div>
+  <div class="head"><div class="title">AI Football Live</div><div class="headRight"><span id="connectionStatus" hidden aria-hidden="true"></span><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile" title="Sayfayı yenile"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 7.5A8 8 0 1 0 20 14"/><path d="M20 3v5h-5"/></svg></button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN AYARLARI</button></div></div>
 
   <div class="adminFrontKeeper" id="adminFrontKeeper">
     <div class="keeperGroupTitle">Kalan kaleci güçleri</div>
@@ -2105,7 +2131,8 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
   
   
 </div></div>
-<div class="adminActions"><div id="adminSaveStatus" role="status" style="color:#81e2bb;font-size:14px;font-weight:800"></div><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn endBtn" onclick="finishActiveMatch()">AKTİF MAÇI SONLANDIR</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">VARSAYILAN AYARLAR</button></div>
+<a href="./admin-security.html" class="adminBtn" style="display:block;text-align:center;text-decoration:none;margin:8px 0;background:#273e62">Yönetici güvenliği · İki aşamalı doğrulama</a>
+  <div class="adminActions"><div id="adminSaveStatus" role="status" style="color:#81e2bb;font-size:14px;font-weight:800"></div><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn endBtn" onclick="finishActiveMatch()">AKTİF MAÇI SONLANDIR</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">VARSAYILAN AYARLAR</button></div>
 <div class="adminRoundControls">
   <button id="autoMatchesToggle" type="button" data-enabled="false" onclick="toggleRoundControl('autoMatches')">MAÇLAR OTOMATİK DEVAM ETSİN: KAPALI</button>
   <button id="guestTrialToggle" type="button" data-enabled="false" onclick="toggleGuestTrial()">MİSAFİR DENEME ŞUTLARI: KAPALI</button>
@@ -2121,8 +2148,8 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./broadcast-layout-v201.js"></script>
-<script src="./tiktok-shared-v203.js?v=203"></script>
+<script src="./broadcast-layout-v204.js"></script>
+<script src="./tiktok-shared-v204.js?v=204"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2449,6 +2476,7 @@ async function getAuth(){
    const {data,error}=await db.auth.getUser();
    if(generation!==authGeneration)return;
    if(error){applyAuthRole(null);console.warn('Admin oturumu sunucuda doğrulanamadı');return;}
+   if(data?.user?.id===ADMIN_UID&&db.auth.mfa){const {data:mfa,error:mfaError}=await db.auth.mfa.getAuthenticatorAssuranceLevel();if(mfaError){applyAuthRole(null);return;}if(mfa?.nextLevel==='aal2'&&mfa.currentLevel!=='aal2'){applyAuthRole(null);location.replace('./admin-security.html');return;}}
    applyAuthRole(data?.user);
   }catch(error){applyAuthRole(null);console.warn('Oturum doğrulanamadı, yönetim kilitlendi');}
  })().finally(()=>authCheck=null);return authCheck;
@@ -2771,11 +2799,11 @@ render();boot();
 })();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=94"></script>
-<script id="stadiumAudioScript" src="./stadium-audio-v200.js?v=200"></script>
+<script id="stadiumAudioScript" src="./stadium-audio-v204.js?v=204"></script>
 
-<script src="./scene-audio-cues-v165.js?v=165"></script>
-<script src="./round-finale-v202.js?v=202"></script>
+<script src="./scene-audio-cues-v204.js?v=204"></script>
+<script src="./round-finale-v204.js?v=204"></script>
 <script src="./shot-cache-v195.js"></script>
-<script id="game3dScript" src="./scene-video-v201.js?v=202"></script>
+<script id="game3dScript" src="./scene-video-v204.js?v=204"></script>
 </body>
 </html>
