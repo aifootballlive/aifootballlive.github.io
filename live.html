@@ -2070,10 +2070,11 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
   <div class="adminField"><label>Ana ses <span class="adminValue" id="valSoundMaster">88%</span></label><input id="setSoundMaster" type="range" min="0" max="100" value="88" oninput="syncAdminValue('SoundMaster',this.value,'%')"></div>
   <div class="adminField"><label>Seyirci sesi <span class="adminValue" id="valSoundCrowd">72%</span></label><input id="setSoundCrowd" type="range" min="0" max="100" value="72" oninput="syncAdminValue('SoundCrowd',this.value,'%')"></div>
   <div class="adminField"><label>Vuruş / top efektleri <span class="adminValue" id="valSoundEffects">92%</span></label><input id="setSoundEffects" type="range" min="0" max="100" value="92" oninput="syncAdminValue('SoundEffects',this.value,'%')"></div>
-  <div class="adminField"><label>Gol spikeri <span class="adminValue" id="valSoundGoal">100%</span></label><input id="setSoundGoal" type="range" min="0" max="100" value="100" oninput="syncAdminValue('SoundGoal',this.value,'%')"></div>
+  <div class="adminField"><label>Spiker / konuşma sesi <span class="adminValue" id="valSoundGoal">100%</span></label><input id="setSoundGoal" type="range" min="0" max="100" value="100" oninput="syncAdminValue('SoundGoal',this.value,'%')"></div>
   <label class="adminToggle"><span>Ses sistemi aktif</span><input id="setSoundEnabled" type="checkbox" checked></label>
   <label class="adminToggle"><span>Seyirci ambiyansı</span><input id="setCrowdEnabled" type="checkbox" checked></label>
-  <label class="adminToggle"><span>Gol spikeri aktif</span><input id="setAnnouncerEnabled" type="checkbox" checked></label>
+  <label class="adminToggle"><span>Yapay zekâ konuşmaları</span><input id="setAiSpeechEnabled" type="checkbox" checked></label>
+  <label class="adminToggle"><span>Gol sevinç sesi</span><input id="setAnnouncerEnabled" type="checkbox" checked></label>
   <label class="adminToggle"><span>Gol konfeti / efekt</span><input id="setGoalFxEnabled" type="checkbox" checked></label>
 </div></div>
 <div class="adminSection"><div class="adminSectionTitle">GÖRÜNTÜ ÖNİZLEMESİ</div>
@@ -2104,7 +2105,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
 <script src="./broadcast-layout-v199.js"></script>
-<script src="./tiktok-shared-v198.js?v=198"></script>
+<script src="./tiktok-shared-v200.js?v=200"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2114,7 +2115,7 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{aut
 const $=id=>document.getElementById(id),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const nameOf=t=>({A:'Altın Pusula',B:'Kızıl Kıvılcım',C:'Gece Yıldızı',D:'Bordo Dalga'}[t]||t);
 let adminAuthed=false,polling=false,gameRules={},audioCtx=null,realtimeStatus='';
-const DEFAULT_ADMIN_SETTINGS={shotThreshold:10,startKeeper:100,keeperCost:10,shotDelay:3000,soundMaster:88,soundCrowd:72,soundEffects:92,soundGoal:100,soundEnabled:true,crowdEnabled:true,announcerEnabled:true,goalFxEnabled:true,cameraZoom:100,stadiumExposure:116,idleMotion:100,ballSize:100,goalSize:100,confettiAmount:70,sceneLabel:true,showQueues:true,showStatus:true};
+const DEFAULT_ADMIN_SETTINGS={shotThreshold:10,startKeeper:100,keeperCost:10,shotDelay:3000,soundMaster:88,soundCrowd:72,soundEffects:92,soundGoal:100,soundEnabled:true,crowdEnabled:true,announcerEnabled:true,aiSpeechEnabled:true,goalFxEnabled:true,cameraZoom:100,stadiumExposure:116,idleMotion:100,ballSize:100,goalSize:100,confettiAmount:70,sceneLabel:true,showQueues:true,showStatus:true};
 let state={...DEFAULT_ADMIN_SETTINGS,A:{score:0,queue:0},B:{score:0,queue:0},C:{score:0,queue:0},D:{score:0,queue:0},keeper:{A:100,B:100,C:100,D:100},lastTeam:'B',busy:false};
 const defaultActorLayout=()=>({A:{x:0,depth:0,size:100},B:{x:0,depth:0,size:100},keeper:{x:0,depth:0,size:100}});
 let actorLayout=defaultActorLayout(),actorLayoutDirty=false,actorLayoutSaving=false;
@@ -2144,7 +2145,7 @@ function syncAdminValue(key,value,suffix=''){
 }
 function runtimeSettings(){return{
   soundMaster:state.soundMaster,soundCrowd:state.soundCrowd,soundEffects:state.soundEffects,soundGoal:state.soundGoal,
-  soundEnabled:state.soundEnabled,crowdEnabled:state.crowdEnabled,announcerEnabled:state.announcerEnabled,
+  soundEnabled:state.soundEnabled,crowdEnabled:state.crowdEnabled,announcerEnabled:state.announcerEnabled,aiSpeechEnabled:state.aiSpeechEnabled,
   cameraZoom:state.cameraZoom,stadiumExposure:state.stadiumExposure,idleMotion:state.idleMotion,
   ballSize:state.ballSize,goalSize:state.goalSize,sceneLabel:state.sceneLabel,actorLayout:structuredClone(actorLayout)
 }}
@@ -2188,10 +2189,10 @@ function previewAdminDraft(){
 }
 function previewAdminToggle(event){
  const input=event.target;
- if(!input||!['setSoundEnabled','setCrowdEnabled','setAnnouncerEnabled','setGoalFxEnabled'].includes(input.id))return;
+ if(!input||!['setSoundEnabled','setCrowdEnabled','setAnnouncerEnabled','setAiSpeechEnabled','setGoalFxEnabled'].includes(input.id))return;
  if(!adminAuthed||!$('adminOverlay')?.classList.contains('show'))return;
  const fields={setSoundEnabled:'soundEnabled',setCrowdEnabled:'crowdEnabled',
-   setAnnouncerEnabled:'announcerEnabled',setGoalFxEnabled:'goalFxEnabled'};
+   setAnnouncerEnabled:'announcerEnabled',setAiSpeechEnabled:'aiSpeechEnabled',setGoalFxEnabled:'goalFxEnabled'};
  state[fields[input.id]]=!!input.checked;
  applyRuntimeSettings();
 }
@@ -2208,7 +2209,7 @@ function fillAdminSettings(){
   set('setKeeperCost',state.keeperCost);set('setShotDelay',state.shotDelay);
   set('setSoundMaster',state.soundMaster);set('setSoundCrowd',state.soundCrowd);set('setSoundEffects',state.soundEffects);set('setSoundGoal',state.soundGoal);
   set('setCameraZoom',state.cameraZoom);set('setStadiumExposure',state.stadiumExposure);
-  check('setSoundEnabled',state.soundEnabled);check('setCrowdEnabled',state.crowdEnabled);check('setAnnouncerEnabled',state.announcerEnabled);check('setGoalFxEnabled',state.goalFxEnabled);
+  check('setSoundEnabled',state.soundEnabled);check('setCrowdEnabled',state.crowdEnabled);check('setAnnouncerEnabled',state.announcerEnabled);check('setAiSpeechEnabled',state.aiSpeechEnabled);check('setGoalFxEnabled',state.goalFxEnabled);
   syncAdminValue('SoundMaster',state.soundMaster,'%');syncAdminValue('SoundCrowd',state.soundCrowd,'%');syncAdminValue('SoundEffects',state.soundEffects,'%');syncAdminValue('SoundGoal',state.soundGoal,'%');
   syncAdminValue('CameraZoom',state.cameraZoom,'%');syncAdminValue('StadiumExposure',state.stadiumExposure,'%');
 }
@@ -2382,7 +2383,7 @@ function applyRules(r){
   state.startKeepers=Object.fromEntries(['A','B','C','D'].map(t=>[t,numberOr(gameRules.goalkeeper_initial_by_team?.[t],10)]));
   state.keeperCost=numberOr(gameRules.keeper_cost,10);state.shotDelay=numberOr(gameRules.shot_delay,3000);state.shotThreshold=numberOr(gameRules.shot_threshold,10);
   state.soundMaster=numberOr(gameRules.sound_master,DEFAULT_ADMIN_SETTINGS.soundMaster);state.soundCrowd=numberOr(gameRules.sound_crowd,DEFAULT_ADMIN_SETTINGS.soundCrowd);state.soundEffects=numberOr(gameRules.sound_effects,DEFAULT_ADMIN_SETTINGS.soundEffects);state.soundGoal=numberOr(gameRules.sound_goal,DEFAULT_ADMIN_SETTINGS.soundGoal);
-  state.soundEnabled=boolOr(gameRules.sound_enabled,true);state.crowdEnabled=boolOr(gameRules.crowd_enabled,true);state.announcerEnabled=boolOr(gameRules.announcer_enabled,true);state.goalFxEnabled=boolOr(gameRules.goal_fx_enabled,true);
+  state.soundEnabled=boolOr(gameRules.sound_enabled,true);state.crowdEnabled=boolOr(gameRules.crowd_enabled,true);state.announcerEnabled=boolOr(gameRules.announcer_enabled,true);state.aiSpeechEnabled=boolOr(gameRules.ai_speech_enabled,true);state.goalFxEnabled=boolOr(gameRules.goal_fx_enabled,true);
   state.cameraZoom=numberOr(gameRules.camera_zoom,100);state.stadiumExposure=numberOr(gameRules.stadium_exposure,116);state.idleMotion=numberOr(gameRules.idle_motion,100);state.ballSize=numberOr(gameRules.ball_size,100);state.goalSize=numberOr(gameRules.goal_size,100);state.confettiAmount=numberOr(gameRules.confetti_amount,70);
   state.sceneLabel=boolOr(gameRules.scene_label,true);state.showQueues=boolOr(gameRules.show_queues,true);state.showStatus=boolOr(gameRules.show_status,true);
   applyRuntimeSettings();render()
@@ -2498,11 +2499,11 @@ async function applyAdminSettings(){
   const changedScores=Object.fromEntries(['A','B','C','D'].map(t=>[t,Math.floor(num('setScore'+t,state[t].score,0,1000000))]).filter(([t,v])=>v!==adminEditBaseline.scores[t]));
   state.startKeepers=initialByTeam;state.keeperCost=num('setKeeperCost',10,1,10000);state.shotDelay=num('setShotDelay',3000,500,30000);
   state.soundMaster=num('setSoundMaster',DEFAULT_ADMIN_SETTINGS.soundMaster,0,100);state.soundCrowd=num('setSoundCrowd',DEFAULT_ADMIN_SETTINGS.soundCrowd,0,100);state.soundEffects=num('setSoundEffects',DEFAULT_ADMIN_SETTINGS.soundEffects,0,100);state.soundGoal=num('setSoundGoal',DEFAULT_ADMIN_SETTINGS.soundGoal,0,100);
-  state.soundEnabled=chk('setSoundEnabled');state.crowdEnabled=chk('setCrowdEnabled');state.announcerEnabled=chk('setAnnouncerEnabled');state.goalFxEnabled=chk('setGoalFxEnabled');
+  state.soundEnabled=chk('setSoundEnabled');state.crowdEnabled=chk('setCrowdEnabled');state.announcerEnabled=chk('setAnnouncerEnabled');state.aiSpeechEnabled=chk('setAiSpeechEnabled');state.goalFxEnabled=chk('setGoalFxEnabled');
   state.cameraZoom=num('setCameraZoom',100,75,140);state.stadiumExposure=num('setStadiumExposure',116,70,150);
   
   gameRules={...gameRules,goalkeeper_initial_by_team:initialByTeam,keeper_cost:state.keeperCost,shot_delay:state.shotDelay,shot_threshold:state.shotThreshold,last_team:state.lastTeam,
-    sound_master:state.soundMaster,sound_crowd:state.soundCrowd,sound_effects:state.soundEffects,sound_goal:state.soundGoal,sound_enabled:state.soundEnabled,crowd_enabled:state.crowdEnabled,announcer_enabled:state.announcerEnabled,goal_fx_enabled:state.goalFxEnabled,
+    sound_master:state.soundMaster,sound_crowd:state.soundCrowd,sound_effects:state.soundEffects,sound_goal:state.soundGoal,sound_enabled:state.soundEnabled,crowd_enabled:state.crowdEnabled,announcer_enabled:state.announcerEnabled,ai_speech_enabled:state.aiSpeechEnabled,goal_fx_enabled:state.goalFxEnabled,
     camera_zoom:state.cameraZoom,stadium_exposure:state.stadiumExposure,idle_motion:state.idleMotion,ball_size:state.ballSize,goal_size:state.goalSize,confetti_amount:state.confettiAmount,scene_label:state.sceneLabel,show_queues:state.showQueues,show_status:state.showStatus};
   const {error}=window.AIFootballTikTok?.active?await window.AIFootballTikTok.saveRules(gameRules,changedKeeper,changedQueues,changedScores):await db.from('games').update({rules:gameRules}).eq('id',ids.game);if(error){console.error(error);log('Ayarlar kaydedilemedi');return}
   const timingResult=await window.AIFootballTikTok?.setTimings?.({
@@ -2697,11 +2698,11 @@ render();boot();
 })();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=94"></script>
-<script id="stadiumAudioScript" src="./stadium-audio-v193.js?v=193"></script>
+<script id="stadiumAudioScript" src="./stadium-audio-v200.js?v=200"></script>
 
 <script src="./scene-audio-cues-v165.js?v=165"></script>
-<script src="./round-finale-v193.js?v=193"></script>
+<script src="./round-finale-v200.js?v=200"></script>
 <script src="./shot-cache-v195.js"></script>
-<script id="game3dScript" src="./scene-video-v196.js?v=196"></script>
+<script id="game3dScript" src="./scene-video-v200.js?v=200"></script>
 </body>
 </html>
