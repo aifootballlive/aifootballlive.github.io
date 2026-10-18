@@ -482,6 +482,7 @@
    const running=matchRunning(m);
    if(!running&&window.AIFootball3D?.isAnimating)window.AIFootball3D.reset();
    if(running){
+    if(!m.cue&&window.AIFootball3D?.isAnimating)window.AIFootball3D.reset?.();
     window.AIFootball3D?.prepareUpcomingShot?.(m.nextCue);
     consider(m.cue);consider(m.nextCue);
     if(m.cue?.finishedAt&&!m.nextCue&&!m.jobs.length)
@@ -687,6 +688,8 @@
     if(now>=cue.endsAt+1800){
      await change(m=>{
       if(m.cue?.id!==cue.id||m.cue.videoStartedAt)return false;
+      if(m.nextCue?.team)
+       m.jobs.unshift({id:'unplayed-next:'+crypto.randomUUID(),team:m.nextCue.team,count:1,nextIndex:0});
       m.jobs.unshift({id:'unplayed:'+crypto.randomUUID(),team:m.cue.team,count:1,nextIndex:0});
       m.cue=null;m.nextCue=null;m.cooldownUntil=0;
      });
@@ -741,7 +744,7 @@
     paint();retry=setTimeout(connect,5000);
    };}catch{retry=setTimeout(connect,5000);}}
  function install(){if(installed)return;if(!ready()){setTimeout(install,50);return;}installed=true;setInterval(showMatchClock,1000);showMatchClock();legend();read().then(ensureChannel).catch(e=>console.warn(e.message));tick();}
- window.AIFootballTikTok={get active(){return true;},get connected(){return connected;},getStatus(){return {autoMatches:autoMatchEnabled(match),manualMatchStart:!autoMatchEnabled(match),active:true,connected,shared:!!match,leader:owns(),revision:match?.revision,accepted:match?.accepted||0,lastGift:match?.lastGift||null,pending:totalJobs(match?.jobs||[])+(match?.nextCue?1:0),waitingRequests:pendingRequests.size,channelReady,adminAvailable:!!match?.lease&&match.lease.until>Date.now(),lastError:errorText};},getClock(){return match?{epoch:match.idleEpoch}:null;},getTimings(){return timingFor(match);},
+ window.AIFootballTikTok={get active(){return true;},get connected(){return connected;},getStatus(){return {autoMatches:autoMatchEnabled(match),manualMatchStart:!autoMatchEnabled(match),active:true,connected,shared:!!match,leader:owns(),revision:match?.revision,accepted:match?.accepted||0,lastGift:match?.lastGift||null,pending:totalJobs(match?.jobs||[])+(match?.nextCue?1:0)+(match?.cue&&!match.cue.finishedAt&&!match.cue.videoStartedAt?1:0),waitingRequests:pendingRequests.size,channelReady,adminAvailable:!!match?.lease&&match.lease.until>Date.now(),lastError:errorText};},getClock(){return match?{epoch:match.idleEpoch}:null;},getTimings(){return timingFor(match);},
   async setTimings(next){
    if(!admin())return false;
    const validated=timingFor({timing:next});
