@@ -2019,20 +2019,17 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 #broadcastViewport .broadcastControls>.panel .adminTeamQueue{height:6.4cqw!important;flex-basis:6.4cqw!important}
 
 
-/* A private phone can lose AAL2 after MFA enrollment or a session refresh.
-   Keep a safe path to the login/challenge screen, without exposing admin tools
-   or adding login clutter to OBS/desktop broadcasts. */
+/* Only previously MFA-verified browsers show the optional login shortcut.
+   The link is a presentation convenience; Supabase Auth/AAL2 enforces access. */
 #guestAdminLogin{display:none!important}
-@media screen and (max-width:600px) and (pointer:coarse){
- #broadcastViewport:not(.adminView)>#guestAdminLogin:not([hidden]){
-  display:inline-flex!important;align-items:center!important;justify-content:center!important;
-  position:absolute!important;top:1.1%!important;right:2.2%!important;z-index:81!important;
-  font-size:clamp(10px,2.5cqw,13px)!important;line-height:1.15!important;
-  font-weight:800!important;letter-spacing:.01em!important;
-  padding:6px 8px!important;color:#f1f6ff!important;text-decoration:none!important;
-  background:rgba(7,18,35,.87)!important;border:1px solid rgba(180,201,230,.64)!important;
-  border-radius:8px!important;touch-action:manipulation!important;pointer-events:auto!important;
- }
+#broadcastViewport:not(.adminView)>#guestAdminLogin:not([hidden]){
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ position:absolute!important;top:1.1%!important;right:2.2%!important;z-index:81!important;
+ font-size:clamp(10px,2.5cqw,13px)!important;line-height:1.15!important;
+ font-weight:800!important;letter-spacing:.01em!important;
+ padding:6px 8px!important;color:#f1f6ff!important;text-decoration:none!important;
+ background:rgba(7,18,35,.87)!important;border:1px solid rgba(180,201,230,.64)!important;
+ border-radius:8px!important;touch-action:manipulation!important;pointer-events:auto!important;
 }
 
 </style>
@@ -2344,8 +2341,13 @@ function syncMainMatchStart(){
 window.AIFootballUpdateMainMatchLaunch=syncMainMatchStart;
 function render(){
   document.querySelector('.wrap').classList.toggle('adminView',adminAuthed);
+  // The shortcut is browser-specific convenience, never authorization.
   const publicAdminLink=$('guestAdminLogin');
-  if(publicAdminLink)publicAdminLink.hidden=adminAuthed;
+  if(publicAdminLink){
+   let recognized=false;
+   try{recognized=localStorage.getItem('afl.adminRecognizedBrowser.v1')==='verified';}catch{}
+   publicAdminLink.hidden=adminAuthed||!recognized;
+  }
   // Guests (including incognito browsers) may send TEST shots. Admin-only
   // actions remain inaccessible without authenticated administrator login.
   const sharedStatus=window.AIFootballTikTok?.getStatus?.();
@@ -2518,6 +2520,10 @@ function handleEventRow(row,animate=true){if(window.AIFootballTikTok?.active)ret
 let authCheck=null,authGeneration=0;
 function applyAuthRole(user){
  adminAuthed=!!(user&&user.id===ADMIN_UID);
+ // getAuth() only passes a user with verified Supabase AAL2.
+ if(adminAuthed){
+  try{localStorage.setItem('afl.adminRecognizedBrowser.v1','verified');}catch{}
+ }
  render();setConn();
  if(document.body.classList.contains('settingsMode')){
   if(adminAuthed&&!$('leagueDrawer').classList.contains('show'))openAdmin();
