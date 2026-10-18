@@ -1877,6 +1877,30 @@ body.settingsMode .wrap > #matchClockHud[data-phase="result"] ~ #roundSummary:no
 /* The obsolete separate end-of-game screen is never rendered. */
 .wrap > #roundWaiting{display:none!important;}
 
+/* Original TikTok artwork from owner screenshots, kept sharp at source resolution. */
+.broadcastControls .giftVisual img{width:100%!important;height:100%!important;max-width:100%!important;object-fit:contain!important;border-radius:6px}
+
+/* Size the admin preview by its portrait frame, not by desktop window width. */
+.wrap.adminView>.broadcastControls>.panel,.wrap:not(.adminView)>.broadcastControls>.panel{
+ height:clamp(142px,40cqw,210px)!important;min-height:0!important;padding:4px 3px!important;
+}
+.wrap .broadcastControls>.panel .panelHead.teamScore{height:17cqw!important;min-height:0!important}
+.wrap .broadcastControls>.panel .teamTitle{font-size:clamp(11px,3cqw,16px)!important;line-height:1.08!important;min-height:0!important}
+.wrap .broadcastControls>.panel .teamLogo{width:clamp(24px,7cqw,40px)!important;height:clamp(27px,8cqw,44px)!important}
+.wrap .broadcastControls>.panel .teamScore .num{font-size:clamp(24px,7cqw,42px)!important;line-height:1!important}
+.wrap .broadcastControls>.panel .giftbtn.shot{height:12cqw!important;min-height:0!important;padding:1px!important;gap:2px!important}
+.wrap .broadcastControls>.panel .giftbtn.shot .giftVisual{height:7cqw!important;width:100%!important}
+.wrap .broadcastControls>.panel .giftbtn.shot .giftVisual img{max-width:8cqw!important;height:7cqw!important;object-fit:contain!important;margin:auto}
+.wrap .broadcastControls>.panel .giftEffect{font-size:clamp(10px,3cqw,16px)!important;line-height:1.1!important}
+.wrap .broadcastControls>.panel .adminTeamQueue{height:7cqw!important;min-height:0!important;font-size:clamp(9px,2.6cqw,14px)!important;line-height:1.1!important}
+.wrap .broadcastControls>.panel .adminTeamQueue strong{font-size:clamp(16px,4cqw,23px)!important;line-height:1!important}
+.wrap>.leagueProfileHint{top:calc(7% + clamp(142px,40cqw,210px) + 4px)!important}
+.wrap>.matchClockHud,.wrap.adminView>.matchClockHud,.wrap:not(.adminView)>.matchClockHud{top:calc(7% + clamp(142px,40cqw,210px) + 32px)!important}
+
+
+body .wrap>.leagueProfileHint,body .wrap.adminView>.leagueProfileHint{bottom:auto!important;height:auto!important;min-height:0!important;max-height:48px!important}
+.wrap .broadcastControls>.panel .panelHead.teamScore{height:15cqw!important}
+.wrap:not(.adminView) .broadcastControls .giftbtn:disabled{opacity:1!important;filter:none!important}
 </style>
 </head>
 <body>
@@ -2031,7 +2055,8 @@ body.settingsMode .wrap > #matchClockHud[data-phase="result"] ~ #roundSummary:no
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./tiktok-shared-v192.js?v=192"></script>
+<script src="./broadcast-layout-v193.js"></script>
+<script src="./tiktok-shared-v193.js?v=193"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2160,6 +2185,7 @@ function syncMainMatchStart(){
 window.AIFootballUpdateMainMatchLaunch=syncMainMatchStart;
 function render(){
   document.querySelector('.wrap').classList.toggle('adminView',adminAuthed);
+  document.querySelectorAll('.broadcastControls .shot').forEach(button=>{button.disabled=!adminAuthed;});
   syncMainMatchStart();
   const ctrl=window.AIFootballTikTok?.getRoundControls?.();
   const auto=$('autoMatchesToggle');
@@ -2621,10 +2647,10 @@ render();boot();
 })();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=94"></script>
-<script id="stadiumAudioScript" src="./stadium-audio-v165.js?v=165"></script>
+<script id="stadiumAudioScript" src="./stadium-audio-v193.js?v=193"></script>
 
 <script src="./scene-audio-cues-v165.js?v=165"></script>
-<script src="./round-finale-v173.js?v=173"></script>
+<script src="./round-finale-v193.js?v=193"></script>
 <script id="game3dScript" src="./scene-video-v159.js?v=159"></script>
 </body>
 </html>

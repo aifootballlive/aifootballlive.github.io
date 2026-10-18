@@ -57,3 +57,29 @@ Bu turda gerçek TikTok mobil görüntü/FPS, canlı Supabase yetkisi ve failove
 - Ses ayarı toggles anlık denenir, panel kapatılırsa kaydedilmemiş genel sunum ayarları son kayıtlı duruma döner. Kaydedilen ana ses açık/kapalı ayarı artık sayfa yenilemede zorla true yapılmaz.
 - Lig iframesi panel kapatılırken veya ayarlara geri dönülürken boşaltılır; gizli arka plan güncellemesi azalır.
 - Güncel dosyalar: live.html, tiktok-shared-v179.js; admin-settings.html yalnız legacy redirect. Kontrollü JS önizleme ve sözdizimi testleri başarılı; gerçek Live Studio/tel cihaz performansı doğrulanmadı.
+
+
+## 18.10.2026 — Work verification and fixes (v193)
+
+Built on remote 59a1d72; do not reapply older v172/v179 experiments from other local directories.
+
+Completed in this Work pass:
+- Found a separate cause of the giant black area: `leagueProfileHint` had both top and bottom constraints, stretching to 350–430px in the mobile admin view. Its bottom/height are now reset. `broadcast-layout-v193.js` anchors hint and timer to actual card dimensions on resize. Timer width is explicitly bounded inside the portrait frame.
+- The result sheet is detached from the DOM while waiting/playing and only mounted during the real result phase. Verified public/admin waiting -> running -> results -> running, including viewport resize at 390x844, 449x793, 1280x900. No phantom result sheet remains outside results.
+- Original eight TikTok gift symbols extracted at source resolution from the owner's two WhatsApp screenshots replace temporary vector stand-ins. Names, coin counts and 1/5-shot mapping were already implemented upstream and preserved. Pointer affordances, queue numeral flashes and striped team colors already existed; not duplicated.
+- Finalist filtering now applies to job selection, next-cue preparation and pending-video checks. Non-finalist jobs stay in the persistent list. 150 outsider shots survived the final and season transition in the controlled test; trophy carried once.
+- Match deadline settles already-reached contact frames and carries unplayed active/reserved shots; no queue reset during round advance.
+- Added generated Turkish winner MP3s for all four current team names, draw and 60-second cue; generated applause/cheer. Audio buffers are cached, obey saved sound settings, master/goal/crowd volume and mute. English still uses existing browser fallback. These files are real AI-generated audio; the older browser-only status is superseded for these Turkish cues.
+- 1,000 gift events plus duplicate deliveries produced 3,000 shots in controlled tests, with unique per-shot indices and rotation. This is not a real TikTok purchase or delivery test.
+- Chrome and Edge media checks exercise A/B and C/D decoder handoffs without idle insertion, recovery of a manually paused decoder, three video nodes, and AI audio decode/play/mute. Real LIVE Studio output routing, physical phone and long-duration CPU/FPS remain unverified.
+
+Still blocked/pending, not completed:
+- No Supabase management/database credentials are available. Server-enforced trusted PC/phone, MFA, actual live RLS audit, token revocation and attack tests are NOT active. Read-only audit SQL: `ops/supabase-security-audit.sql`. Activation and durable independent receiver design: `docs/SERVER-SECURITY-AND-RELAY.md`. The existing local desktop pairing tests do not secure the cloud broadcast database.
+- No independent always-on receiver/provider is deployed. Gifts never delivered while the only upstream collector is offline cannot be reconstructed from browser storage.
+- Future league tabs remain previews; separate production league data/fixtures and server isolation are still to be implemented. Do not present sample standings as actual played fixtures.
+- Initial name check found existing Altın Pusula usages. See `docs/NAME-REVIEW.md`; registry clearance is not complete. Do not claim all fictional names have no trademark risk.
+- MP4 objects cannot be independently resized without a new rendering approach; player video files/quality unchanged.
+
+Current upstream behavior preserved: combined winner+league results duration (default 60 seconds), first match explicit admin start, automatic continuation opt-in. Do not restore the earlier separate 60+120-second flow unless the owner asks again.
+
+- Additional client-path hardening in v193: anonymous/free manual-shot buttons are disabled while preserving bright gift artwork. Public Realtime broadcast commands are ignored. Signed-in manual commands use authenticated Supabase updates directly, including a non-leader admin phone. This removes the unverified broadcast-to-admin relay path but DOES NOT establish that live RLS/device policies are correct; server audit is still required.
