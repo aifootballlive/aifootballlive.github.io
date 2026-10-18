@@ -2056,7 +2056,7 @@ body .wrap>.leagueProfileHint,body .wrap.adminView>.leagueProfileHint{bottom:aut
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
 <script src="./broadcast-layout-v193.js"></script>
-<script src="./tiktok-shared-v193.js?v=193"></script>
+<script src="./tiktok-shared-v194.js?v=194"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2169,7 +2169,7 @@ function syncMainMatchStart(){
  const button=$('liveStartButton'),hud=$('matchClockHud');
  if(!button||!hud)return;
  const info=window.AIFootballTikTok?.getMatchState?.();
- const running=info?.running===true;
+ const running=info?.running===true||info?.starting===true;
  const showingResults=info?.results===true;
  button.hidden=!adminAuthed||showingResults;
  button.disabled=!adminAuthed||!info?.ready||(!running&&!info?.canStart)||button.dataset.busy==='true';
@@ -2177,7 +2177,7 @@ function syncMainMatchStart(){
  const label=running?'DURDUR':'BAŞLAT';
  if(action&&action.textContent!==label)action.textContent=label;
  button.dataset.action=running?'stop':'start';
- button.title=running?'Aktif maçı sonlandır':'Yeni maçı başlat';
+ button.title=running?(info?.starting?'Maç başlangıcını iptal et':'Aktif maçı sonlandır'):'30 saniye geri sayımla maçı başlat';
  button.setAttribute('aria-label',running?'Maçı durdur':'Maçı başlat');
  button.setAttribute('aria-disabled',String(button.disabled));
  hud.classList.toggle('hasAdminMatchButton',adminAuthed&&!showingResults);
@@ -2515,8 +2515,8 @@ async function toggleMainMatch(){
  if(!button||button.disabled||button.dataset.busy==='true')return;
  const game=window.AIFootballTikTok;
  const info=game?.getMatchState?.();
- if(!info?.ready||info.results||(!info.running&&!info.canStart))return;
- const stopping=info.running===true;
+ if(!info?.ready||info.results||(!info.running&&!info.starting&&!info.canStart))return;
+ const stopping=info.running===true||info.starting===true;
  if(stopping&&!confirm('Aktif maçı sonlandırmak istiyor musunuz? Kazanan ve lig tablosu ayarlanan süre boyunca gösterilecek.'))return;
  button.dataset.busy='true';
  button.disabled=true;

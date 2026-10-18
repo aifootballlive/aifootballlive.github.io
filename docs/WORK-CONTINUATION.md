@@ -83,3 +83,13 @@ Still blocked/pending, not completed:
 Current upstream behavior preserved: combined winner+league results duration (default 60 seconds), first match explicit admin start, automatic continuation opt-in. Do not restore the earlier separate 60+120-second flow unless the owner asks again.
 
 - Additional client-path hardening in v193: anonymous/free manual-shot buttons are disabled while preserving bright gift artwork. Public Realtime broadcast commands are ignored. Signed-in manual commands use authenticated Supabase updates directly, including a non-leader admin phone. This removes the unverified broadcast-to-admin relay path but DOES NOT establish that live RLS/device policies are correct; server audit is still required.
+
+
+## 18.10.2026 — Explicit 30-second kickoff (v194)
+
+- Every explicit start and automatic next-round start schedules a shared `clock.startedAt` 30 seconds in the future. All viewers show Maç Başlıyor + 00:30..00:01. Shots cannot start or consume keeper power during this preparation period; the idle clip can keep playing.
+- At that exact timestamp the configured normal-time countdown starts, followed by configured overtime. Result/league display retains its existing stamped configurable duration.
+- Main button is DURDUR both during preparation and play. Cancelling preparation returns to BAŞLAT without recording a league result or losing queued gifts. Stopping play ends the round with its result and temporarily pauses the automatic chain; explicit start resumes it. Saved auto preference is retained.
+- Automatic continuation runs through the current season and tied championship finals, then stops when a champion is established. The next season requires an explicit start. Non-finalist shot carry-over is preserved.
+- Tests: countdown 30->1->configured time, no early shots, double start, preparation cancel, result deadline, manual/auto transitions, season end, stop/restart, unauthorized start/stop; prior 1,000-gift/final-carry regression; real Chrome main-button click start/stop and public/admin rendering. Tests use mocked database state, never click the production admin start/stop button.
+- Current engine: tiktok-shared-v194.js. Existing server-access and real physical-device limitations remain listed above.
