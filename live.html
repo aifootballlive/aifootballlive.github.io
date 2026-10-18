@@ -1926,6 +1926,19 @@ body .wrap>.leagueProfileHint,body .wrap.adminView>.leagueProfileHint{bottom:aut
  }
 }
 
+
+/* Center result label and countdown; equal-height admin controls. */
+body .wrap>#matchClockHud[data-phase="result"]{display:grid!important;grid-template-columns:1fr!important;justify-items:center!important;text-align:center!important}
+body .wrap>#matchClockHud[data-phase="result"] .clockStatus{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;justify-self:center!important;width:100%!important;max-width:100%!important;margin:0!important;padding:0!important;text-align:center!important}
+body .wrap>#matchClockHud[data-phase="result"] .clockLabel,body .wrap>#matchClockHud[data-phase="result"] .clockDigits{display:block!important;width:100%!important;text-align:center!important}
+#roundSummary .resultSectionTitle{display:none!important}
+#roundSummary .roundSummaryTitle,#roundSummary .leagueBreakHeader,#roundSummary .leagueNext{text-align:center!important}
+body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{align-items:stretch!important;--admin-control-height:clamp(38px,8cqw,48px)}
+body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight>#adminRefresh:not([hidden]),body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight>#adminOpen{height:var(--admin-control-height)!important;min-height:var(--admin-control-height)!important;max-height:var(--admin-control-height)!important;align-self:stretch!important;margin:0!important;box-sizing:border-box!important;transform:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
+.broadcastControls>.panel{position:relative!important;overflow:visible!important}
+.teamGiftNotice{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:45;background:#0c1e35;color:#fff2ca;border:1px solid #e5bc63;border-radius:8px;padding:7px 5px;text-align:center;font-size:clamp(11px,2.6cqw,22px);font-weight:800;line-height:1.25;box-shadow:0 3px 12px #0008;pointer-events:none}
+.teamGiftNotice[hidden]{display:none!important}
+
 </style>
 </head>
 <body>
@@ -2081,8 +2094,8 @@ body .wrap>.leagueProfileHint,body .wrap.adminView>.leagueProfileHint{bottom:aut
  <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
-<script src="./broadcast-layout-v193.js"></script>
-<script src="./tiktok-shared-v196.js?v=198"></script>
+<script src="./broadcast-layout-v195.js"></script>
+<script src="./tiktok-shared-v197.js?v=197"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2677,6 +2690,7 @@ render();boot();
 
 <script src="./scene-audio-cues-v165.js?v=165"></script>
 <script src="./round-finale-v193.js?v=193"></script>
-<script id="game3dScript" src="./scene-video-v160.js?v=161"></script>
+<script src="./shot-cache-v195.js"></script>
+<script id="game3dScript" src="./scene-video-v195.js?v=195"></script>
 </body>
 </html>
