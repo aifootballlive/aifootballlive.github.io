@@ -58,7 +58,19 @@ async function finishIfAdmin(user){
 }
 function showProfile(user){const isAdmin=!!(user&&user.id===ADMIN_UID);form.hidden=isAdmin;document.getElementById('profile').hidden=!isAdmin;document.getElementById('profileEmail').textContent=isAdmin?(user.email||'Admin hesabı'):'';}
 (async()=>{try{const {data}=await db.auth.getUser();showProfile(data&&data.user);}catch(e){show('Oturum kontrol edilemedi. Tekrar deneyebilirsin.')}})();
-db.auth.onAuthStateChange((_event,session)=>showProfile(session&&session.user));
+db.auth.onAuthStateChange((event,session)=>{
+ if(event==='SIGNED_OUT'){showProfile(null);return;}
+ // Never promote a cached session object to an admin profile. Verify the
+ // server-issued identity first, even when the Auth SDK refreshes a token.
+ showProfile(null);
+ if(!session)return;
+ setTimeout(async()=>{
+  try{
+   const {data,error}=await db.auth.getUser();
+   showProfile(!error?data?.user:null);
+  }catch{showProfile(null);}
+ },0);
+});
 document.getElementById('logoutBtn').addEventListener('click',async()=>{const logout=document.getElementById('logoutBtn');logout.disabled=true;try{const {error}=await db.auth.signOut({scope:'local'});if(error)throw error;showProfile(null);document.getElementById('password').value='';show('Bu tarayıcıdaki oturum kapatıldı.',true);}catch(e){show('Çıkış yapılamadı. Tekrar dene.')}finally{logout.disabled=false}});
 form.addEventListener('submit',async e=>{e.preventDefault();btn.disabled=true;show('Giriş yapılıyor…');const email=document.getElementById('email').value.trim();const password=document.getElementById('password').value;const {data,error}=await db.auth.signInWithPassword({email,password});if(error){show('Giriş başarısız: e-posta veya şifreyi kontrol et.');btn.disabled=false;return}if(!data.user||data.user.id!==ADMIN_UID){await db.auth.signOut();show('Bu hesap admin olarak yetkili değil.');btn.disabled=false;return}if(!await finishIfAdmin(data.user))btn.disabled=false});
 </script>
