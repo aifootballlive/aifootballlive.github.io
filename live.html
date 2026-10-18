@@ -1989,6 +1989,26 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 
 #broadcastViewport:not(.adminView) .broadcastControls>.panel .adminTeamQueue{display:none!important}
 #broadcastViewport:not(.adminView) .broadcastControls>.panel .giftbtn:disabled{opacity:1!important;filter:none!important}
+
+/* Compact team-specific queue clearing controls, settings only. */
+#adminTeamQueueReset{min-width:0!important}
+#adminTeamQueueReset .teamQueueClearHint{font-size:12px!important;line-height:1.35!important;margin:4px 0 10px!important;opacity:.82!important}
+#adminTeamQueueReset .teamQueueClearGrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;min-width:0!important}
+#adminTeamQueueReset .teamQueueClearBtn{width:100%!important;min-width:0!important;min-height:36px!important;
+ padding:7px 5px!important;line-height:1.12!important;font-weight:800!important;font-size:clamp(11px,2cqw,14px)!important;
+ white-space:normal!important;overflow-wrap:anywhere!important;touch-action:manipulation!important}
+#adminTeamQueueReset .teamQueueClearBtn:disabled{opacity:.48!important;cursor:wait!important}
+#adminTeamQueueReset .teamQueueClearStatus{font-size:12px!important;line-height:1.3!important;min-height:15px!important;margin-top:5px!important;color:#9ce7bf!important}
+@media(max-width:440px){#adminTeamQueueReset .teamQueueClearGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+/* A little extra space above the goal crossbar without moving team labels
+   into the LIVE title safe area. Small vertical compression, admin and public. */
+#broadcastViewport .broadcastControls>.panel .panelHead.teamScore{
+ height:15.3cqw!important;flex-basis:15.3cqw!important;grid-template-rows:9.6cqw minmax(0,1fr)!important;
+}
+#broadcastViewport .broadcastControls>.panel .buttons{height:11.5cqw!important;flex-basis:11.5cqw!important}
+#broadcastViewport .broadcastControls>.panel .giftbtn.shot{height:11.5cqw!important}
+#broadcastViewport .broadcastControls>.panel .adminTeamQueue{height:6.4cqw!important;flex-basis:6.4cqw!important}
+
 </style>
 </head>
 <body>
@@ -2035,7 +2055,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
     <div id="actorAdjustStatus" class="actorAdjustStatus" role="status"></div>
   </section>
 
-  <div class="head"><div class="title">AI Football Live</div><div class="headRight"><span id="connectionStatus" hidden aria-hidden="true"></span><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile" title="Sayfayı yenile"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 7.5A8 8 0 1 0 20 14"/><path d="M20 3v5h-5"/></svg></button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN AYARLARI</button></div></div>
+  <div class="head"><div class="title">AI Football Live</div><div class="headRight"><span id="connectionStatus" hidden aria-hidden="true"></span><button id="adminRefresh" class="adminOpen" hidden onclick="refreshAdminPage()" aria-label="Sayfayı yenile" title="Sayfayı yenile"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.3 10a8.6 8.6 0 0 1 14.9-4.6L20.4 7.5"/><path d="M20.4 3.5v4h-4"/><path d="M20.7 14a8.6 8.6 0 0 1-14.9 4.6L3.6 16.5"/><path d="M3.6 20.5v-4h4"/></svg></button><button id="adminOpen" class="adminOpen" onclick="openAdmin()">ADMIN AYARLARI</button></div></div>
 
   <div class="adminFrontKeeper" id="adminFrontKeeper">
     <div class="keeperGroupTitle">Kalan kaleci güçleri</div>
@@ -2091,6 +2111,17 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
   <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jB"></span></span><span>BEKLEYEN ŞUT</span></div><input id="setQueueB" type="number" min="0" max="10000" step="1" aria-label="B bekleyen şut"></div>
   <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jC"></span></span><span>BEKLEYEN ŞUT</span></div><input id="setQueueC" type="number" min="0" max="10000" step="1" aria-label="C bekleyen şut"></div>
   <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jD"></span></span><span>BEKLEYEN ŞUT</span></div><input id="setQueueD" type="number" min="0" max="10000" step="1" aria-label="D bekleyen şut"></div>
+</div>
+<div class="adminSection" id="adminTeamQueueReset">
+ <div class="adminSectionTitle">TAKIM TAKIM BEKLEYEN ŞUTLARI SIFIRLA</div>
+ <p class="teamQueueClearHint">Yalnızca seçilen takımın bekleyen şutları temizlenir. Oynatılmakta olan şut tamamlanır; gol ve kaleci güçleri değişmez.</p>
+ <div class="teamQueueClearGrid">
+  <button type="button" class="adminBtn teamQueueClearBtn" id="clearQueueA" onclick="clearTeamPendingShots('A')">Altın Pusula · SIFIRLA</button>
+  <button type="button" class="adminBtn teamQueueClearBtn" id="clearQueueB" onclick="clearTeamPendingShots('B')">Kızıl Kıvılcım · SIFIRLA</button>
+  <button type="button" class="adminBtn teamQueueClearBtn" id="clearQueueC" onclick="clearTeamPendingShots('C')">Gece Yıldızı · SIFIRLA</button>
+  <button type="button" class="adminBtn teamQueueClearBtn" id="clearQueueD" onclick="clearTeamPendingShots('D')">Bordo Dalga · SIFIRLA</button>
+ </div>
+ <div id="teamQueueClearStatus" role="status" aria-live="polite" class="teamQueueClearStatus"></div>
 </div>
 <div class="adminSection"><div class="adminSectionTitle">GÜNCEL SKORLAR (ATILAN GOL)</div><div class="adminGrid"><div class="adminField"><label>Altın Pusula gol sayısı</label><input id="setScoreA" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>Kızıl Kıvılcım gol sayısı</label><input id="setScoreB" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>Gece Yıldızı gol sayısı</label><input id="setScoreC" type="number" min="0" max="1000000" step="1"></div><div class="adminField"><label>Bordo Dalga gol sayısı</label><input id="setScoreD" type="number" min="0" max="1000000" step="1"></div></div></div>
 <div class="adminSection"><div class="adminSectionTitle">MAÇ VE SONUÇ EKRANI SÜRELERİ</div><div class="adminGrid">
@@ -2149,7 +2180,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
 <script src="./broadcast-layout-v204.js"></script>
-<script src="./tiktok-shared-v204.js?v=204"></script>
+<script src="./tiktok-shared-v205.js?v=205"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2598,6 +2629,31 @@ async function restoreDefaultSettings(){
   applyRuntimeSettings();
   await applyAdminSettings();
   log('Tüm ayarlar varsayılana döndürüldü');
+}
+async function clearTeamPendingShots(team){
+ const names={A:'Altın Pusula',B:'Kızıl Kıvılcım',C:'Gece Yıldızı',D:'Bordo Dalga'};
+ if(!adminAuthed||!names[team])return;
+ const game=window.AIFootballTikTok;
+ if(!game?.active||!game.clearTeamPendingShots){
+  alert('Ortak maç hazır değil. Sayfayı yenileyip tekrar deneyin.');return;
+ }
+ if(!confirm(names[team]+' takımının bekleyen şutları sıfırlansın mı? Diğer takımlar ve oynayan şut etkilenmeyecek.'))return;
+ const button=$('clearQueue'+team),label=button?.textContent;
+ const notice=$('teamQueueClearStatus');
+ if(button)button.disabled=true;
+ if(notice)notice.textContent=names[team]+' şut kuyruğu temizleniyor…';
+ try{
+  const result=await game.clearTeamPendingShots(team);
+  if(!result)throw Error('Veritabanı işlemi onaylanmadı');
+  const count=Number(result.pending)||0;
+  const input=$('setQueue'+team);
+  if(input)input.value=String(count);
+  adminEditBaseline.queues[team]=count;
+  if(notice)notice.textContent=names[team]+' bekleyen şutları temizlendi.'+(result.playing?' Oynayan 1 şut tamamlanacak.':'');
+ }catch(error){
+  console.error('Takım şutlarını sıfırlama hatası',error);
+  if(notice)notice.textContent='İşlem başarısız. Bağlantı ve yönetici yetkisini kontrol edin.';
+ }finally{if(button){button.disabled=false;button.textContent=label;}}
 }
 async function toggleGuestTrial(){
  if(!adminAuthed||!window.AIFootballTikTok?.setGuestTrialEnabled)return;
