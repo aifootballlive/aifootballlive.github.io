@@ -55,7 +55,7 @@ async function finishIfAdmin(user){
  if(error||data?.user?.id!==ADMIN_UID){show('Kimlik doğrulaması teyit edilemedi.');return false;}
  const {data:mfa,error:mfaError}=await db.auth.mfa.getAuthenticatorAssuranceLevel();
  if(mfaError){show('İki aşamalı doğrulama kontrol edilemedi.');return false;}
- if(mfa?.currentLevel!=='aal2'&&(mfa?.nextLevel==='aal2'||new URLSearchParams(location.search).get('next')==='security')){location.replace('./admin-security.html');return true;}
+ if(mfa?.currentLevel!=='aal2'){location.replace('./admin-security.html');return true;}
  show('Giriş başarılı. Oyun açılıyor…',true);
  setTimeout(()=>location.replace(new URLSearchParams(location.search).get('next')==='settings'?'./admin-settings.html':'./live.html'),350);return true;
 }
