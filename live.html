@@ -2445,7 +2445,7 @@ async function getAuth(){
   try{
    const local=await db.auth.getSession();
    if(generation!==authGeneration)return;
-   if(!local.data?.session){if(!local.error)applyAuthRole(null);return;}
+   if(!local.data?.session){applyAuthRole(null);return;}
    const {data,error}=await db.auth.getUser();
    if(generation!==authGeneration)return;
    if(error){applyAuthRole(null);console.warn('Admin oturumu sunucuda doğrulanamadı');return;}
@@ -2669,7 +2669,12 @@ async function boot(){
   // Cached session claims cannot directly open the admin panel. Verify
   // the current user through Supabase Auth before restoring any controls.
   authGeneration++;applyAuthRole(null);
-  setTimeout(()=>getAuth().catch(()=>applyAuthRole(null)),0);
+  setTimeout(async()=>{
+   // Supabase can emit TOKEN_REFRESHED while a prior getUser is still in
+   // flight. Wait for that check to settle, then verify this generation.
+   try{if(authCheck)await authCheck;await getAuth();}
+   catch(error){applyAuthRole(null);}
+  },0);
  });
  const recheck=()=>{if(!document.hidden)getAuth().catch(()=>{});};
  window.addEventListener('focus',recheck);window.addEventListener('online',recheck);document.addEventListener('visibilitychange',recheck);
