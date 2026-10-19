@@ -12,9 +12,11 @@ const measure=document.createElement('canvas').getContext('2d');
 function baseline(node){
  const style=getComputedStyle(node);
  if(measure&&node.matches('#leagueProfileHint,.clockLabel')&&node.clientWidth){
-  const max=node.id==='leagueProfileHint'?24:25,min=node.id==='leagueProfileHint'?10:11;
+  const reference=root.getBoundingClientRect().width/390;
+  const max=(node.id==='leagueProfileHint'?24:25)*reference,min=(node.id==='leagueProfileHint'?10:11)*reference;
   measure.font=(style.fontWeight||'900')+' '+max+'px '+style.fontFamily;
-  return Math.max(min,Math.min(max,max*Math.max(1,node.clientWidth-10)/Math.max(1,measure.measureText((node.textContent||'').trim()).width)));
+  const available=node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase!=='result'?Math.min(node.clientWidth,root.getBoundingClientRect().width*.64):node.clientWidth;
+  return Math.max(min,Math.min(max,max*Math.max(1,available-10*reference)/Math.max(1,measure.measureText((node.textContent||'').trim()).width)));
  }
  return parseFloat(style.fontSize);
 }
@@ -24,6 +26,7 @@ function fit(node,px){
  const parent=node.parentElement,parentStyle=getComputedStyle(parent);
  const safe=Math.max(1,root.getBoundingClientRect().width*.003);
  let maxWidth=node.clientWidth;
+ if(node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase!=='result')maxWidth=Math.min(maxWidth,root.getBoundingClientRect().width*.64);
  if(node.matches('.arenaTitle,.startMatchAction')||!maxWidth)maxWidth=parent.clientWidth-padding(parentStyle,'x');
  if(node.matches('.frontKeeperTop strong')){const siblings=[...parent.children].filter(el=>el!==node).reduce((sum,el)=>sum+el.getBoundingClientRect().width,0);maxWidth=parent.clientWidth-padding(parentStyle,'x')-siblings-(parseFloat(parentStyle.columnGap)||0);}
  let maxHeight=Infinity;

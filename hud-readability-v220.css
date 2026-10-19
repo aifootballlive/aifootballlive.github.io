@@ -384,3 +384,62 @@ html body #broadcastViewport[data-large-team-type="true"] .broadcastControls>.pa
  white-space:normal!important;text-wrap:balance!important;overflow-wrap:normal!important;
  word-break:normal!important;line-height:1.12!important;
 }
+
+/* v244 — identical public/admin bar geometry at every broadcast source width. */
+html body #broadcastViewport>.leagueProfileHint{
+ box-sizing:border-box!important;padding:.4cqw .8cqw!important;
+ border:clamp(1px,.24cqw,3px) solid #dce8fa!important;border-radius:1.8cqw!important;
+}
+html body #broadcastViewport>#matchClockHud:not([data-phase="result"]){
+ box-sizing:border-box!important;padding:.6cqw!important;max-width:none!important;
+ border:clamp(1px,.24cqw,3px) solid #e8c55e!important;border-radius:1.8cqw!important;
+ background:rgba(5,16,32,.9)!important;line-height:1.1!important;
+}
+html body #broadcastViewport>#matchClockHud:not([data-phase="result"]) .clockStatus{
+ display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+ min-width:0!important;width:100%!important;
+}
+html body #broadcastViewport>#matchClockHud:not([data-phase="result"]) .clockDigits{font-size:4.8cqw!important}
+
+html body #broadcastViewport>#leagueProfileHint{
+ max-height:none!important;padding:.4cqw .8cqw!important;line-height:1.03!important;
+}
+html body #broadcastViewport>#matchClockHud:not([data-phase="result"]) .clockLabel,
+html body #broadcastViewport>#matchClockHud:not([data-phase="result"]) .clockDigits{
+ width:100%!important;max-width:100%!important;text-align:center!important;
+}
+html body #broadcastViewport>#matchClockHud:not([data-phase="result"])>#liveStartButton{
+ height:6.8cqw!important;min-height:0!important;max-height:none!important;
+ padding:.5cqw .6cqw!important;line-height:1.1!important;
+}
+/* All shared HUD measurements use the same portrait canvas, including 80% desktop zoom. */
+html body #broadcastViewport#broadcastViewport{--afl-hud-gap:.9cqw}
+html body #broadcastViewport#broadcastViewport>.broadcastControls>.panel{
+ padding:.55cqw!important;gap:.5cqw!important;border-width:.48cqw!important;border-radius:1.28cqw!important;
+}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .buttons{gap:.55cqw!important}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .panelHead.teamScore,
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .giftbtn.shot,
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .adminTeamQueue{border-width:.32cqw!important;border-radius:1.28cqw!important}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .adminTeamQueue{gap:.51cqw!important;font-size:3.1cqw!important}
+html body #broadcastViewport#broadcastViewport>.goalsHeading{min-height:0!important;border-width:.32cqw!important;border-radius:2.05cqw!important;font-size:3.2cqw!important}
+html body #broadcastViewport#broadcastViewport>.liveArenaName .arenaTitle{font-size:4.1cqw!important}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .panelHead.teamScore .teamTitle{font-size:3.1cqw!important;letter-spacing:.015em!important}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .panelHead.teamScore .num{font-size:6.1cqw!important}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .giftEffect{font-size:2.6cqw!important}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .adminTeamQueue strong{font-size:4.3cqw!important}
+html body #broadcastViewport#broadcastViewport>#leagueProfileHint,
+html body #broadcastViewport#broadcastViewport>#matchClockHud:not([data-phase="result"]){border-width:.24cqw!important}
+
+/* Private controls occupy their own row; shared arena title stays centered in both views. */
+html body #broadcastViewport#broadcastViewport>.liveArenaName{
+ top:4.8cqw!important;left:50%!important;width:96%!important;max-width:96%!important;
+ transform:translateX(-50%)!important;align-items:center!important;text-align:center!important;
+}
+html body #broadcastViewport#broadcastViewport.adminView>.head>.headRight{
+ height:4.1cqw!important;grid-template-columns:4.1cqw minmax(0,1fr)!important;
+}
+html body #broadcastViewport#broadcastViewport>#leagueProfileHint{line-height:1.2!important}
+html body #broadcastViewport#broadcastViewport>#matchClockHud:not([data-phase="result"]){
+ display:grid!important;grid-template-columns:minmax(0,1fr) 26%!important;gap:.6cqw!important;align-items:center!important;
+}
