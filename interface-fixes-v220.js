@@ -62,10 +62,21 @@ function fitSingleLine(el,max,min){
  el.style.setProperty('white-space','nowrap','important');
 }
 function fixAudioPlacement(){
- const button=id('soundEnable');
- if(button&&button.parentNode!==root){
-  root.append(button); // Move the existing working control, never clone or replace its listeners.
- }
+ const button=id('soundEnable'),hud=id('matchClockHud'),start=id('liveStartButton');
+ if(!button||!hud)return;
+ if(button.parentNode!==root)root.append(button); // Preserve the existing button and its sound listener.
+ const frame=root.getBoundingClientRect(),bar=hud.getBoundingClientRect(),action=start?.getBoundingClientRect();
+ if(!frame.width||!bar.width)return;
+ const actionVisible=action&&action.width>8&&action.height>8;
+ const target=actionVisible?action:bar;
+ const top=Math.max(0,Math.round(bar.bottom-frame.top+Math.max(4,frame.width*.009)));
+ const buttonWidth=button.getBoundingClientRect().width||Math.max(65,frame.width*.16);
+ const right=Math.max(3,Math.min(frame.width-buttonWidth-3,Math.round(frame.right-target.right)));
+ button.style.setProperty('top',top+'px','important');
+ button.style.setProperty('right',right+'px','important');
+ button.style.setProperty('left','auto','important');
+ button.style.setProperty('bottom','auto','important');
+ button.style.setProperty('transform','none','important');
 }
 function fitHeaderTabs(){
  for(const tab of document.querySelectorAll('#adminOverlay .drawerTab,#adminOverlay .closeBtn,#leagueDrawer .drawerTab,#leagueDrawer .closeBtn')){
@@ -94,6 +105,8 @@ let raf=0;
 function requestResize(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;resizeAll();});}
 new ResizeObserver(requestResize).observe(root);
 for(const node of cardNodes) new ResizeObserver(requestResize).observe(node);
+const clockObserver=new MutationObserver(requestResize);
+for(const node of [id('matchClockHud'),id('liveStartButton')])if(node)clockObserver.observe(node,{attributes:true,attributeFilter:['style','class','hidden','data-phase']});
 const paneObserver=new MutationObserver(requestResize);
 for(const node of [id('adminOverlay'),id('leagueDrawer')]){
  if(node)paneObserver.observe(node,{attributes:true,attributeFilter:['class']});
