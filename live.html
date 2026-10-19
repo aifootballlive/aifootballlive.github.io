@@ -2213,7 +2213,7 @@ body.drawerMode>#leagueDrawer.show iframe{display:block!important;visibility:vis
   
   
 </div></div>
-<a href="./admin-security.html" class="adminBtn" style="display:block;text-align:center;text-decoration:none;margin:8px 0;background:#273e62">Yönetici güvenliği · İki aşamalı doğrulama</a>
+<a href="./admin-security.html" class="adminBtn" style="display:block;text-align:center;text-decoration:none;margin:8px 0;background:#273e62">Yönetici güvenliği · İki aşamalı doğrulama</a><a href="./admin-devices.html" class="adminBtn" style="display:block;text-align:center;text-decoration:none;margin:8px 0;background:#273e62">Telefon ve PC onayı</a>
   <div class="adminActions"><div id="adminSaveStatus" role="status" style="color:#81e2bb;font-size:14px;font-weight:800"></div><button class="adminBtn applyBtn" onclick="applyAdminSettings()">AYARLARI UYGULA</button><button class="adminBtn resetBtn" onclick="resetMatch()">MAÇI SIFIRLA</button><button class="adminBtn endBtn" onclick="finishActiveMatch()">AKTİF MAÇI SONLANDIR</button><button class="adminBtn defaultsBtn" onclick="restoreDefaultSettings()">VARSAYILAN AYARLAR</button></div>
 <div class="adminRoundControls">
   <button id="autoMatchesToggle" type="button" data-enabled="false" onclick="toggleRoundControl('autoMatches')">MAÇLAR OTOMATİK DEVAM ETSİN: KAPALI</button>
@@ -2585,6 +2585,12 @@ async function getAuth(){
      location.replace('./admin-security.html');
      return;
     }
+   }
+   if(data?.user?.id===ADMIN_UID){
+    const device=await db.rpc('admin_device_status');
+    if(generation!==authGeneration)return;
+    if(device.error||typeof device.data?.enabled!=='boolean'){applyAuthRole(null);return;}
+    if(device.data.enabled&&!device.data.approved){applyAuthRole(null);location.replace('./admin-devices.html');return;}
    }
    applyAuthRole(data?.user);
   }catch(error){applyAuthRole(null);console.warn('Oturum doğrulanamadı, yönetim kilitlendi');}

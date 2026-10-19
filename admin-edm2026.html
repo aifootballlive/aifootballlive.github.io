@@ -56,6 +56,9 @@ async function finishIfAdmin(user){
  const {data:mfa,error:mfaError}=await db.auth.mfa.getAuthenticatorAssuranceLevel();
  if(mfaError){show('İki aşamalı doğrulama kontrol edilemedi.');return false;}
  if(mfa?.currentLevel!=='aal2'){location.replace('./admin-security.html');return true;}
+ const device=await db.rpc('admin_device_status');
+ if(device.error||typeof device.data?.enabled!=='boolean'){show('Cihaz güvenliği doğrulanamadı. Tekrar dene.');return false;}
+ if(device.data.enabled&&!device.data.approved){location.replace('./admin-devices.html');return true;}
  show('Giriş başarılı. Oyun açılıyor…',true);
  setTimeout(()=>location.replace(new URLSearchParams(location.search).get('next')==='settings'?'./admin-settings.html':'./live.html'),350);return true;
 }

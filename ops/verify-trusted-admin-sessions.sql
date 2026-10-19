@@ -1,0 +1,34 @@
+begin;
+do $test$
+declare a uuid;b uuid;blocked int:=0;s jsonb;
+begin
+ select id into a from auth.sessions where user_id='6893f884-6b91-4224-abaa-43f87df0966f' order by created_at limit 1;
+ select id into b from auth.sessions where user_id='6893f884-6b91-4224-abaa-43f87df0966f' and id<>a limit 1;
+ if a is null or b is null then raise exception 'Need two existing owner sessions';end if;
+ if (select enabled from private.admin_device_config where singleton) then raise exception 'Already enabled: use separate staging verification';end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','6893f884-6b91-4224-abaa-43f87df0966f','aal','aal1','session_id',a)::text,true);
+ begin perform public.admin_device_bootstrap('TEST PC');exception when insufficient_privilege then blocked:=blocked+1;end;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','6893f884-6b91-4224-abaa-43f87df0966f','aal','aal2','session_id',a)::text,true);
+ s:=public.admin_device_bootstrap('TEST PC');
+ if not (s->>'approved')::boolean or not private.admin_device_write_authorized() then raise exception 'PC not approved';end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','6893f884-6b91-4224-abaa-43f87df0966f','aal','aal2','session_id',b)::text,true);
+ if private.admin_device_write_authorized() then raise exception 'Unapproved phone permitted';end if;
+ s:=public.admin_device_request('TEST phone');
+ begin perform public.admin_device_approve(b);exception when insufficient_privilege then blocked:=blocked+1;end;
+ begin perform public.admin_device_bootstrap('TEST takeover');exception when insufficient_privilege then blocked:=blocked+1;end;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','6893f884-6b91-4224-abaa-43f87df0966f','aal','aal2','session_id',a)::text,true);
+ perform public.admin_device_approve(b);
+ begin perform public.admin_device_approve('00000000-0000-4000-8000-000000000999');exception when raise_exception then if sqlerrm not like '%two approved%' then raise;end if;blocked:=blocked+1;end;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','6893f884-6b91-4224-abaa-43f87df0966f','aal','aal2','session_id',b)::text,true);
+ if not private.admin_device_write_authorized() then raise exception 'Approved phone denied';end if;
+ perform public.admin_device_revoke(a);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','6893f884-6b91-4224-abaa-43f87df0966f','aal','aal2','session_id',a)::text,true);
+ if private.admin_device_write_authorized() then raise exception 'Revoked PC allowed';end if;
+ begin perform public.admin_device_request('TEST revoked');exception when insufficient_privilege then blocked:=blocked+1;end;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','00000000-0000-4000-8000-000000000999','aal','aal2','session_id',b)::text,true);
+ if private.admin_device_write_authorized() then raise exception 'Other user permitted';end if;
+ if blocked<>5 then raise exception 'Missing expected rejection';end if;
+ if has_function_privilege('anon','public.admin_device_bootstrap(text)','execute') then raise exception 'Anon has access';end if;
+end;$test$;
+rollback;
+select jsonb_build_object('result','PASS: AAL1 denied, PC bootstrap, unapproved phone denied, self-approval denied, second bootstrap denied, two-browser cap, phone approval, revocation, other-owner denial, anon denial; all fixture writes rolled back','enabled',(select enabled from private.admin_device_config where singleton),'registered',(select count(*) from private.admin_devices)) as verification;

@@ -20,3 +20,14 @@ References: [Supabase password security](https://supabase.com/docs/guides/auth/p
 - After HTTP verification of the fixed live.html serving v204, applied activate_unplayed_shot_integrity_guard. public.games trigger preserve_unplayed_shots is enabled. It rejects decreases without a matching full-playback receipt or an explicit admin reset/resize marker. This is correctness protection under existing owner RLS, not a substitute for authentication or a device allowlist.
 - Fixture-only SQL verification passed after activation. No production queues/scores were modified. Reload old admin/source pages once so explicit admin edits use the new protocol.
 - Final MFA check still found zero verified factors; user enrollment remains required. Security advisor still reports only leaked-password protection disabled on the Free plan.
+
+## MFA completed — live verification follow-up
+- Owner account now has one verified MFA factor (supersedes the earlier zero-factor checks).
+- All 24 restrictive mutation policies remain installed. Transaction-local claim tests verified owner AAL1 denied and owner AAL2 permitted through private.admin_mfa_authorized(). No application data or authentication credentials were changed.
+- Security advisor still reports leaked-password protection disabled. Trusted-device allowlist and physical TikTok end-to-end checks remain separate incomplete work; verified MFA does not prove either.
+
+## Approved browser protection prepared
+- Applied owner_approved_browser_sessions + keep_device_privilege_helpers_in_private_schema. 24 additional restrictive write policies, active Auth session and owner AAL2 check, private helper implementation with invoker public wrappers.
+- PC + phone approval UI: admin-devices.html. Two approved browser sessions maximum, explicit first-PC activation, trusted-PC confirmation for phone, revocation and request expiry. Not hardware attestation; browser session cloning remains a limitation. Both sessions lost requires management recovery.
+- Database fixture tests rolled back; actual enabled=false, registered=0 until user explicitly approves PC. Do not report enforcement enabled before this step.
+- Owner requested skipping leaked-password protection. Latest advisor reports only that acknowledged warning; no new device-function warning remains.
