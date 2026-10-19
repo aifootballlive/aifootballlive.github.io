@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261019-v211-visible-admin-entry">
+<meta name="aifootball-release" content="20261019-v212-private-admin-entry">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>AI Football Live</title>
 <style>
@@ -2020,8 +2020,8 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 #broadcastViewport .broadcastControls>.panel .adminTeamQueue{height:6.4cqw!important;flex-basis:6.4cqw!important}
 
 
-/* Fresh home-screen apps have separate storage. Login must remain reachable
-   without a previous browser marker; Auth/MFA/device checks still gate admin. */
+/* Login shortcut is shown only in a previously approved browser profile.
+   This presentation marker never grants Auth/MFA/device authorization. */
 #guestAdminLogin{display:none!important}
 #broadcastViewport:not(.adminView)>#guestAdminLogin:not([hidden]){
  display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;
@@ -2063,7 +2063,7 @@ body.drawerMode>#leagueDrawer.show iframe{display:block!important;visibility:vis
 </head>
 <body>
 <div class="wrap" id="broadcastViewport">
-  <a id="guestAdminLogin" href="./admin-security.html" aria-label="Yönetici oturum aç"><span class="loginStatusLight" aria-hidden="true"></span>YÖNETİCİ OTURUM AÇ</a>
+  <a id="guestAdminLogin" href="./admin-security.html" aria-label="Yönetici oturum aç" hidden><span class="loginStatusLight" aria-hidden="true"></span>YÖNETİCİ OTURUM AÇ</a>
   <div id="pendingGiftNotice" class="pendingGiftNotice" hidden role="status" aria-live="polite" aria-atomic="true"></div>
   <div id="matchClockHud" class="matchClockHud" data-phase="manual" role="status" aria-label="Hakemin Maçı Başlatması Bekleniyor">
   <div class="clockStatus"><span class="clockLabel">Hakemin Maçı Başlatması Bekleniyor</span><strong class="clockDigits" hidden></strong></div>
@@ -2370,10 +2370,12 @@ function syncMainMatchStart(){
 window.AIFootballUpdateMainMatchLaunch=syncMainMatchStart;
 function render(){
   document.querySelector('.wrap').classList.toggle('adminView',adminAuthed);
-  // Always offer login in a fresh browser/home-screen app. This grants no authority.
+  // Separate incognito/fresh profiles have no approved-browser presentation marker.
   const publicAdminLink=$('guestAdminLogin');
   if(publicAdminLink){
-   publicAdminLink.hidden=adminAuthed;
+   let recognized=false;
+   try{recognized=localStorage.getItem('afl.approvedAdminBrowser.v1')==='approved';}catch{}
+   publicAdminLink.hidden=adminAuthed||!recognized;
   }
   // Guests (including incognito browsers) may send TEST shots. Admin-only
   // actions remain inaccessible without authenticated administrator login.
@@ -2550,10 +2552,7 @@ function handleEventRow(row,animate=true){if(window.AIFootballTikTok?.active)ret
 let authCheck=null,authGeneration=0;
 function applyAuthRole(user){
  adminAuthed=!!(user&&user.id===ADMIN_UID);
- // getAuth() only passes a user with verified Supabase AAL2.
- if(adminAuthed){
-  try{localStorage.setItem('afl.adminRecognizedBrowser.v1','verified');}catch{}
- }
+ // getAuth() verifies MFA and server-side device permission before unlocking admin.
  render();setConn();
  if(document.body.classList.contains('settingsMode')){
   if(adminAuthed&&!$('leagueDrawer').classList.contains('show'))openAdmin();
@@ -2573,15 +2572,14 @@ async function getAuth(){
    if(generation!==authGeneration)return;
    if(error){applyAuthRole(null);console.warn('Admin oturumu sunucuda doğrulanamadı');return;}
    // Never unlock the administrator from a password-only (AAL1) session.
-   // First-time admins enroll TOTP at admin-security.html, existing admins
-   // enter their authenticator code there. Auth and public scoreboard remain available.
+   // live.html is always a viewing entry point. Only an explicit login action
+   // navigates to MFA/device setup; incomplete sessions stay on the game.
    if(data?.user?.id===ADMIN_UID){
     if(!db.auth.mfa){applyAuthRole(null);return;}
     const {data:mfa,error:mfaError}=await db.auth.mfa.getAuthenticatorAssuranceLevel();
     if(mfaError){applyAuthRole(null);return;}
     if(mfa?.currentLevel!=='aal2'){
      applyAuthRole(null);
-     location.replace('./admin-security.html');
      return;
     }
    }
@@ -2589,7 +2587,8 @@ async function getAuth(){
     const device=await db.rpc('admin_device_status');
     if(generation!==authGeneration)return;
     if(device.error||typeof device.data?.enabled!=='boolean'){applyAuthRole(null);return;}
-    if(device.data.enabled&&!device.data.approved){applyAuthRole(null);location.replace('./admin-devices.html');return;}
+    try{if(device.data.approved===true)localStorage.setItem('afl.approvedAdminBrowser.v1','approved');else localStorage.removeItem('afl.approvedAdminBrowser.v1');}catch{}
+    if(device.data.enabled&&!device.data.approved){applyAuthRole(null);return;}
    }
    applyAuthRole(data?.user);
   }catch(error){applyAuthRole(null);console.warn('Oturum doğrulanamadı, yönetim kilitlendi');}
