@@ -4,7 +4,11 @@
   "type": "module",
   "scripts": {
     "start": "node football/server.mjs",
-    "test": "node --test football/tests/*.test.mjs"
+    "test": "node --test football/tests/*.test.mjs",
+    "tiktok:bridge": "node football/tiktok-bridge.mjs"
   },
-  "dependencies": {"ws": "^8.18.3"}
+  "dependencies": {
+    "ws": "^8.18.3",
+    "tiktok-live-connector": "^2.5.0"
+  }
 }
