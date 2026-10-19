@@ -41,6 +41,13 @@ function displayRefreshNotice(){
  card.append(title,detail,button);shade.append(card);document.body.append(shade);
  document.dispatchEvent(new CustomEvent('aifootball-update-required'));
 }
+function isNewerRelease(remoteMarker){
+ const re=/^(\d{8})-v(\d+)/;
+ const remote=remoteMarker.match(re),local=currentMarker.match(re);
+ if(!remote||!local)return remoteMarker!==currentMarker;
+ if(remote[1]!==local[1])return remote[1]>local[1];
+ return Number(remote[2])>Number(local[2]);
+}
 function maybeFixReload(remoteMarker){
  if(!explicitlyRefreshed||!currentMarker||!remoteMarker||remoteMarker===currentMarker)return false;
  const attempt=currentMarker+' -> '+remoteMarker;
@@ -63,6 +70,7 @@ async function probePage(force=false){
   const remoteMarker=html.match(releasePattern)?.[1];
   if(!remoteMarker||!currentMarker)return;
   if(remoteMarker===currentMarker){try{sessionStorage.removeItem(reloadKey);}catch(_){}return;}
+  if(!isNewerRelease(remoteMarker))return;
   // A manual browser refresh should correct a stale cached page on its own,
   // without asking the user to refresh it a second time.
   if(maybeFixReload(remoteMarker))return;
