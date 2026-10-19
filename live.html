@@ -2032,6 +2032,31 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
  border-radius:8px!important;touch-action:manipulation!important;pointer-events:auto!important;
 }
 
+
+/* Spectators need one intentional tap to unlock browser sound.
+   Do not cover the stadium or show controls in an OBS browser with audio running. */
+#broadcastViewport:not(.adminView) #matchControls #soundEnable:not([data-audio-unlocked="true"]){
+ display:inline-flex!important;position:relative!important;
+ flex:0 0 auto!important;width:auto!important;min-width:75px!important;
+ min-height:32px!important;padding:6px 8px!important;font-size:11px!important;
+ border:1px solid #a4e4ca!important;background:#205948!important;
+ color:white!important;z-index:8!important;pointer-events:auto!important;
+ align-items:center!important;justify-content:center!important;
+}
+/* Keep league drawer visible, scrollable, and touch-friendly on iPhone. */
+body.drawerMode>#leagueDrawer.show{display:block!important;visibility:visible!important;
+ min-width:0!important;opacity:1!important;pointer-events:auto!important}
+body.drawerMode>#leagueDrawer.show iframe{display:block!important;visibility:visible!important}
+@media(max-width:800px){
+ body.drawerMode>#leagueDrawer.show{width:100%!important;max-width:100%!important;
+ height:calc(100dvh - 12px)!important;margin:0!important}
+ body.drawerMode>#leagueDrawer .leagueDrawerHead{min-height:50px!important;gap:5px!important}
+ body.drawerMode>#leagueDrawer .leagueDrawerHead strong{font-size:16px!important}
+ body.drawerMode>#leagueDrawer .drawerHeaderActions{gap:4px!important}
+ body.drawerMode>#leagueDrawer .drawerTab,
+ body.drawerMode>#leagueDrawer .closeBtn{padding:6px!important;font-size:12px!important;min-height:35px!important}
+ body.drawerMode>#leagueDrawer iframe{height:calc(100% - 50px)!important}
+}
 </style>
 </head>
 <body>
@@ -2199,12 +2224,12 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 </div>
 <p class="giftToggleHelp">Şutlar durdurulduğunda gelen hediyeler kuyruğa eklenir. TikTok'ta hediye gönderimini tamamen kapatmak için LIVE ayarlarından hediye seçeneğini kapatmalısın.</p></div></section></div>
 <aside id="leagueDrawer" class="leagueDrawer" aria-label="Lig puan durumu" aria-hidden="true">
- <div class="leagueDrawerHead"><strong>LİG TABLOSU</strong><div class="drawerHeaderActions"><button type="button" class="drawerTab" onclick="openAdmin()">AYARLAR</button><button type="button" class="closeBtn" onclick="closeAdmin()">KAPAT</button></div></div>
- <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="lazy"></iframe>
+ <div class="leagueDrawerHead"><strong>LİG TABLOSU</strong><div class="drawerHeaderActions"><a href="./league.html" target="_blank" rel="noopener" class="drawerTab" style="text-decoration:none;display:inline-flex;align-items:center">AYRI AÇ</a><button type="button" class="drawerTab" onclick="openAdmin()">AYARLAR</button><button type="button" class="closeBtn" onclick="closeAdmin()">KAPAT</button></div></div>
+ <iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="eager"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
 <script src="./broadcast-layout-v204.js"></script>
-<script src="./tiktok-shared-v207.js?v=207"></script>
+<script src="./tiktok-shared-v208.js?v=208"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2486,7 +2511,10 @@ function openLeagueDrawer(){
   iframe.addEventListener('load',sendLeagueSnapshot);
   iframe.dataset.leagueBound='1';
  }
- if(!iframe.getAttribute('src'))iframe.src='./league.html?v=20261018-compact';
+ // Safari may never load a lazy iframe that was initially display:none.
+ // Set an explicit cache-busted source when the drawer is already visible.
+ iframe.loading='eager';
+ if(!iframe.getAttribute('src'))iframe.src='./league.html?v=20261019-readable';
  else sendLeagueSnapshot();
  requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
 }
@@ -2902,11 +2930,11 @@ render();boot();
 })();
 </script>
 <script id="instantSyncFix" src="./instant-sync.js?v=94"></script>
-<script id="stadiumAudioScript" src="./stadium-audio-v204.js?v=204"></script>
+<script id="stadiumAudioScript" src="./stadium-audio-v205.js?v=205"></script>
 
 <script src="./scene-audio-cues-v204.js?v=204"></script>
 <script src="./round-finale-v204.js?v=204"></script>
 <script src="./shot-cache-v195.js"></script>
-<script id="game3dScript" src="./scene-video-v205.js?v=205"></script>
+<script id="game3dScript" src="./scene-video-v206.js?v=206"></script>
 </body>
 </html>
