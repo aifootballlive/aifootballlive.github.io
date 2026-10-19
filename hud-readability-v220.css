@@ -315,7 +315,7 @@ html body #broadcastViewport>.liveArenaName .arenaTitle{
 }
 html body #broadcastViewport>.liveArenaName .arenaTitle{
  font-family:Arial,Helvetica,sans-serif!important;font-weight:700!important;
- letter-spacing:.01em!important;color:#fff!important;
- background:rgba(4,17,34,.9)!important;padding:.2cqw .6cqw!important;
+ letter-spacing:.01em!important;color:#ffe36e!important;text-transform:uppercase!important;
+ background:transparent!important;padding:0!important;
  border-radius:4px!important;box-shadow:none!important;
 }
