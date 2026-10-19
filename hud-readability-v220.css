@@ -248,7 +248,7 @@ html body #broadcastViewport>.liveArenaName .arenaTitle{font-size:clamp(16px,4.1
 html body #broadcastViewport.adminView>.liveArenaName{left:2%!important;width:50%!important;max-width:50%!important;transform:none!important;align-items:flex-start!important}
 html body #broadcastViewport.adminView>.head>.title{position:absolute!important;top:-4.8cqw!important;left:0!important;width:55%!important;max-width:55%!important;text-align:left!important}
 html body #broadcastViewport.adminView>.head>.headRight{width:42.5%!important}
-html body #broadcastViewport.adminView>.head>.headRight>#adminOpen{font-size:clamp(10px,2.65cqw,27px)!important}
+html body #broadcastViewport.adminView>.head>.headRight>#adminOpen{font-size:clamp(9.5px,2.5175cqw,25.65px)!important}
 html body #broadcastViewport .broadcastControls>.panel .panelHead.teamScore .num::before{content:none!important;display:none!important}
 html body #broadcastViewport .broadcastControls>.panel .panelHead.teamScore .num{
  font-size:clamp(20px,6.1cqw,66px)!important;line-height:1!important;width:100%!important;
