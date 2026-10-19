@@ -1,7 +1,7 @@
 /* One durable match for every viewer of the permanent broadcast URL. */
 (()=>{
  'use strict';
- const KEY='tiktok_match_v2',CLIENT_BUILD=209,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=250,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // A hidden overlay must never become a phantom dark sheet through stale CSS.
@@ -106,7 +106,7 @@
  function drawLeagueBreak(m){
   const area=document.getElementById('leagueBreakRows');
   if(!area)return;
-  const league=m?.league||{},signature=JSON.stringify([league.season,league.teams,league.trophies]);
+  const league=m?.league||{},signature=JSON.stringify([league.season,league.teams,league.trophies,league.extraRounds,m.clock?.leagueFinal]);
   if(signature===leagueBreakSignature)return;
   leagueBreakSignature=signature;
   const rows=TEAMS.slice().sort((a,b)=>Number(league.teams?.[b]?.points||0)-Number(league.teams?.[a]?.points||0)||Number(league.teams?.[b]?.wins||0)-Number(league.teams?.[a]?.wins||0)||Number(league.teams?.[b]?.goals||0)-Number(league.teams?.[a]?.goals||0));
@@ -121,7 +121,7 @@
    }
    area.append(tr);
   }
-  const label=document.getElementById('leagueBreakSeason');if(label)label.textContent=timingFor(m).arenaName.toLocaleUpperCase('tr-TR')+' • SEZON '+(Number(league.season)||1)+(m?.clock?.leagueFinal?' • ŞAMPİYONLUK FİNALİ':'');
+  const label=document.getElementById('leagueBreakSeason');if(label)label.textContent=timingFor(m).arenaName.toLocaleUpperCase('tr-TR')+' • SEZON '+(Number(league.season)||1)+(m?.clock?.leagueFinal?' • ŞAMPİYONLUK FİNALİ':'')+(league.extraRounds?' • '+league.extraRounds+' EK MAÇ':'');
  }
  function announceMatchResult(m){
   if(!m?.clock?.finishedAt||lastRoundAnnouncement===m.clock.finishedAt)return;
@@ -316,10 +316,39 @@
  }catch{}
  const LEAGUE_ROUNDS=20;
  function newLeague(season=1,trophies={}){
-  return {season,plannedRounds:LEAGUE_ROUNDS,completedRounds:0,
+  return {season,plannedRounds:LEAGUE_ROUNDS,completedRounds:0,extraRounds:0,
    trophies:Object.fromEntries(TEAMS.map(t=>[t,Number(trophies?.[t])||0])),
    teams:Object.fromEntries(TEAMS.map(t=>[t,{played:0,wins:0,draws:0,losses:0,goals:0,points:0}])),
    history:[],champion:null};
+ }
+ function hasSeasonShots(m){
+  if(Object.values(pendingShotCounts(m)).some(n=>n>0))return true;
+  for(const [id,g]of inbox)if(!m.receipts?.includes(id)&&Number(g.receivedAt||0)>Number(m.queueClearAt?.[g.team]||0))return true;
+  for(const [id,r]of pendingRequests)if(!m.commandReceipts?.includes(id)&&Number(r.payload?.sentAt||0)>Number(m.queueClearAt?.[r.payload?.team]||0))return true;
+  return [...manualBursts.values()].some(b=>b.count>0);
+ }
+ function extendSeasonForShots(m){
+  const league=m.league;
+  league.plannedRounds=Math.max(Number(league.plannedRounds)||20,Number(league.completedRounds)||0)+1;
+  league.extraRounds=(Number(league.extraRounds)||0)+1;
+  league.champion=null;league.finalists=[];league.finalAttempts=0;league.completionPending=false;
+  delete league.pendingFinalResult;
+ }
+ function resolveSeasonCompletion(m){
+  const league=m.league;if(!league?.completionPending)return false;
+  if(hasSeasonShots(m)){extendSeasonForShots(m);return true;}
+  league.completionPending=false;
+  if(league.pendingFinalResult){
+   const winner=league.pendingFinalResult.winner;delete league.pendingFinalResult;
+   if(winner){league.champion=winner;league.trophies[winner]=(Number(league.trophies[winner])||0)+1;league.finalists=[];}
+   return true;
+  }
+  const sorted=TEAMS.slice().sort((a,b)=>league.teams[b].points-league.teams[a].points||league.teams[b].wins-league.teams[a].wins||league.teams[b].goals-league.teams[a].goals);
+  const lead=league.teams[sorted[0]];
+  const equals=sorted.filter(t=>league.teams[t].points===lead.points&&league.teams[t].wins===lead.wins&&league.teams[t].goals===lead.goals);
+  if(equals.length>1){league.finalists=equals;league.champion=null;league.finalAttempts=0;}
+  else{league.champion=sorted[0];league.trophies[sorted[0]]=(Number(league.trophies[sorted[0]])||0)+1;}
+  return true;
  }
  function recordLeagueRound(m){
   if(m.lastResult?.interrupted)return;
@@ -332,8 +361,9 @@
    const winners=finalists.filter(t=>(Number(scores[t])||0)===top);
    league.history.push({round:m.clock.round,at:m.clock.finishedAt,scores,winner:winners.length===1?winners[0]:null,final:true});
    league.history=league.history.slice(-100);
-   if(winners.length===1){league.champion=winners[0];league.trophies[winners[0]]=(Number(league.trophies[winners[0]])||0)+1;league.finalists=[];}
-   else{league.finalAttempts=(Number(league.finalAttempts)||0)+1;}
+   if(winners.length!==1)league.finalAttempts=(Number(league.finalAttempts)||0)+1;
+   league.pendingFinalResult={winner:winners.length===1?winners[0]:null};league.completionPending=true;
+   if(hasSeasonShots(m))extendSeasonForShots(m);
    return;
   }
   if(league.completedRounds>=league.plannedRounds)return;
@@ -351,11 +381,8 @@
   league.history.push({round:m.clock.round,at:m.clock.finishedAt,scores,winner:winners.length===1?winners[0]:null});
   league.history=league.history.slice(-100);
   if(league.completedRounds>=league.plannedRounds){
-   const sorted=TEAMS.slice().sort((a,b)=>league.teams[b].points-league.teams[a].points||league.teams[b].wins-league.teams[a].wins||league.teams[b].goals-league.teams[a].goals);
-   const lead=league.teams[sorted[0]];
-   const equals=sorted.filter(t=>league.teams[t].points===lead.points&&league.teams[t].wins===lead.wins&&league.teams[t].goals===lead.goals);
-   if(equals.length>1){league.finalists=equals;league.champion=null;league.finalAttempts=0;}
-   else{league.champion=sorted[0];league.trophies[sorted[0]]=(Number(league.trophies[sorted[0]])||0)+1;}
+   league.completionPending=true;
+   if(hasSeasonShots(m))extendSeasonForShots(m);
   }
  }
  function interruptOfflineMatch(m,at){
@@ -800,10 +827,12 @@
   return true;
  }
  function beginNextRound(m,now){
+  resolveSeasonCompletion(m);
+  if(m.league?.finalists?.length>1&&hasSeasonShots(m))extendSeasonForShots(m);
   const round=(Number(m.clock?.round)||1)+1;
   if(m.league?.completedRounds>=m.league?.plannedRounds&&m.league.champion){
    m.leagueArchive ||= [];
-   m.leagueArchive.push({season:m.league.season,completedAt:now,champion:m.league.champion,
+   m.leagueArchive.push({season:m.league.season,completedAt:now,champion:m.league.champion,completedRounds:m.league.completedRounds,plannedRounds:m.league.plannedRounds,extraRounds:Number(m.league.extraRounds)||0,
     trophies:{...m.league.trophies},teams:clone(m.league.teams)});
    m.leagueArchive=m.leagueArchive.slice(-12);
    m.league=newLeague((Number(m.league.season)||1)+1,m.league.trophies);
@@ -834,6 +863,11 @@
    return;
   }
   if(Number.isFinite(match.clock.finishedAt)){
+   // Gifts received during the results screen still belong to this season.
+   if(match.league?.completionPending&&now>=breakDeadlines(match).summaryUntil){
+    await change(m=>{if(!m.league?.completionPending||Date.now()<breakDeadlines(m).summaryUntil)return false;return resolveSeasonCompletion(m);});
+    return;
+   }
    // Only an explicitly enabled automatic switch can start the next round.
    if(!canContinueAutomatically(match)||now<breakDeadlines(match).summaryUntil)return;
    await change(m=>{
@@ -918,6 +952,7 @@
   try{
    if(Date.now()-lastRead>(channelReady?3000:1000))await read();ensureChannel();sendRequests().catch(e=>console.warn(e.message));if(admin()&&!connected&&!retry)connect();
    if(admin()){
+    if(match&&Number(match.minClientBuild||0)<CLIENT_BUILD)await change(m=>{if(Number(m.minClientBuild||0)>=CLIENT_BUILD)return false;m.minClientBuild=CLIENT_BUILD;},false);
     // Upgrade old match settings to a one-time MANUAL default. This is saved
     // in the database before any countdown/auto transition can run.
     if(match&&!Object.prototype.hasOwnProperty.call(match,'autoStartV3')){
@@ -1036,7 +1071,7 @@
   getSeasonControl(){
    if(!admin()||!match)return null;
    return {leagues:[{id:'doruk',name:timingFor(match).arenaName}],season:Number(match.league?.season)||1,
-    resetToken:match.seasonReset?.id||'',pending:pendingShotCounts(match),complete:seasonComplete(match),
+    resetToken:match.seasonReset?.id||'',pending:pendingShotCounts(match),complete:seasonComplete(match),extraRounds:Number(match.league?.extraRounds)||0,
     running:matchRunning(match)||matchStarting(match)};
   },
   async resetSeason(options){
