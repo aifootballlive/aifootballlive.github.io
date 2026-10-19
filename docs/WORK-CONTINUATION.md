@@ -234,3 +234,7 @@ Current upstream behavior preserved: combined winner+league results duration (de
 
 ## 20.10.2026 — v231 pending label
 - All four queue labels now read Bekleyen / Şutlar on two explicit centered lines. Counts stay in place. Eight existing scoreboard viewport checks passed.
+
+## 20.10.2026 — v232 gift art and caption spacing
+- Enlarged gift art from 7.35cqw to 9.3cqw within a square container; preserved aspect and source pixels. Shot buttons now grow vertically to contain art plus caption.
+- Added space below the image and 1.3 line height with bottom padding for Ş descenders. Eight viewport checks passed for square art, image/text separation and unclipped caption bounds; mobile rendering inspected.

@@ -273,3 +273,23 @@ html body #broadcastViewport .broadcastControls>.panel .adminTeamQueue .queueLab
 html body #broadcastViewport.adminView>.head>.title{font-size:clamp(8px,2cqw,22px)!important}
 
 html body #broadcastViewport .broadcastControls>.panel .adminTeamQueue .queueLabel{display:block;text-align:center;white-space:nowrap}
+
+/* v232 — square, larger gift art and an unclipped caption below it. */
+html body #broadcastViewport .broadcastControls>.panel .giftbtn.shot{
+ aspect-ratio:auto!important;justify-content:flex-start!important;
+ height:auto!important;padding:.25cqw .2cqw .45cqw!important;gap:.25cqw!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .giftVisual{
+ position:relative!important;flex:0 0 auto!important;
+ width:min(100%,9.3cqw)!important;height:auto!important;aspect-ratio:1/1!important;
+ max-height:none!important;margin:0 auto!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .giftVisual img,
+html body #broadcastViewport .broadcastControls>.panel .giftVisual svg{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;object-fit:contain!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .giftEffect{
+ flex:0 0 auto!important;line-height:1.3!important;padding:.15cqw 0 .25cqw!important;
+ overflow:visible!important;height:auto!important;min-height:0!important;
+}
