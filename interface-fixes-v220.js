@@ -24,8 +24,8 @@ function updateAdminScale(value,save){
  }
 }
 updateAdminScale(currentScale,false);
-slider?.addEventListener('input',()=>updateAdminScale(slider.value,true));
-slider?.addEventListener('change',()=>updateAdminScale(slider.value,true));
+slider?.addEventListener('input',event=>{event.stopPropagation();updateAdminScale(slider.value,true)});
+slider?.addEventListener('change',event=>{event.stopPropagation();updateAdminScale(slider.value,true)});
 id('leagueDrawerFrame')?.addEventListener('load',()=>updateAdminScale(currentScale,false));
 
 const cardNodes=[...root.querySelectorAll('.broadcastControls > .panel')];
