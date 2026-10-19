@@ -1,0 +1,190 @@
+/* v220 — readability-first portrait HUD, shared by the live game, OBS and TikTok.
+   Never scales the MP4. Keep every team label exactly one line, uniformly sized. */
+#broadcastViewport{--afl-team-name-fit:13px;--afl-hud-top:9.0%;--afl-hud-gap:3px}
+html body #broadcastViewport>.head{
+ top:4.05%!important;left:2%!important;right:2%!important;
+ height:4.5%!important;min-height:0!important;margin:0!important;padding:0!important;
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ z-index:14!important;background:transparent!important;border:0!important;box-shadow:none!important;
+ pointer-events:none!important;
+}
+html body #broadcastViewport:not(.adminView)>.head{display:none!important}
+html body #broadcastViewport>.head>.title{
+ position:relative!important;flex:0 0 26%!important;left:auto!important;right:auto!important;
+ width:26%!important;min-width:0!important;max-width:26%!important;margin:0!important;
+ transform:none!important;text-align:center!important;
+ font-size:clamp(12px,3.3cqw,30px)!important;line-height:1.1!important;
+ font-weight:1000!important;white-space:nowrap!important;letter-spacing:-.04em!important;
+ pointer-events:none!important;
+}
+html body #broadcastViewport>.head>.headRight{
+ position:relative!important;inset:auto!important;right:auto!important;bottom:auto!important;
+ margin:0!important;transform:none!important;flex:0 0 auto!important;
+ min-width:0!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;
+ gap:clamp(2px,.65cqw,8px)!important;pointer-events:auto!important;
+}
+html body #broadcastViewport>.head .headRight #adminRefresh:not([hidden]){
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ width:clamp(26px,6.7cqw,56px)!important;min-width:0!important;
+ height:clamp(26px,6.7cqw,56px)!important;min-height:0!important;
+ padding:2px!important;margin:0!important;transform:none!important;
+}
+html body #broadcastViewport>.head .headRight #adminRefresh svg{width:65%!important;height:65%!important}
+html body #broadcastViewport>.head .headRight #adminOpen{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ font-size:clamp(9px,2.28cqw,21px)!important;font-weight:950!important;
+ height:clamp(28px,7cqw,62px)!important;min-height:0!important;
+ padding:0 clamp(3px,.9cqw,10px)!important;margin:0!important;line-height:1!important;
+ white-space:nowrap!important;
+}
+html body #broadcastViewport>.head .sub{display:none!important}
+html body #broadcastViewport>.liveArenaName{
+ top:4.08%!important;left:50%!important;right:auto!important;
+ width:33%!important;max-width:33%!important;transform:translateX(-50%)!important;
+ margin:0!important;padding:0!important;
+ text-align:center!important;white-space:normal!important;z-index:12!important;
+ display:flex!important;flex-direction:column!important;align-items:center!important;
+ gap:0!important;line-height:1.02!important;
+}
+html body #broadcastViewport>.liveArenaName .arenaTitle{
+ font-size:clamp(14px,3.5cqw,33px)!important;line-height:1.04!important;
+ white-space:nowrap!important;font-weight:1000!important;letter-spacing:-.035em!important;
+}
+html body #broadcastViewport>.liveArenaName .arenaScoreCaption{
+ font-size:clamp(11px,2.9cqw,27px)!important;line-height:1.03!important;
+ white-space:nowrap!important;font-weight:1000!important;
+}
+/* All four cards remain above the stadium roof and the gameplay picture. */
+html body #broadcastViewport>.broadcastControls,
+html body #broadcastViewport:not(.adminView)>.broadcastControls{
+ top:var(--afl-hud-top)!important;bottom:auto!important;left:2.0%!important;right:2.0%!important;
+ display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ gap:var(--afl-hud-gap)!important;margin:0!important;padding:0!important;
+ width:auto!important;height:auto!important;max-width:none!important;align-items:start!important;
+}
+html body #broadcastViewport>.broadcastControls>.panel{
+ box-sizing:border-box!important;display:flex!important;flex-direction:column!important;min-width:0!important;
+ gap:2px!important;margin:0!important;padding:clamp(2px,.55cqw,6px)!important;
+ height:auto!important;min-height:0!important;overflow:visible!important;
+}
+/* Badge + GOL + goal count fill the entire upper card without hiding names. */
+html body #broadcastViewport .broadcastControls>.panel .panelHead.teamScore{
+ display:grid!important;grid-template-columns:minmax(0,40%) minmax(0,60%)!important;
+ grid-template-rows:10.0cqw 4.1cqw!important;grid-auto-rows:0!important;
+ place-items:center!important;column-gap:0!important;row-gap:0!important;
+ width:100%!important;height:14.1cqw!important;flex:0 0 14.1cqw!important;
+ min-height:0!important;max-height:none!important;overflow:hidden!important;
+ margin:0!important;padding:0!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .panelHead.teamScore .teamLogo{
+ grid-column:1!important;grid-row:1!important;position:static!important;
+ display:block!important;width:min(7.3cqw,95%)!important;height:8.6cqw!important;
+ max-width:100%!important;max-height:100%!important;object-fit:contain!important;
+ margin:0!important;transform:none!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .panelHead.teamScore .num{
+ grid-column:2!important;grid-row:1!important;position:static!important;
+ display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;
+ font-size:clamp(24px,7.5cqw,74px)!important;font-weight:1000!important;
+ line-height:.94!important;white-space:nowrap!important;min-width:0!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .panelHead.teamScore .num::before{
+ content:"GOL"!important;display:block!important;position:static!important;
+ font-size:clamp(11px,3.05cqw,29px)!important;font-weight:1000!important;
+ color:#fff!important;background:#d31223!important;
+ border:1px solid #ff7584!important;border-radius:2px!important;
+ padding:.3cqw 1.15cqw!important;min-width:5.6cqw!important;
+ text-align:center!important;line-height:1.04!important;margin:0 0 .2cqw!important;
+ box-shadow:0 0 3px #ff4040!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .panelHead.teamScore .teamTitle{
+ grid-column:1/-1!important;grid-row:2!important;position:static!important;
+ display:block!important;width:100%!important;height:auto!important;
+ margin:0!important;padding:0!important;min-width:0!important;
+ font-size:var(--afl-team-name-fit)!important;font-weight:950!important;
+ line-height:1.07!important;letter-spacing:-.025em!important;text-align:center!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;
+ overflow-wrap:normal!important;word-break:keep-all!important;hyphens:none!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .buttons{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:2px!important;width:100%!important;height:auto!important;min-height:0!important;
+ flex:0 0 auto!important;margin:0!important;padding:0!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .giftbtn.shot{
+ box-sizing:border-box!important;display:flex!important;flex-direction:column!important;
+ align-items:center!important;justify-content:center!important;
+ width:100%!important;min-width:0!important;
+ height:auto!important;min-height:0!important;max-height:none!important;
+ aspect-ratio:1/1!important;gap:0!important;padding:0!important;
+ border:1px solid #d3deee!important;border-radius:5px!important;background:rgba(10,20,39,.94)!important;
+ overflow:hidden!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .giftVisual{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;height:7.7cqw!important;max-height:76%!important;
+ margin:0!important;line-height:1!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .giftVisual img,
+html body #broadcastViewport .broadcastControls>.panel .giftVisual svg{
+ width:7.35cqw!important;height:7.35cqw!important;
+ max-width:85%!important;max-height:96%!important;object-fit:contain!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .giftEffect{
+ display:block!important;margin:0!important;padding:0!important;
+ font-size:clamp(8px,2.15cqw,22px)!important;line-height:1.05!important;
+ font-weight:950!important;white-space:nowrap!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .adminTeamQueue{
+ box-sizing:border-box!important;display:flex!important;align-items:center!important;
+ justify-content:space-between!important;gap:2px!important;position:relative!important;
+ flex:0 0 auto!important;width:100%!important;
+ height:6.2cqw!important;min-height:0!important;
+ padding:1px 2px!important;margin:0!important;overflow:hidden!important;
+ font-size:clamp(10px,2.6cqw,27px)!important;line-height:1.02!important;
+ white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important;
+ font-weight:950!important;color:#fff!important;background:rgba(10,19,37,.94)!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .adminTeamQueue strong{
+ flex:0 0 auto!important;font-size:clamp(15px,4.3cqw,43px)!important;
+ line-height:1!important;color:#fff!important;background:transparent!important;
+ font-variant-numeric:tabular-nums!important;
+}
+@keyframes aflNewShotFlash{
+ 0%,100%{background:#0a1325;box-shadow:inset 0 0 0 #ffdc44,0 0 0 transparent;color:#fff}
+ 22%,70%{background:#7b5200;box-shadow:inset 0 0 3px #ffe983,0 0 16px #ffcf00;color:#fff7aa}
+ 43%{background:#0a1325;box-shadow:inset 0 0 0 #ffdb4f,0 0 0 transparent;color:#fff}
+}
+html body #broadcastViewport .broadcastControls>.panel .adminTeamQueue.aflNewShot{
+ animation:aflNewShotFlash .68s ease-in-out 4!important;
+}
+/* Referee + public league hint: single line, below the enlarged cards and above the goal. */
+html body #broadcastViewport>.leagueProfileHint{
+ left:2%!important;right:2%!important;width:auto!important;
+ font-size:clamp(10px,3.05cqw,29px)!important;font-weight:950!important;
+ line-height:1.03!important;white-space:nowrap!important;text-align:center!important;
+ overflow:hidden!important;text-overflow:clip!important;padding:2px 3px!important;
+}
+html body #broadcastViewport>#matchClockHud:not([data-phase="result"]) .clockLabel{
+ font-size:clamp(11px,2.85cqw,27px)!important;
+ line-height:1.05!important;font-weight:950!important;white-space:nowrap!important;
+ overflow:hidden!important;text-overflow:clip!important;
+}
+/* Sound button is placed directly into the portrait wrapper, never on a player's face. */
+html body #broadcastViewport>#soundEnable{
+ position:absolute!important;top:0.65%!important;right:1.8%!important;
+ bottom:auto!important;left:auto!important;transform:none!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ min-width:0!important;width:auto!important;height:auto!important;
+ min-height:0!important;padding:.7cqw 1.0cqw!important;
+ font-size:clamp(10px,2cqw,19px)!important;line-height:1.1!important;
+ white-space:nowrap!important;z-index:75!important;
+ border:1px solid #78bda1!important;border-radius:6px!important;background:#174a3e!important;
+ color:#fff!important;pointer-events:auto!important;
+}
+html body #broadcastViewport:not(.adminView)>#soundEnable[data-audio-unlocked="true"]{display:none!important}
+/* Prevent card growth from covering the goals when the viewport is unusually short. */
+@media(max-width:390px){
+ #broadcastViewport{--afl-hud-gap:2px}
+ html body #broadcastViewport .broadcastControls>.panel .teamTitle{letter-spacing:-.05em!important}
+}
