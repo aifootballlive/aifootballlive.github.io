@@ -293,3 +293,17 @@ html body #broadcastViewport .broadcastControls>.panel .giftEffect{
  flex:0 0 auto!important;line-height:1.3!important;padding:.15cqw 0 .25cqw!important;
  overflow:visible!important;height:auto!important;min-height:0!important;
 }
+
+/* v233 — keep dividers visible when a 1080px source becomes a phone preview. */
+html body #broadcastViewport{--afl-hud-gap:clamp(3px,.9cqw,10px)}
+html body #broadcastViewport>.broadcastControls>.panel{
+ border:clamp(1.5px,.48cqw,6px) solid #f4f7ff!important;
+ gap:clamp(2px,.5cqw,6px)!important;
+ background:rgba(6,15,30,.96)!important;
+}
+html body #broadcastViewport .broadcastControls>.panel .buttons{gap:clamp(2px,.55cqw,6px)!important}
+html body #broadcastViewport .broadcastControls>.panel .panelHead.teamScore,
+html body #broadcastViewport .broadcastControls>.panel .giftbtn.shot,
+html body #broadcastViewport .broadcastControls>.panel .adminTeamQueue{
+ border:clamp(1.25px,.32cqw,4px) solid #f4f7ff!important;
+}

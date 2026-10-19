@@ -238,3 +238,7 @@ Current upstream behavior preserved: combined winner+league results duration (de
 ## 20.10.2026 — v232 gift art and caption spacing
 - Enlarged gift art from 7.35cqw to 9.3cqw within a square container; preserved aspect and source pixels. Shot buttons now grow vertically to contain art plus caption.
 - Added space below the image and 1.3 line height with bottom padding for Ş descenders. Eight viewport checks passed for square art, image/text separation and unclipped caption bounds; mobile rendering inspected.
+
+## 20.10.2026 — v233 broadcast divider visibility
+- Replaced fixed 2–3px gaps and 1px borders with source-relative spacing: .9cqw card gaps, .48cqw bright outer borders and .32cqw internal dividers (bounded). Increased inner spacing proportionally; dark card background improves white-line contrast.
+- Eight browser sizes passed gift geometry, caption room and team-name fitting. At 1080px, measured 5px outer borders and 9.72px gaps retain ~1.7px and 3.2px when reduced to a 360px preview. Source screenshot inspected; actual TikTok encoder output still requires a live preview check.
