@@ -188,3 +188,10 @@ html body #broadcastViewport:not(.adminView)>#soundEnable[data-audio-unlocked="t
  #broadcastViewport{--afl-hud-gap:2px}
  html body #broadcastViewport .broadcastControls>.panel .teamTitle{letter-spacing:-.05em!important}
 }
+
+
+/* v224 — drop Refresh + Admin Settings into the marked space just above
+   the four team cards; leave arena name, scoreboard and buttons unchanged. */
+html body #broadcastViewport.adminView>.head>.headRight{
+ transform:translateY(7.4cqw)!important;
+}
