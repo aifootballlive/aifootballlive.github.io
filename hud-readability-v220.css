@@ -466,3 +466,13 @@ html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .giftEf
 html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .giftEffect{transform:scaleX(.85)!important;transform-origin:center!important}
 /* Viewers have no Start button, so center the status across the entire bar. */
 html body #broadcastViewport#broadcastViewport:not(.adminView)>#matchClockHud:not([data-phase="result"]){grid-template-columns:minmax(0,1fr)!important}
+/* v247 — readable sound control and keeper heading, with interior breathing room. */
+html body #broadcastViewport#broadcastViewport>#soundEnable{
+ width:20cqw!important;font-size:3.7cqw!important;padding:.7cqw 1cqw!important;
+ min-height:7cqw!important;line-height:1.1!important;border-width:.24cqw!important;border-radius:1.8cqw!important;
+}
+html body #broadcastViewport#broadcastViewport.adminView>.adminFrontKeeper.show{grid-template-rows:5.5cqw minmax(0,1fr)!important}
+html body #broadcastViewport#broadcastViewport .keeperGroupTitle{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;height:100%!important;line-height:1.1!important;padding:.2cqw .8cqw!important;
+}

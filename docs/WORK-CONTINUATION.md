@@ -283,3 +283,8 @@ Current upstream behavior preserved: combined winner+league results duration (de
 ## 20.10.2026 — v246 readable waiting message
 - Manual waiting label now auto-fits its available status column independently of the smaller info-text preference. Uses the full public bar width when Start is hidden; author view fits beside Start. Active match/countdown/result labels retain the saved info scale.
 - Four local author/viewer cases (390, desktop and 1080 portrait) passed: text fills over 97% of its status slot, stays within the bar and clear of Start, and remains centered for viewers even with info set to 40%. Counter/info regressions and all 15 shared-layout comparisons passed. Mocked browser screenshots inspected; no live game or setting mutations.
+
+## 20.10.2026 — v247 sound and keeper heading
+- Enlarged sound button baseline to 3.7cqw and widened its interior to 20cqw, retaining padding, source-relative border and safe fitting.
+- Keeper group title uses a separate 3.6cqw baseline with overall broadcast scaling, avoiding the small info-text preference. Reserved a 5.5cqw header row and bounded the fitted title by its height. Kept numeric power values under the existing info preference.
+- Four phone/desktop author/viewer checks passed at info 40%: waiting label safe, sound and visible keeper title larger than 2.6% of portrait width with safe text bounds; screenshots inspected. Existing phone/desktop preview/save/rollback tests passed. No production state changed during QA.
