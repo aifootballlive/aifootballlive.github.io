@@ -1,0 +1,140 @@
+/* Admin-only v220 scalable typography. Saved per browser, never modifies the broadcast video. */
+#adminOverlay{--afl-admin-font:1.10}
+#adminOverlay .adminHead,
+#adminOverlay .adminHead strong{
+ font-size:calc(20px * var(--afl-admin-font))!important;
+ line-height:1.18!important;min-width:0!important;
+}
+body.drawerMode #adminOverlay .adminHead,
+body.settingsMode #adminOverlay .adminHead{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ gap:8px!important;padding:10px 12px!important;min-height:0!important;
+ flex-wrap:nowrap!important;overflow:visible!important;
+}
+#adminOverlay .adminHead>strong{
+ display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+#adminOverlay .drawerHeaderActions{
+ width:100%!important;min-width:0!important;
+ display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:stretch!important;gap:5px!important;
+}
+#adminOverlay .drawerTabs{
+ width:100%!important;min-width:0!important;
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:5px!important;
+}
+#adminOverlay .drawerTab,#adminOverlay .closeBtn,
+body.drawerMode #adminOverlay .drawerTab,body.drawerMode #adminOverlay .closeBtn{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ min-width:0!important;min-height:40px!important;height:auto!important;
+ padding:7px 8px!important;
+ font-size:clamp(11px,calc(15px * var(--afl-admin-font)),21px)!important;
+ font-weight:900!important;line-height:1.1!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;
+ overflow-wrap:normal!important;word-break:normal!important;hyphens:none!important;
+}
+#adminOverlay .adminBody{font-size:calc(17px * var(--afl-admin-font))!important;line-height:1.4!important}
+#adminOverlay .adminSectionTitle{
+ font-size:calc(19px * var(--afl-admin-font))!important;line-height:1.23!important;
+ font-weight:950!important;overflow-wrap:break-word!important;
+}
+#adminOverlay .adminField label,
+#adminOverlay .adminToggle,
+#adminOverlay .adminStat,
+#adminOverlay .adminStat .statLabel,
+#adminOverlay .adminValue,
+#adminOverlay .adminBody p,
+#adminOverlay .adminPreviewHint,
+#adminOverlay .giftToggleHelp,
+#adminOverlay .teamQueueClearHint,
+#adminOverlay .teamQueueClearStatus,
+#adminOverlay #adminSaveStatus{
+ font-size:calc(17px * var(--afl-admin-font))!important;line-height:1.35!important;
+ white-space:normal!important;overflow-wrap:break-word!important;word-break:normal!important;
+}
+#adminOverlay .adminStat .statLabel{
+ display:flex!important;align-items:flex-start!important;gap:7px!important;
+}
+#adminOverlay .adminStat .statLabel span:last-child{
+ min-width:0!important;overflow-wrap:break-word!important;word-break:normal!important;
+}
+#adminOverlay .adminField input:not([type=range]),
+#adminOverlay .adminField select,
+#adminOverlay .adminStat input,
+#adminOverlay .adminStat strong{
+ font-size:calc(21px * var(--afl-admin-font))!important;line-height:1.15!important;
+ min-width:0!important;max-width:100%!important;
+}
+#adminOverlay .adminStat,#adminOverlay .adminField{min-width:0!important}
+#adminOverlay .adminStats,#adminOverlay .adminGrid{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ column-gap:10px!important;row-gap:10px!important;
+}
+#adminOverlay .adminStat{padding:10px!important}
+#adminOverlay .adminSection{padding:12px!important;margin-top:10px!important}
+#adminOverlay .adminBtn,
+#adminOverlay .adminActions button,
+#adminOverlay .adminRoundControls button,
+#adminOverlay .adminSecondaryActions button,
+#adminOverlay #giftProcessingToggle,
+#adminOverlay #adminTeamQueueReset .teamQueueClearBtn{
+ font-size:calc(16px * var(--afl-admin-font))!important;line-height:1.2!important;
+ min-width:0!important;height:auto!important;min-height:42px!important;
+ padding:10px 8px!important;white-space:normal!important;overflow-wrap:break-word!important;
+}
+#adminOverlay .adminToggle{padding:9px!important;gap:8px!important}
+#adminOverlay .adminToggle input{width:22px!important;height:22px!important;flex:0 0 22px!important}
+/* Always-visible type control at the beginning of Settings. */
+#adminOverlay .aflFontScalePanel{
+ position:relative!important;display:flex!important;flex-direction:column!important;
+ gap:8px!important;margin:0 0 12px!important;padding:12px!important;
+ border:1px solid #86b5da!important;border-radius:10px!important;
+ background:#18314a!important;
+}
+#adminOverlay .aflFontScalePanel label{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;
+ font-size:calc(17px * var(--afl-admin-font))!important;font-weight:950!important;
+ white-space:normal!important;
+}
+#adminOverlay .aflFontScalePanel input[type=range]{
+ display:block!important;cursor:pointer!important;appearance:auto!important;
+ width:100%!important;min-height:28px!important;accent-color:#58d9c6!important;
+ margin:0!important;padding:0!important;
+}
+#adminOverlay .aflFontScalePanel output{white-space:nowrap!important;color:#ffe783!important;font-variant-numeric:tabular-nums!important}
+#adminOverlay .aflFontScalePanel p{margin:0!important;color:#bbd5eb!important}
+#adminOverlay .adminBody{scrollbar-gutter:stable}
+@media(max-width:520px){
+ #adminOverlay .adminStats,#adminOverlay .adminGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+ #adminOverlay .adminStat{padding:7px!important}
+ #adminOverlay .adminSection{padding:8px!important}
+ #adminOverlay .adminStat .statLabel{gap:3px!important}
+}
+/* League drawer tabs: maintain single-line labels, no clipped "AYARLA/R". */
+body.drawerMode #leagueDrawer.show .leagueDrawerHead{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ min-height:0!important;height:auto!important;flex:0 0 auto!important;
+ gap:7px!important;padding:10px 12px!important;
+}
+body.drawerMode #leagueDrawer.show .leagueDrawerHead strong{
+ font-size:calc(20px * var(--afl-admin-font,1.1))!important;
+ line-height:1.15!important;white-space:nowrap!important;
+}
+#leagueDrawer .drawerHeaderActions{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:5px!important;width:100%!important}
+#leagueDrawer .drawerTabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important;min-width:0!important}
+body.drawerMode #leagueDrawer .drawerTab,body.drawerMode #leagueDrawer .closeBtn{
+ font-size:clamp(11px,calc(15px * var(--afl-admin-font,1.1)),20px)!important;
+ line-height:1.1!important;white-space:nowrap!important;overflow:hidden!important;
+ min-width:0!important;padding:8px 6px!important;min-height:40px!important;height:auto!important;
+}
+body.drawerMode>#leagueDrawer.show{display:flex!important;flex-direction:column!important;min-height:0!important}
+body.drawerMode>#leagueDrawer.show iframe{
+ flex:1 1 0!important;min-height:0!important;width:100%!important;height:auto!important;
+ border:0!important;display:block!important;
+}
+#leagueDrawer .aflLeagueExternal{
+ color:#d3f2ff!important;text-decoration:underline!important;
+ font-size:clamp(11px,calc(13px * var(--afl-admin-font,1.1)),18px)!important;
+ margin:0!important;white-space:nowrap!important;text-align:center!important;
+}
