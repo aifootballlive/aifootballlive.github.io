@@ -167,6 +167,38 @@ th:first-child,td:first-child{width:35%;text-align:left}
  th{font-size:8px}
 }
 
+
+/* Accessible standings: legible text on phones and desktop alike.
+   Horizontal table scrolling is preferable to squeezing 8 columns to 9px. */
+html,body{font-size:17px!important}
+h1{font-size:clamp(25px,4vw,34px)!important}
+h2{font-size:clamp(22px,3.2vw,27px)!important}
+#status,.note,.small{font-size:clamp(15px,2.2vw,18px)!important;line-height:1.42!important}
+.summary .stat span{font-size:clamp(14px,2vw,17px)!important}
+.summary .stat strong{font-size:clamp(25px,3.3vw,34px)!important}
+.leagueChoice{font-size:17px!important;padding:9px 12px!important}
+.tablewrap{width:100%!important;max-width:100%!important;overflow-x:auto!important;
+ -webkit-overflow-scrolling:touch!important;overscroll-behavior-x:contain!important}
+.tablewrap table{width:100%!important;min-width:870px!important;max-width:none!important;
+ table-layout:auto!important;white-space:nowrap!important;border-collapse:collapse!important}
+.tablewrap th,.tablewrap td{font-size:clamp(18px,2.3vw,22px)!important;
+ padding:15px 12px!important;line-height:1.25!important;overflow-wrap:normal!important;
+ word-break:normal!important;white-space:nowrap!important}
+.tablewrap th{font-size:clamp(16px,2vw,19px)!important}
+.tablewrap th:first-child,.tablewrap td:first-child{width:auto!important;min-width:235px!important}
+.tablewrap .team{display:flex!important;min-width:220px!important;align-items:center!important;
+ white-space:normal!important;font-size:clamp(19px,2.5vw,23px)!important;line-height:1.2!important;gap:9px!important}
+.tablewrap .teamLogo{width:33px!important;height:40px!important}
+.result,.result strong,.result time{font-size:17px!important;line-height:1.35!important}
+@media(max-width:650px){
+ .panel{padding:12px!important}
+ .tablewrap table{min-width:820px!important}
+ .tablewrap th,.tablewrap td{font-size:20px!important;padding:14px 10px!important}
+ .tablewrap th{font-size:17px!important}
+ .tablewrap .team{font-size:21px!important}
+ .subtitle,.back{font-size:16px!important}
+ .summary .stat strong{font-size:26px!important}
+}
 </style>
 </head>
 <body>
