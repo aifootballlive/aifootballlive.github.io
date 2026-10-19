@@ -217,7 +217,7 @@ h2{font-size:clamp(22px,3.2vw,27px)!important}
 }
 
 </style>
-<link rel="stylesheet" href="./panel-type-v214.css">
+<link rel="stylesheet" href="./panel-type-v214.css?v=217">
 </head>
 <body id="leaguePage">
 <main>
@@ -252,6 +252,8 @@ h2{font-size:clamp(22px,3.2vw,27px)!important}
 // Do not leave an empty league table if a CDN or network request fails.
 const db=window.supabase?.createClient?.("https://xozzbaguihyhruloiqjm.supabase.co","sb_publishable_Oftm7DRbr0Vdt9gTLFGAaw_LQq4PCnP")||null;
 const id=x=>document.getElementById(x);
+// The host panel owns navigation; do not load a second game inside this iframe.
+if(window.parent!==window)document.querySelector('header .back')?.setAttribute('hidden','');
 const names={A:'Altın Pusula',B:'Kızıl Kıvılcım',C:'Gece Yıldızı',D:'Bordo Dalga'};
 const colors={A:'#f0d436',B:'#c83436',C:'#e2e5e8',D:'#a54868'};
 const logos={A:'altin-pusula.svg',B:'kizil-kivilcim.svg',C:'gece-yildizi.svg',D:'bordo-dalga.svg'};

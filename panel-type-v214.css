@@ -1,5 +1,8 @@
 /* Shared panel typography. 22px remains ~15px at the owner's 67% desktop zoom.
    Scoped to settings/league so broadcast text and video framing stay unchanged. */
+.drawerTabs{display:flex;align-items:stretch;gap:6px;min-width:0}
+#adminOverlay .drawerTabs .drawerTab,#leagueDrawer .drawerTabs .drawerTab{border:1px solid #6787a8!important;background:#1a3049!important;color:#d5e3f2!important;cursor:pointer}
+#adminOverlay .drawerTabs .drawerTab[aria-pressed=true],#leagueDrawer .drawerTabs .drawerTab[aria-pressed=true]{background:#375c80!important;border-color:#bad7f3!important;color:#fff!important;box-shadow:inset 0 -3px #b8d8ff!important}
 #adminOverlay{--panel-copy:22px;--panel-heading:26px;--panel-number:26px}
 #adminOverlay .adminBody{font-size:var(--panel-copy)!important;line-height:1.5!important}
 #adminOverlay .adminHead,#adminOverlay .adminHead strong,
