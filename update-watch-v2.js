@@ -13,6 +13,8 @@ let shown=false,pageBusy=false,gitBusy=false,pageCheckedAt=0,gitCheckedAt=0,last
 
 function refreshedUrl(){
  const dest=new URL('./live.html',location.href);
+ // Keep the dedicated TikTok source resolution mode after refresh.
+ if(new URLSearchParams(location.search).get('studio')==='tiktok1080')dest.searchParams.set('studio','tiktok1080');
  // A new URL is essential: meta http-equiv Cache-Control alone does not
  // override HTTP caches or an already cached GitHub Pages document.
  dest.searchParams.delete('version_probe');
