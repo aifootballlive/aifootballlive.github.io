@@ -1,0 +1,10 @@
+#broadcastTextSettings .adminBtn{background:#254462!important;color:#fff!important;border:1px solid #6884a5!important;border-radius:9px!important;padding:10px 12px!important;cursor:pointer;font-weight:800}
+#broadcastTextSettings output{float:right;color:#ffe28a;font-weight:900}
+#broadcastTextSettings input[type=range]{width:100%;accent-color:#35bc98;cursor:pointer}
+#broadcastTextPreviewToggle{display:none}
+@media(max-width:800px){
+ #broadcastTextPreviewToggle{display:block;width:100%;margin-bottom:10px}
+ body.aflTextPreview.drawerMode>#broadcastViewport{display:block!important;position:fixed!important;top:0!important;left:50%!important;transform:translateX(-50%)!important;width:100vw!important;max-width:none!important;height:auto!important;aspect-ratio:9/16!important;margin:0!important;padding:0!important}
+ body.aflTextPreview.drawerMode>#adminOverlay.show{position:fixed!important;inset:45dvh 0 0!important;width:100%!important;height:55dvh!important;max-height:55dvh!important;z-index:500!important;border-radius:14px 14px 0 0!important}
+ body.aflTextPreview.drawerMode>#adminOverlay.show .admin{height:100%!important;max-height:100%!important}
+}

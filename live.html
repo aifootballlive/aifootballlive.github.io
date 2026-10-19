@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261020-v229-scoreboard-hierarchy">
+<meta name="aifootball-release" content="20261020-v230-live-text-settings">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script>if(new URLSearchParams(location.search).get('studio')==='tiktok1080')document.documentElement.classList.add('aflTikTokPortraitSource');</script>
 <title>AI Football Live</title>
@@ -2214,7 +2214,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
   <div id="event" hidden aria-hidden="true">Hazır</div><div class="note">Tüm cihazlar aynı canlı maç durumunu gösterir.</div>
 </div>
 <div id="drawerSplitHandle" class="drawerSplitHandle" role="separator" aria-orientation="vertical" aria-label="Oyun ekranı ve yönetim paneli genişliğini ayarla" aria-valuemin="260" aria-valuemax="650" aria-valuenow="449" tabindex="0" title="Sola veya sağa sürükleyin; ok tuşlarıyla da ayarlayabilirsiniz"><span aria-hidden="true">↔</span></div>
-<div class="overlay" id="adminOverlay"><section class="admin"><div class="adminHead"><strong>ADMIN AYARLARI</strong><div class="drawerHeaderActions"><div class="drawerTabs" aria-label="Yönetim sekmeleri"><button id="adminSettingsTab" type="button" class="drawerTab" aria-pressed="true" onclick="openAdmin()">AYARLAR</button><button id="adminLeagueTab" type="button" class="drawerTab" aria-pressed="false" onclick="openLeagueDrawer()">LİG TABLOSU</button></div><button type="button" class="closeBtn" onclick="closeAdmin()">KAPAT</button></div></div><div class="adminBody">
+<div class="overlay" id="adminOverlay"><section class="admin"><div class="adminHead"><strong>ADMIN AYARLARI</strong><div class="drawerHeaderActions"><div class="drawerTabs" aria-label="Yönetim sekmeleri"><button id="adminSettingsTab" type="button" class="drawerTab" aria-pressed="true" onclick="openAdmin()">AYARLAR</button><button id="adminLeagueTab" type="button" class="drawerTab" aria-pressed="false" onclick="openLeagueDrawer()">LİG TABLOSU</button></div><button type="button" class="closeBtn" onclick="closeAdmin()">KAPAT</button></div></div><div class="adminBody"><div class="adminSection" id="broadcastTextSettings"><h3>ANA EKRAN YAZI BOYUTLARI</h3><button type="button" class="adminBtn" id="broadcastTextPreviewToggle">Telefonda canlı önizlemeyi aç</button><p>Kaydırıcıları değiştirirken video önizlemesinde anında görürsün. Ayarları Uygula ile tüm izleyiciler için kaydedilir. Dar alanlarda taşmayı önlemek için yazılar otomatik sığdırılır.</p><div class="adminGrid"><label>Tüm yayın yazıları <output id="broadcastTextValue-all">100%</output><input id="broadcastText-all" type="range" min="80" max="130" step="5" value="100" aria-label="Tüm yayın yazıları"></label><label>Arena ve gol başlığı <output id="broadcastTextValue-headings">100%</output><input id="broadcastText-headings" type="range" min="80" max="130" step="5" value="100" aria-label="Arena ve gol başlığı"></label><label>Takım adları <output id="broadcastTextValue-teams">100%</output><input id="broadcastText-teams" type="range" min="80" max="130" step="5" value="100" aria-label="Takım adları"></label><label>Gol rakamları <output id="broadcastTextValue-scores">100%</output><input id="broadcastText-scores" type="range" min="80" max="130" step="5" value="100" aria-label="Gol rakamları"></label><label>1 Şut / 5 Şut yazıları <output id="broadcastTextValue-shots">100%</output><input id="broadcastText-shots" type="range" min="80" max="130" step="5" value="100" aria-label="1 Şut / 5 Şut yazıları"></label><label>Bekleyen şutlar <output id="broadcastTextValue-queues">100%</output><input id="broadcastText-queues" type="range" min="80" max="130" step="5" value="100" aria-label="Bekleyen şutlar"></label><label>Süre ve bilgi yazıları <output id="broadcastTextValue-info">100%</output><input id="broadcastText-info" type="range" min="80" max="130" step="5" value="100" aria-label="Süre ve bilgi yazıları"></label><label>Yayın butonları <output id="broadcastTextValue-buttons">100%</output><input id="broadcastText-buttons" type="range" min="80" max="130" step="5" value="100" aria-label="Yayın butonları"></label></div><button type="button" class="adminBtn" id="broadcastTextDefaults">Yayın yazılarını varsayılana getir</button></div>
 <div class="aflFontScalePanel" aria-label="Yönetici yazı boyutu ayarı">
  <label for="adminTextScale">YÖNETİM YAZI BOYUTU <output id="adminTextScaleValue" for="adminTextScale">110%</output></label>
  <input type="range" id="adminTextScale" min="85" max="170" value="110" step="5" aria-label="Yönetici paneli ve lig tablosu yazılarının boyutu">
@@ -2308,7 +2308,7 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{aut
 const $=id=>document.getElementById(id),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const nameOf=t=>({A:'Altın Pusula',B:'Kızıl Kıvılcım',C:'Gece Yıldızı',D:'Bordo Dalga'}[t]||t);
 let adminAuthed=false,polling=false,gameRules={},audioCtx=null,realtimeStatus='';
-const DEFAULT_ADMIN_SETTINGS={shotThreshold:10,startKeeper:100,keeperCost:10,shotDelay:3000,soundMaster:88,soundCrowd:72,soundEffects:92,soundGoal:100,soundEnabled:true,crowdEnabled:true,announcerEnabled:true,aiSpeechEnabled:true,goalFxEnabled:true,cameraZoom:100,stadiumExposure:116,idleMotion:100,ballSize:100,goalSize:100,confettiAmount:70,sceneLabel:true,showQueues:true,showStatus:true};
+const DEFAULT_ADMIN_SETTINGS={broadcastText:{},shotThreshold:10,startKeeper:100,keeperCost:10,shotDelay:3000,soundMaster:88,soundCrowd:72,soundEffects:92,soundGoal:100,soundEnabled:true,crowdEnabled:true,announcerEnabled:true,aiSpeechEnabled:true,goalFxEnabled:true,cameraZoom:100,stadiumExposure:116,idleMotion:100,ballSize:100,goalSize:100,confettiAmount:70,sceneLabel:true,showQueues:true,showStatus:true};
 let state={...DEFAULT_ADMIN_SETTINGS,A:{score:0,queue:0},B:{score:0,queue:0},C:{score:0,queue:0},D:{score:0,queue:0},keeper:{A:100,B:100,C:100,D:100},lastTeam:'B',busy:false};
 const defaultActorLayout=()=>({A:{x:0,depth:0,size:100},B:{x:0,depth:0,size:100},keeper:{x:0,depth:0,size:100}});
 let actorLayout=defaultActorLayout(),actorLayoutDirty=false,actorLayoutSaving=false;
@@ -2336,7 +2336,7 @@ function syncAdminValue(key,value,suffix=''){
   }
  }
 }
-function runtimeSettings(){return{
+function runtimeSettings(){return{broadcastText:state.broadcastText||{},
   soundMaster:state.soundMaster,soundCrowd:state.soundCrowd,soundEffects:state.soundEffects,soundGoal:state.soundGoal,
   soundEnabled:state.soundEnabled,crowdEnabled:state.crowdEnabled,announcerEnabled:state.announcerEnabled,aiSpeechEnabled:state.aiSpeechEnabled,
   cameraZoom:state.cameraZoom,stadiumExposure:state.stadiumExposure,idleMotion:state.idleMotion,
@@ -2357,6 +2357,7 @@ function adminPreviewArenaName(){
 }
 window.AIFootballAdminPreviewArena=adminPreviewArenaName;
 function previewAdminDraft(){
+ if(adminAuthed&&$('adminOverlay')?.classList.contains('show')){state.broadcastText=window.AIFootballBroadcastText?.read()||state.broadcastText;window.AIFootballBroadcastText?.apply(state.broadcastText);}
  if(!adminAuthed||!$('adminOverlay')?.classList.contains('show'))return;
  const read=(id,min=0,max=1000000)=>{
   const value=$(id)?.value;
@@ -2400,6 +2401,7 @@ function syncLiveAdminCounters(){
 }
 function initialKeeper(t){return Number(state.startKeepers?.[t]??10);}
 function fillAdminSettings(){
+  window.AIFootballBroadcastText?.fill(state.broadcastText||{});
   const set=(id,v)=>{const e=$(id);if(e)e.value=v},check=(id,v)=>{const e=$(id);if(e)e.checked=!!v};
   for(const t of ['A','B','C','D']){set('setInitialKeeper'+t,initialKeeper(t));set('setQueue'+t,state[t].queue);set('setScore'+t,state[t].score);}
   adminEditBaseline={initial:Object.fromEntries(['A','B','C','D'].map(t=>[t,initialKeeper(t)])),queues:Object.fromEntries(['A','B','C','D'].map(t=>[t,state[t].queue])),scores:Object.fromEntries(['A','B','C','D'].map(t=>[t,state[t].score]))};
@@ -2600,6 +2602,7 @@ function openLeagueDrawer(){
  requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
 }
 function closeAdmin(){
+ document.body.classList.remove('aflTextPreview');
  if(document.body.classList.contains('settingsMode')){location.replace('./live.html');return;}
  $('adminOverlay').classList.remove('show');
  $('leagueDrawer').classList.remove('show');$('leagueDrawer').setAttribute('aria-hidden','true');
@@ -2622,6 +2625,7 @@ function applyRules(r){
   state.soundMaster=numberOr(gameRules.sound_master,DEFAULT_ADMIN_SETTINGS.soundMaster);state.soundCrowd=numberOr(gameRules.sound_crowd,DEFAULT_ADMIN_SETTINGS.soundCrowd);state.soundEffects=numberOr(gameRules.sound_effects,DEFAULT_ADMIN_SETTINGS.soundEffects);state.soundGoal=numberOr(gameRules.sound_goal,DEFAULT_ADMIN_SETTINGS.soundGoal);
   state.soundEnabled=boolOr(gameRules.sound_enabled,true);state.crowdEnabled=boolOr(gameRules.crowd_enabled,true);state.announcerEnabled=boolOr(gameRules.announcer_enabled,true);state.aiSpeechEnabled=boolOr(gameRules.ai_speech_enabled,true);state.goalFxEnabled=boolOr(gameRules.goal_fx_enabled,true);
   state.cameraZoom=numberOr(gameRules.camera_zoom,100);state.stadiumExposure=numberOr(gameRules.stadium_exposure,116);state.idleMotion=numberOr(gameRules.idle_motion,100);state.ballSize=numberOr(gameRules.ball_size,100);state.goalSize=numberOr(gameRules.goal_size,100);state.confettiAmount=numberOr(gameRules.confetti_amount,70);
+  state.broadcastText=window.AIFootballBroadcastText?.normalize(gameRules.broadcast_text)||gameRules.broadcast_text||{};
   state.sceneLabel=boolOr(gameRules.scene_label,true);state.showQueues=boolOr(gameRules.show_queues,true);state.showStatus=boolOr(gameRules.show_status,true);
   applyRuntimeSettings();render()
 }
@@ -2760,9 +2764,10 @@ async function applyAdminSettings(){
   state.startKeepers=initialByTeam;state.keeperCost=num('setKeeperCost',10,1,10000);state.shotDelay=num('setShotDelay',3000,500,30000);
   state.soundMaster=num('setSoundMaster',DEFAULT_ADMIN_SETTINGS.soundMaster,0,100);state.soundCrowd=num('setSoundCrowd',DEFAULT_ADMIN_SETTINGS.soundCrowd,0,100);state.soundEffects=num('setSoundEffects',DEFAULT_ADMIN_SETTINGS.soundEffects,0,100);state.soundGoal=num('setSoundGoal',DEFAULT_ADMIN_SETTINGS.soundGoal,0,100);
   state.soundEnabled=chk('setSoundEnabled');state.crowdEnabled=chk('setCrowdEnabled');state.announcerEnabled=chk('setAnnouncerEnabled');state.aiSpeechEnabled=chk('setAiSpeechEnabled');state.goalFxEnabled=chk('setGoalFxEnabled');
+  state.broadcastText=window.AIFootballBroadcastText?.read()||{};
   state.cameraZoom=num('setCameraZoom',100,75,140);state.stadiumExposure=num('setStadiumExposure',116,70,150);
   
-  gameRules={...gameRules,goalkeeper_initial_by_team:initialByTeam,keeper_cost:state.keeperCost,shot_delay:state.shotDelay,shot_threshold:state.shotThreshold,last_team:state.lastTeam,
+  gameRules={...gameRules,broadcast_text:state.broadcastText,goalkeeper_initial_by_team:initialByTeam,keeper_cost:state.keeperCost,shot_delay:state.shotDelay,shot_threshold:state.shotThreshold,last_team:state.lastTeam,
     sound_master:state.soundMaster,sound_crowd:state.soundCrowd,sound_effects:state.soundEffects,sound_goal:state.soundGoal,sound_enabled:state.soundEnabled,crowd_enabled:state.crowdEnabled,announcer_enabled:state.announcerEnabled,ai_speech_enabled:state.aiSpeechEnabled,goal_fx_enabled:state.goalFxEnabled,
     camera_zoom:state.cameraZoom,stadium_exposure:state.stadiumExposure,idle_motion:state.idleMotion,ball_size:state.ballSize,goal_size:state.goalSize,confetti_amount:state.confettiAmount,scene_label:state.sceneLabel,show_queues:state.showQueues,show_status:state.showStatus};
   const {error}=window.AIFootballTikTok?.active?await window.AIFootballTikTok.saveRules(gameRules,changedKeeper,changedQueues,changedScores):await db.from('games').update({rules:gameRules}).eq('id',ids.game);if(error){console.error(error);log('Ayarlar kaydedilemedi');return}
@@ -3022,6 +3027,7 @@ render();boot().finally(()=>window.dispatchEvent(new Event('afl-initial-state-re
 <script src="./shot-cache-v195.js"></script>
 <script id="game3dScript" src="./scene-video-v219.js?v=219"></script>
 <script src="./update-watch-v2.js?v=2"></script>
-<script src="./interface-fixes-v220.js?v=223"></script>
+<script src="./interface-fixes-v230.js?v=230"></script>
+<link rel="stylesheet" href="./broadcast-text-v230.css"><script src="./broadcast-text-v230.js"></script>
 </body>
 </html>
