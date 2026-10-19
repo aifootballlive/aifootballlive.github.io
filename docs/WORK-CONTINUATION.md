@@ -257,3 +257,8 @@ Current upstream behavior preserved: combined winner+league results duration (de
 - Expanded management/league type slider, persisted-value validation and iframe scale validation from 170% to 300%. Existing per-browser preference retained.
 - Above 170%, management form groups use one column and the title wraps, so large text is not squeezed into half-width fields. Header tab controls remain fitted for navigation.
 - Phone and desktop tests passed 300% selection, CSS scale 3, one-column layout, same-panel league scale 3 and persistence after reload. Mobile large-text layout inspected.
+
+## 20.10.2026 — v241 scalable settings/league/close labels
+- Removed separate 20–21px header-button caps and the JS font shrinking loop. AYARLAR, LİG TABLOSU and KAPAT now follow the management scale, including 300% (45px).
+- Header controls wrap into additional rows when necessary; text wraps safely instead of shrinking. Applied to both settings and league drawer headers.
+- Phone/desktop tests verified 45px labels at 300%, no button text overflow, league propagation and persistence; existing same-page tabs/draft/queue/close regression passed. Mobile 300% header inspected.

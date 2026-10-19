@@ -80,12 +80,7 @@ function fixAudioPlacement(){
  button.style.setProperty('transform','none','important');
 }
 function fitHeaderTabs(){
- for(const tab of document.querySelectorAll('#adminOverlay .drawerTab,#adminOverlay .closeBtn,#leagueDrawer .drawerTab,#leagueDrawer .closeBtn')){
-  if(tab.clientWidth<15)continue;
-  const style=getComputedStyle(tab),size=parseFloat(style.fontSize)||15;
-  const w=Math.max(1,tab.clientWidth-13),measured=fontWidth(tab.textContent.trim(),size,'900',style.fontFamily);
-  if(measured>w)tab.style.setProperty('font-size',Math.max(10,size*w/measured*.96).toFixed(2)+'px','important');
- }
+ for(const tab of document.querySelectorAll('#adminOverlay .drawerTab,#adminOverlay .closeBtn,#leagueDrawer .drawerTab,#leagueDrawer .closeBtn'))tab.style.removeProperty('font-size');
 }
 function alignDrawerTabs(){
  const showLeague=id('leagueDrawer')?.classList.contains('show')===true;

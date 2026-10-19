@@ -148,3 +148,18 @@ body.drawerMode>#leagueDrawer.show iframe{
 #adminOverlay[data-large-type="true"] .aflFontScalePanel label{flex-wrap:wrap!important}
 #adminOverlay[data-large-type="true"] .aflFontScalePanel output{margin-left:auto}
 #adminOverlay[data-large-type="true"] .adminBody label{overflow-wrap:anywhere!important;min-width:0!important}
+
+/* v241 — scale navigation labels too; wrap controls instead of shrinking type. */
+#adminOverlay .drawerHeaderActions,
+#leagueDrawer .drawerHeaderActions{
+ display:flex!important;flex-wrap:wrap!important;gap:6px!important;align-items:stretch!important;
+}
+#adminOverlay .drawerTabs,#leagueDrawer .drawerTabs{display:contents!important}
+#adminOverlay .drawerTab,#adminOverlay .closeBtn,
+body.drawerMode #adminOverlay .drawerTab,body.drawerMode #adminOverlay .closeBtn,
+body.drawerMode #leagueDrawer .drawerTab,body.drawerMode #leagueDrawer .closeBtn{
+ flex:1 1 max-content!important;min-width:0!important;max-width:100%!important;width:auto!important;
+ font-size:calc(15px * var(--afl-admin-font,1.1))!important;line-height:1.2!important;
+ padding:8px 10px!important;white-space:normal!important;overflow:visible!important;
+ overflow-wrap:anywhere!important;word-break:normal!important;
+}
