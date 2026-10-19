@@ -3,7 +3,7 @@
 const root=document.getElementById('broadcastViewport');if(!root)return;
 const groups={headings:'.arenaTitle,#goalsHeading',teams:'.teamTitle',scores:'.panelHead.teamScore .num',shots:'.giftEffect',queues:'.queueLabel,.adminTeamQueue strong',info:'#leagueProfileHint,.clockLabel,.clockDigits,.keeperGroupTitle,.frontKeeperTop strong',buttons:'#adminOpen,#soundEnable,.startMatchAction'};
 const keys=['all',...Object.keys(groups)],id=k=>document.getElementById('broadcastText-'+k);
-function normalize(value){return Object.fromEntries(keys.map(k=>{const n=Number(value?.[k]);return[k,Number.isFinite(n)?Math.max(80,Math.min(130,n)):100];}));}
+function normalize(value){return Object.fromEntries(keys.map(k=>{const n=Number(value?.[k]);return[k,Number.isFinite(n)?Math.max(80,Math.min(k==='teams'||k==='scores'?200:130,n)):100];}));}
 let config=normalize(window.__AI_FOOTBALL_SETTINGS?.broadcastText),signature='',raf=0,lastWidth=0;
 const originals=new WeakMap();
 function read(){return normalize(Object.fromEntries(keys.map(k=>[k,id(k)?.value??100])));}
@@ -29,7 +29,7 @@ function fit(node,px){
  let maxHeight=Infinity;
  if(node.matches('.teamTitle,.num,#goalsHeading'))maxHeight=node.clientHeight;
  if(node.matches('.queueLabel,.adminTeamQueue strong'))maxHeight=parent.clientHeight-padding(parentStyle,'y');
- const lines=(node.innerText||node.textContent||'').trim().split(/\n/);
+ const lines=node.matches('.teamTitle')&&root.dataset.largeTeamType==='true'?(node.textContent||'').trim().split(/\s+/):(node.innerText||node.textContent||'').trim().split(/\n/);
  for(let i=0;i<5;i++){
   setSize(node,px);const style=getComputedStyle(node);
   const available=Math.max(1,maxWidth-padding(style,'x')-safe*2);
@@ -49,6 +49,10 @@ function fit(node,px){
 }
 function render(){raf=0;const width=root.getBoundingClientRect().width;if(!width)return;
  lastWidth=width;const entries=[];
+ const teamFactor=config.all*config.teams/10000,scoreFactor=config.all*config.scores/10000;
+ const multiline=teamFactor>1.35;root.dataset.largeTeamType=String(multiline);
+ root.style.setProperty('--afl-name-cell',(multiline?Math.min(11.2,8.2+(teamFactor-1.35)*2.4):4.6)+'cqw');
+ root.style.setProperty('--afl-score-cell',Math.min(12.5,9.2+Math.max(0,scoreFactor-1)*2.1)+'cqw');
  for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector)){
   if(!originals.has(node))originals.set(node,{value:node.style.getPropertyValue('font-size'),priority:node.style.getPropertyPriority('font-size')});
   const old=originals.get(node);if(old.value)node.style.setProperty('font-size',old.value,old.priority);else node.style.removeProperty('font-size');

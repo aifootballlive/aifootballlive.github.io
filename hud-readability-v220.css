@@ -373,3 +373,14 @@ html body #broadcastViewport>.goalsHeading{
  height:5.8cqw!important;min-height:19px!important;padding:.35cqw .8cqw!important;
 }
 html body #broadcastViewport>.liveArenaName .arenaTitle{max-width:100%!important}
+
+/* v243 — larger reserved cells let 200% team/score controls visibly grow. */
+html body #broadcastViewport .broadcastControls>.panel .panelHead.teamScore{
+ height:calc(var(--afl-score-cell,9.2cqw) + var(--afl-name-cell,4.6cqw) + 1.8cqw)!important;
+ flex-basis:calc(var(--afl-score-cell,9.2cqw) + var(--afl-name-cell,4.6cqw) + 1.8cqw)!important;
+ grid-template-rows:minmax(0,var(--afl-score-cell,9.2cqw)) minmax(0,var(--afl-name-cell,4.6cqw))!important;
+}
+html body #broadcastViewport[data-large-team-type="true"] .broadcastControls>.panel .panelHead.teamScore .teamTitle{
+ white-space:normal!important;text-wrap:balance!important;overflow-wrap:normal!important;
+ word-break:normal!important;line-height:1.12!important;
+}

@@ -262,3 +262,8 @@ Current upstream behavior preserved: combined winner+league results duration (de
 - Removed separate 20–21px header-button caps and the JS font shrinking loop. AYARLAR, LİG TABLOSU and KAPAT now follow the management scale, including 300% (45px).
 - Header controls wrap into additional rows when necessary; text wraps safely instead of shrinking. Applied to both settings and league drawer headers.
 - Phone/desktop tests verified 45px labels at 300%, no button text overflow, league propagation and persistence; existing same-page tabs/draft/queue/close regression passed. Mobile 300% header inspected.
+
+## 20.10.2026 — v243 team names and goal numbers to 200%
+- Raised only team-name and score sliders/normalization to 200%; other broadcast categories retain 130%.
+- Reserved card header rows expand with those settings. Large team labels use two centered word lines; score/logo row grows modestly. Safe text measurements remain enforced, including 999 and maximum overall scale.
+- Eight viewport tests passed: 200% accepted, visible font growth versus 130% for names/single-digit scores, safe text/art bounds at defaults and maximum with 999. Existing phone/desktop typography preview/save/rollback checks passed. Max mobile view inspected; no production game/settings writes in QA.
