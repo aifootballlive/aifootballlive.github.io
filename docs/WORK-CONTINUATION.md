@@ -231,3 +231,6 @@ Current upstream behavior preserved: combined winner+league results duration (de
 - Apply saves normalized broadcast_text in the existing shared games.rules through the authorized saveRules path. Existing backend RLS/device/MFA remains unchanged. Incoming presentation updates apply to viewers; unsaved drafts survive settings/league navigation and are reverted on close. Reset button previews default typography without resetting match state.
 - Added opt-in phone split preview: visible video/HUD above, settings sheet below; close returns to the ordinary layout. Local font renderer reuses authored responsive sizes, bounded text fitting, and unchanged-text guards to avoid unnecessary redraws. Existing layout/first-frame/audio code preserved.
 - Mocked Chrome tests passed on phone and desktop: instant adjustment, tab draft retention, unsaved rollback, saved payload, received shared settings, defaults, 999 fitting. Eight prior scoreboard viewports passed; phone preview inspected. No production settings or shots were mutated during testing.
+
+## 20.10.2026 — v231 pending label
+- All four queue labels now read Bekleyen / Şutlar on two explicit centered lines. Counts stay in place. Eight existing scoreboard viewport checks passed.

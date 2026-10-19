@@ -271,3 +271,5 @@ html body #broadcastViewport .broadcastControls>.panel .adminTeamQueue{height:7.
 html body #broadcastViewport .broadcastControls>.panel .adminTeamQueue .queueLabel{flex:1 1 0;min-width:0;white-space:normal;line-height:1.02}
 
 html body #broadcastViewport.adminView>.head>.title{font-size:clamp(8px,2cqw,22px)!important}
+
+html body #broadcastViewport .broadcastControls>.panel .adminTeamQueue .queueLabel{display:block;text-align:center;white-space:nowrap}

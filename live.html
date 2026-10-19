@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261020-v230-live-text-settings">
+<meta name="aifootball-release" content="20261020-v231-centered-pending-label">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script>if(new URLSearchParams(location.search).get('studio')==='tiktok1080')document.documentElement.classList.add('aflTikTokPortraitSource');</script>
 <title>AI Football Live</title>
@@ -2118,7 +2118,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
 }
 </style>
 <link rel="stylesheet" href="./panel-type-v214.css?v=218">
-<link rel="stylesheet" href="./broadcast-scale-v218.css"><link rel="stylesheet" href="./hud-readability-v220.css?v=229"><link rel="stylesheet" href="./admin-font-control-v220.css?v=220"><script>(()=>{const root=document.documentElement,q=matchMedia("(min-width:801px)"),p=matchMedia("(min-width:650px) and (max-aspect-ratio:9/16)"),sync=()=>root.classList.toggle("aflProportionalHud",q.matches||p.matches||root.classList.contains("aflTikTokPortraitSource"));sync();q.addEventListener("change",sync);p.addEventListener("change",sync);})();</script>
+<link rel="stylesheet" href="./broadcast-scale-v218.css"><link rel="stylesheet" href="./hud-readability-v220.css?v=231"><link rel="stylesheet" href="./admin-font-control-v220.css?v=220"><script>(()=>{const root=document.documentElement,q=matchMedia("(min-width:801px)"),p=matchMedia("(min-width:650px) and (max-aspect-ratio:9/16)"),sync=()=>root.classList.toggle("aflProportionalHud",q.matches||p.matches||root.classList.contains("aflTikTokPortraitSource"));sync();q.addEventListener("change",sync);p.addEventListener("change",sync);})();</script>
 </head>
 <body>
 <div id="startupStatus" role="status">Yayın hazırlanıyor…</div>
@@ -2183,7 +2183,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
         <button type="button" class="giftbtn shot" onclick="addShots('A',1)" aria-label="Altın Pusula için 1 şut"><span class="giftVisual"></span><span class="giftEffect">1 ŞUT</span></button>
         <button type="button" class="giftbtn shot" onclick="addShots('A',5)" aria-label="Altın Pusula için 5 şut"><span class="giftVisual"></span><span class="giftEffect">5 ŞUT</span></button>
       </div>
-      <div class="adminTeamQueue"><span class="queueLabel">Bekleyen şut</span> <strong id="frontQueueA">0</strong></div>
+      <div class="adminTeamQueue"><span class="queueLabel">Bekleyen<br>Şutlar</span> <strong id="frontQueueA">0</strong></div>
     </section>
     <section class="panel teamB" aria-label="Kızıl Kıvılcım skor ve şut hediyeleri">
       <div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/kizil-kivilcim.svg" alt="Kızıl Kıvılcım logosu"><div class="num" id="scoreB">0</div><div class="teamTitle">Kızıl Kıvılcım</div></div>
@@ -2191,7 +2191,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
         <button type="button" class="giftbtn shot" onclick="addShots('B',1)" aria-label="Kızıl Kıvılcım için 1 şut"><span class="giftVisual"></span><span class="giftEffect">1 ŞUT</span></button>
         <button type="button" class="giftbtn shot" onclick="addShots('B',5)" aria-label="Kızıl Kıvılcım için 5 şut"><span class="giftVisual"></span><span class="giftEffect">5 ŞUT</span></button>
       </div>
-      <div class="adminTeamQueue"><span class="queueLabel">Bekleyen şut</span> <strong id="frontQueueB">0</strong></div>
+      <div class="adminTeamQueue"><span class="queueLabel">Bekleyen<br>Şutlar</span> <strong id="frontQueueB">0</strong></div>
     </section>
     <section class="panel teamC" aria-label="Gece Yıldızı skor ve şut hediyeleri">
       <div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/gece-yildizi.svg" alt="Gece Yıldızı logosu"><div class="num" id="scoreC">0</div><div class="teamTitle">Gece Yıldızı</div></div>
@@ -2199,7 +2199,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
         <button type="button" class="giftbtn shot" onclick="addShots('C',1)" aria-label="Gece Yıldızı için 1 şut"><span class="giftVisual"></span><span class="giftEffect">1 ŞUT</span></button>
         <button type="button" class="giftbtn shot" onclick="addShots('C',5)" aria-label="Gece Yıldızı için 5 şut"><span class="giftVisual"></span><span class="giftEffect">5 ŞUT</span></button>
       </div>
-      <div class="adminTeamQueue"><span class="queueLabel">Bekleyen şut</span> <strong id="frontQueueC">0</strong></div>
+      <div class="adminTeamQueue"><span class="queueLabel">Bekleyen<br>Şutlar</span> <strong id="frontQueueC">0</strong></div>
     </section>
     <section class="panel teamD" aria-label="Bordo Dalga skor ve şut hediyeleri">
       <div class="panelHead teamScore"><img class="teamLogo" src="./assets/team-logos/bordo-dalga.svg" alt="Bordo Dalga logosu"><div class="num" id="scoreD">0</div><div class="teamTitle">Bordo Dalga</div></div>
@@ -2207,7 +2207,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
         <button type="button" class="giftbtn shot" onclick="addShots('D',1)" aria-label="Bordo Dalga için 1 şut"><span class="giftVisual"></span><span class="giftEffect">1 ŞUT</span></button>
         <button type="button" class="giftbtn shot" onclick="addShots('D',5)" aria-label="Bordo Dalga için 5 şut"><span class="giftVisual"></span><span class="giftEffect">5 ŞUT</span></button>
       </div>
-      <div class="adminTeamQueue"><span class="queueLabel">Bekleyen şut</span> <strong id="frontQueueD">0</strong></div>
+      <div class="adminTeamQueue"><span class="queueLabel">Bekleyen<br>Şutlar</span> <strong id="frontQueueD">0</strong></div>
     </section>
   </div>
   <div class="matchControls" id="matchControls" aria-label="Bekleyen şutlar ve ses"><div class="queues"></div></div>
