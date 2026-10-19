@@ -199,6 +199,23 @@ h2{font-size:clamp(22px,3.2vw,27px)!important}
  .subtitle,.back{font-size:16px!important}
  .summary .stat strong{font-size:26px!important}
 }
+
+/* Each club's real match-kit colours next to its badge: same palette as live.html */
+.tablewrap .team{gap:10px!important;min-width:288px!important}
+.tablewrap th:first-child,.tablewrap td:first-child{min-width:300px!important}
+.leagueJersey{display:inline-block;flex:0 0 42px;width:42px;height:34px;
+ clip-path:polygon(16% 0,36% 9%,64% 9%,84% 0,100% 25%,85% 45%,78% 31%,78% 100%,22% 100%,22% 31%,15% 45%,0 25%);
+ border-radius:4px;filter:drop-shadow(0 1px 2px #0009)}
+.leagueJerseyA{background:repeating-linear-gradient(90deg,#ffd21f 0 10px,#173f9b 10px 20px)}
+.leagueJerseyB{background:repeating-linear-gradient(90deg,#ffd21f 0 10px,#c91f2c 10px 20px)}
+.leagueJerseyC{background:repeating-linear-gradient(90deg,#ffffff 0 10px,#151515 10px 20px)}
+.leagueJerseyD{background:repeating-linear-gradient(90deg,#76233f 0 10px,#58b8e4 10px 20px)}
+@media(max-width:650px){
+ .tablewrap .team{gap:8px!important;min-width:260px!important}
+ .tablewrap th:first-child,.tablewrap td:first-child{min-width:275px!important}
+ .leagueJersey{width:38px;height:32px;flex-basis:38px}
+}
+
 </style>
 </head>
 <body>
@@ -257,7 +274,11 @@ function renderLeague(league,archives){
   const label=document.createElement('span');label.textContent=names[team];
   const stars=Math.floor(metric(stats,'wins')/5);
   if(stars)label.title=stars+' yıldız';
-  box.append(logo,label);td.append(box);
+  const jersey=document.createElement('span');
+  jersey.className='leagueJersey leagueJersey'+team;
+  jersey.setAttribute('role','img');
+  jersey.setAttribute('aria-label',({A:'sarı lacivert',B:'sarı kırmızı',C:'siyah beyaz',D:'bordo açık mavi'})[team]+' çizgili takım forması');
+  box.append(logo,jersey,label);td.append(box);
   if(stars){const extra=document.createElement('div');extra.className='small';extra.textContent=stars+' yıldız';td.append(extra);}
   tr.append(td);
   for(const k of ['played','wins','draws','losses','goals','points'])appendTextCell(tr,metric(stats,k));
