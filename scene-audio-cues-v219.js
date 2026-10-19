@@ -1,0 +1,2 @@
+/* Reviewed ball contacts only. Native soundtrack retained; no added footsteps. */
+window.AIFootballSceneAudioCues={"A_save":[[4.4167,"kick",true],[4.875,"catch",false]],"A_goal":[[1.9167,"kick",true],[3.375,"net",true]],"B_save":[[5.0833,"kick",true],[5.7083,"catch",true]],"B_goal":[[2.7083,"kick",true],[3.375,"net",true]],"C_save":[[3.1667,"kick",true],[3.8333,"catch",true]],"C_goal":[[3.2917,"kick",true],[3.9583,"net",false]],"D_save":[[2.625,"kick",true],[3.7083,"catch",true]],"D_goal":[[2.625,"kick",true],[3.2917,"net",true]]};

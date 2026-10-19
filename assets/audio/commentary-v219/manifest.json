@@ -1,0 +1,31 @@
+{
+  "provider": "Runway",
+  "model": "eleven_v3",
+  "presetVoice": "Mark",
+  "language": "tr",
+  "created": "2026-10-19",
+  "lines": {
+    "goal1": "[excited] Gooooool! Harika bir vuruş, top ağlarda! Muhteşem bir gol!",
+    "prepare": "[confident] Doruk Arenası'nda heyecan başlıyor! Takımlar hazır, birazdan ilk düdük çalacak.",
+    "kickoff": "[excited] Ve maç başladı! Bütün takımlara başarılar. Haydi, futbol şöleni başlasın!",
+    "shot1": "[excited] Harika bir şut!",
+    "shot2": "[excited] Çok sert bir vuruş!",
+    "save": "[excited] Kaleciden müthiş bir kurtarış!",
+    "goal2": "[excited] Gooooool! Nefis bir bitiriş! Tribünler ayakta!",
+    "support1": "[confident] Tribünlerden destek geliyor! Yeni şutlar sıraya eklendi.",
+    "support2": "[excited] Taraftarlar devrede! Takımına destek veren herkese teşekkürler.",
+    "support3": "[confident] Yeni hediyeler geldi, şutlar kaydedildi! Sahada heyecan devam ediyor.",
+    "atmosphere1": "[confident] Doruk Arenası'nda gözler sahada. Bakalım sıradaki gol kimden gelecek?",
+    "atmosphere2": "[confident] Mücadele sürüyor, heyecan giderek artıyor. Takımlar gol arıyor!",
+    "final30a": "[excited] Maçın bitmesine son otuz saniye! Şimdi her şut çok önemli!",
+    "final30b": "[excited] Son otuz saniyeye giriyoruz! Heyecan dorukta!",
+    "final30c": "[excited] Artık son otuz saniye! Bakalım son sözü hangi takım söyleyecek?",
+    "league": "[confident] İşte lig puan durumu! Gönderdiğiniz yeni şutlar sıradaki maç için kaydediliyor.",
+    "countdown": "[excited] Yeni maça son altmış saniye! Takımlar hazırlanıyor, futbol heyecanı birazdan devam edecek.",
+    "A": "[excited] Maç sona erdi! Kazanan Altın Pusula! Harika bir mücadeleydi, şampiyonumuzu alkışlıyoruz!",
+    "B": "[excited] Maç sona erdi! Kazanan Kızıl Kıvılcım! Harika bir mücadeleydi, şampiyonumuzu alkışlıyoruz!",
+    "C": "[excited] Maç sona erdi! Kazanan Gece Yıldızı! Harika bir mücadeleydi, şampiyonumuzu alkışlıyoruz!",
+    "D": "[excited] Maç sona erdi! Kazanan Bordo Dalga! Harika bir mücadeleydi, şampiyonumuzu alkışlıyoruz!",
+    "draw": "[confident] Maç sona erdi, beraberlik var! Müthiş mücadele için bütün takımları alkışlıyoruz!"
+  }
+}
