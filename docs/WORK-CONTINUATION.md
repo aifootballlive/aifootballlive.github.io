@@ -219,3 +219,9 @@ Current upstream behavior preserved: combined winner+league results duration (de
 
 ## 20.10.2026 — v228 soft control corners
 - Unified rounded corners for Refresh, Admin Settings, Sound, Start/Stop and shot buttons (8–18px relative to broadcast frame). Positions and dimensions preserved. Existing six-viewport placement checks passed; desktop rendering visually inspected.
+
+## 20.10.2026 — v229 scoreboard hierarchy
+- Enlarged arena/admin labels; removed MAÇ SKORLARI and the red per-team GOL badges. Added one full-width GOL SAYILARI heading above all four cards.
+- Centered score digits against logo centers; tabular numerals and reserved score columns fit 999. Team names share queue-label sizing; gift shot text shares sound-button sizing. Queue labels wrap safely in their existing rows.
+- Aligned admin controls, match action and sound right edges; refresh/admin stay equal height. Reserved space for the shared heading and kept the sound control above the goal area.
+- Eight mocked Chrome layouts passed (320, 360, 390, desktop 80%, 720/1080 regular and broadcast sources): 999 fit, names/admin text fit, logo/score centers match, red badges absent, requested font pairs equal, button edges align, heading/header avoid overlap. Mobile/desktop screenshots inspected. Test scores only changed isolated browser DOM; no production state writes.
