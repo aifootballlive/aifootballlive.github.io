@@ -242,3 +242,7 @@ Current upstream behavior preserved: combined winner+league results duration (de
 ## 20.10.2026 — v233 broadcast divider visibility
 - Replaced fixed 2–3px gaps and 1px borders with source-relative spacing: .9cqw card gaps, .48cqw bright outer borders and .32cqw internal dividers (bounded). Increased inner spacing proportionally; dark card background improves white-line contrast.
 - Eight browser sizes passed gift geometry, caption room and team-name fitting. At 1080px, measured 5px outer borders and 9.72px gaps retain ~1.7px and 3.2px when reduced to a 360px preview. Source screenshot inspected; actual TikTok encoder output still requires a live preview check.
+
+## 20.10.2026 — v234 arena title clarity
+- Removed inherited 10px blurred title shadow and the weight-1000 tightly spaced treatment. Arena title now uses white Arial bold, modest positive tracking, and a flat dark backing; no glow/filter/stroke. Font-size sliders and arena naming remain functional.
+- Phone/desktop typography preview/save tests and eight divider/gift viewport cases passed. Real TikTok encoding may still soften small text; no claim of eliminating external compression.
