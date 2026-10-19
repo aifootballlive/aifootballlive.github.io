@@ -4,8 +4,10 @@ const root=document.getElementById('broadcastViewport');if(!root)return;
 const groups={headings:'.arenaTitle,#goalsHeading',teams:'.teamTitle',scores:'.panelHead.teamScore .num',shots:'.giftEffect',queues:'.queueLabel,.adminTeamQueue strong',info:'#leagueProfileHint,.clockLabel,.clockDigits,.keeperGroupTitle,.frontKeeperTop strong',buttons:'#adminOpen,#soundEnable,.startMatchAction'};
 const keys=['all',...Object.keys(groups)],id=k=>document.getElementById('broadcastText-'+k);
 function normalize(value){return Object.fromEntries(keys.map(k=>{const n=Number(value?.[k]);return[k,Number.isFinite(n)?Math.max(k==='info'?40:80,Math.min(k==='teams'||k==='scores'?200:130,n)):100];}));}
-let config=normalize(window.__AI_FOOTBALL_SETTINGS?.broadcastText),signature='',raf=0,lastWidth=0;
-const originals=new WeakMap();
+let config=normalize(window.__AI_FOOTBALL_SETTINGS?.broadcastText),signature='',raf=0;
+const originals=new WeakMap(),observedText=new WeakSet();
+function watchText(node){if(observedText.has(node))return;observedText.add(node);let previous=node.textContent;new MutationObserver(()=>{if(node.textContent===previous)return;previous=node.textContent;schedule();}).observe(node,{childList:true,characterData:true,subtree:true});}
+const measurable=node=>node.getClientRects().length>0&&node.clientWidth>0&&node.clientHeight>0;
 function read(){return normalize(Object.fromEntries(keys.map(k=>[k,id(k)?.value??100])));}
 function fill(value){const clean=normalize(value);for(const k of keys){if(id(k))id(k).value=clean[k];const out=document.getElementById('broadcastTextValue-'+k);if(out)out.textContent=clean[k]+'%';}}
 const measure=document.createElement('canvas').getContext('2d');
@@ -27,6 +29,7 @@ function fit(node,px){
  const parent=node.parentElement,parentStyle=getComputedStyle(parent);
  const safe=Math.max(1,root.getBoundingClientRect().width*.003);
  let maxWidth=node.clientWidth;
+ if(node.matches('.clockLabel'))maxWidth=Math.min(maxWidth,parent.clientWidth-padding(parentStyle,'x'));
  if(node.matches('.teamTitle'))maxWidth/=.875;
  if(node.matches('.giftEffect'))maxWidth/=.85;
  if(node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase!=='result'&&!waitingLabel(node))maxWidth=Math.min(maxWidth,root.getBoundingClientRect().width*.64);
@@ -52,20 +55,29 @@ function fit(node,px){
   }
   if(ratio>=.995)break;px*=ratio*.985;
  }
- setSize(node,px);return px;
+ setSize(node,px);
+ // Browser-rendered text is the final authority (native buttons can differ from canvas metrics).
+ if(node.matches('.clockLabel,#adminOpen,#soundEnable,.startMatchAction'))for(let i=0;i<3;i++){
+  const range=document.createRange();range.selectNodeContents(node);const actual=range.getBoundingClientRect().width;
+  const available=Math.max(1,maxWidth-padding(getComputedStyle(node),'x')-safe*2);
+  if(!actual||actual<=available)break;px*=available/actual*.985;setSize(node,px);
+ }
+ return px;
 }
 function render(){raf=0;const width=root.getBoundingClientRect().width;if(!width)return;
- lastWidth=width;const entries=[];
+ const entries=[];
  const teamFactor=config.all*config.teams/10000,scoreFactor=config.all*config.scores/10000;
  const multiline=teamFactor>1.35;root.dataset.largeTeamType=String(multiline);
  root.style.setProperty('--afl-name-cell',(multiline?Math.min(11.2,8.2+(teamFactor-1.35)*2.4):4.6)+'cqw');
  root.style.setProperty('--afl-score-cell',Math.min(12.5,9.2+Math.max(0,scoreFactor-1)*2.1)+'cqw');
  for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector)){
+  if(!measurable(node))continue;
+  watchText(node);
   if(!originals.has(node))originals.set(node,{value:node.style.getPropertyValue('font-size'),priority:node.style.getPropertyPriority('font-size')});
   const old=originals.get(node);if(old.value)node.style.setProperty('font-size',old.value,old.priority);else node.style.removeProperty('font-size');
  }
  // Read every baseline after restoring parents, before writing any scaled font.
- for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector))entries.push({node,group,px:waitingLabel(node)?width*.08:node.matches('.keeperGroupTitle')?width*.036*config.all/100:baseline(node)*config.all*config[group]/10000});
+ for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector))if(measurable(node))entries.push({node,group,px:waitingLabel(node)?width*.08:node.matches('.keeperGroupTitle')?width*.036*config.all/100:baseline(node)*config.all*config[group]/10000});
  let teamSize=Infinity;
  for(const item of entries){const px=fit(item.node,item.px);if(item.group==='teams')teamSize=Math.min(teamSize,px);}
  if(Number.isFinite(teamSize))for(const node of root.querySelectorAll(groups.teams))setSize(node,teamSize);
@@ -81,8 +93,16 @@ window.addEventListener('ai-football-settings',e=>{
  // Incoming shared updates must not erase an unsaved local slider draft.
  if(editing)return;fill(e.detail?.broadcastText);apply(e.detail?.broadcastText);
 });
-new ResizeObserver(()=>{const width=root.getBoundingClientRect().width;if(Math.abs(width-lastWidth)>.5)schedule();}).observe(root);
-for(const node of root.querySelectorAll('.panelHead.teamScore .num,.arenaTitle,.clockLabel,.clockDigits,.frontKeeperTop strong,.adminTeamQueue strong')){let previous=node.textContent;new MutationObserver(()=>{if(node.textContent===previous)return;previous=node.textContent;schedule();}).observe(node,{childList:true,characterData:true,subtree:true});}
+// Auth, hidden buttons and drawer changes alter available space without resizing the canvas.
+const dimensions=new WeakMap(),geometryObserver=new ResizeObserver(entries=>{
+ let changed=false;for(const {target}of entries){const size=[target.clientWidth,target.clientHeight],before=dimensions.get(target);dimensions.set(target,size);if(!before||size.some((n,i)=>Math.abs(n-before[i])>.5))changed=true;}
+ if(changed)schedule();
+});
+for(const node of [root,root.querySelector('.clockStatus'),document.getElementById('liveStartButton'),root.querySelector('.headRight'),document.getElementById('adminFrontKeeper')])if(node)geometryObserver.observe(node);
+const layoutObserver=new MutationObserver(records=>{if(records.some(r=>r.type==='childList'||r.oldValue!==r.target.getAttribute(r.attributeName)))schedule();});
+for(const node of [root,document.body,document.documentElement,document.getElementById('matchClockHud'),document.getElementById('liveStartButton')])if(node)layoutObserver.observe(node,{attributes:true,attributeOldValue:true,attributeFilter:['class','hidden','data-phase'],childList:node===root});
+document.fonts?.ready.then(schedule);document.fonts?.addEventListener('loadingdone',schedule);
+for(const selector of Object.values(groups))for(const node of root.querySelectorAll(selector))watchText(node);
 window.AIFootballBroadcastText={normalize,read,fill,apply};
 fill(config);apply(config,true);
 })();
