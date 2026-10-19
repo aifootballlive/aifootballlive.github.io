@@ -1,0 +1,23 @@
+/* Match the established 390px phone HUD proportions at every larger source size.
+   No rules apply to the normal mobile home page. Source MP4s are unchanged. */
+html.aflProportionalHud body:not(.drawerMode):not(.settingsMode)>#broadcastViewport{width:min(100vw,56.25dvh)!important;max-width:none!important}
+html.aflProportionalHud #broadcastViewport .broadcastControls .teamTitle{font-size:2.5641cqw!important}
+html.aflProportionalHud #broadcastViewport .broadcastControls .teamScore .num{font-size:6cqw!important}
+html.aflProportionalHud #broadcastViewport .broadcastControls .teamScore .num::before{font-size:2.0513cqw!important}
+html.aflProportionalHud #broadcastViewport .broadcastControls .teamLogo{width:5.5cqw!important;height:6cqw!important}
+html.aflProportionalHud #broadcastViewport .broadcastControls .giftEffect{font-size:3.0769cqw!important}
+html.aflProportionalHud #broadcastViewport .broadcastControls .adminTeamQueue{font-size:2.8205cqw!important;line-height:1!important}
+html.aflProportionalHud #broadcastViewport .broadcastControls .adminTeamQueue strong{font-size:5.641cqw!important;line-height:1!important}
+html.aflProportionalHud #broadcastViewport .leagueProfileHint{font-size:2.6cqw!important;padding:.5128cqw!important}
+html.aflProportionalHud #broadcastViewport>#matchClockHud .clockLabel{font-size:2.5641cqw!important}
+html.aflProportionalHud #broadcastViewport>#matchClockHud .clockDigits{font-size:4.8cqw!important}
+html.aflProportionalHud #broadcastViewport .arenaTitle{font-size:3.0769cqw!important}
+html.aflProportionalHud #broadcastViewport .arenaScoreCaption{font-size:2.5641cqw!important}
+html.aflProportionalHud #broadcastViewport .keeperGroupTitle{font-size:2.8205cqw!important}
+html.aflProportionalHud #broadcastViewport .frontKeeperTop strong{font-size:4.359cqw!important}
+html.aflProportionalHud #broadcastViewport .head .title{font-size:2.8205cqw!important}
+html.aflProportionalHud #broadcastViewport #liveStartButton{font-size:2.8205cqw!important}
+html.aflProportionalHud #broadcastViewport #adminOpen{font-size:3cqw!important;padding:1cqw 1.5cqw!important}
+html.aflProportionalHud #broadcastViewport #adminRefresh svg{width:5.1282cqw!important;height:5.1282cqw!important}
+html.aflProportionalHud #broadcastViewport #soundEnable{font-size:2.6cqw!important;padding:1cqw 2cqw!important;min-height:7cqw!important;height:auto!important;width:16cqw!important;max-width:none!important;white-space:nowrap!important}
+html.aflProportionalHud #broadcastViewport .teamGiftNotice{font-size:2.5641cqw!important;padding:1.282cqw .7692cqw!important}

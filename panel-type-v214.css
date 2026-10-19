@@ -67,23 +67,23 @@ body.drawerMode>#leagueDrawer .drawerTab,body.drawerMode>#leagueDrawer .closeBtn
 body.drawerMode>#leagueDrawer iframe,body.settingsMode>#leagueDrawer iframe{height:auto!important;min-height:0!important;flex:1 1 0!important}
 
 @media(max-width:800px){
- #adminOverlay{--panel-copy:17px;--panel-heading:21px;--panel-number:23px}
+ #adminOverlay{--panel-copy:15px;--panel-heading:19px;--panel-number:21px}
  #adminOverlay .adminHead{min-height:56px!important;gap:8px!important}
  #adminOverlay .adminBtn,#adminOverlay .adminActions button,
  #adminOverlay .adminRoundControls button,#adminOverlay .adminSecondaryActions button,
  #adminOverlay #giftProcessingToggle,#adminOverlay .drawerTab,#adminOverlay .closeBtn{padding:10px!important;min-height:44px!important}
  #adminOverlay .adminSection{padding:12px!important}
- #leaguePage{font-size:17px!important}
- #leaguePage h1{font-size:28px!important}
- #leaguePage h2{font-size:21px!important}
+ #leaguePage{font-size:15px!important}
+ #leaguePage h1{font-size:24px!important}
+ #leaguePage h2{font-size:19px!important}
  #leaguePage .subtitle,#leaguePage .back,#leaguePage .note,#leaguePage .small,
  #leaguePage #status,#leaguePage .stat span,#leaguePage .leagueChoice,
- #leaguePage .result,#leaguePage .result strong,#leaguePage .result time{font-size:17px!important}
- #leaguePage .tablewrap th{font-size:18px!important}
- #leaguePage .tablewrap td,#leaguePage .tablewrap .team{font-size:20px!important}
- #leaguePage .stat strong{font-size:28px!important}
- #leagueDrawer .leagueDrawerHead,body.drawerMode>#leagueDrawer .leagueDrawerHead strong{font-size:21px!important;min-height:56px!important}
- body.drawerMode>#leagueDrawer .drawerTab,body.drawerMode>#leagueDrawer .closeBtn{font-size:17px!important;min-height:44px!important}
+ #leaguePage .result,#leaguePage .result strong,#leaguePage .result time{font-size:15px!important}
+ #leaguePage .tablewrap th{font-size:16px!important}
+ #leaguePage .tablewrap td,#leaguePage .tablewrap .team{font-size:18px!important}
+ #leaguePage .stat strong{font-size:24px!important}
+ #leagueDrawer .leagueDrawerHead,body.drawerMode>#leagueDrawer .leagueDrawerHead strong{font-size:19px!important;min-height:56px!important}
+ body.drawerMode>#leagueDrawer .drawerTab,body.drawerMode>#leagueDrawer .closeBtn{font-size:15px!important;min-height:44px!important}
 }
 @media(max-width:480px){
  #adminOverlay .adminGrid{grid-template-columns:minmax(0,1fr)!important}
