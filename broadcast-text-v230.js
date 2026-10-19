@@ -1,7 +1,7 @@
 /* Saved broadcast typography; admin edits preview locally until Apply. */
 (()=>{'use strict';
 const root=document.getElementById('broadcastViewport');if(!root)return;
-const groups={headings:'.arenaTitle,#goalsHeading',teams:'.teamTitle',scores:'.panelHead.teamScore .num',shots:'.giftEffect',queues:'.adminTeamQueue,.adminTeamQueue strong',info:'#leagueProfileHint,.clockLabel,.clockDigits,.keeperGroupTitle,.frontKeeperTop strong',buttons:'#adminOpen,#soundEnable,.startMatchAction'};
+const groups={headings:'.arenaTitle,#goalsHeading',teams:'.teamTitle',scores:'.panelHead.teamScore .num',shots:'.giftEffect',queues:'.queueLabel,.adminTeamQueue strong',info:'#leagueProfileHint,.clockLabel,.clockDigits,.keeperGroupTitle,.frontKeeperTop strong',buttons:'#adminOpen,#soundEnable,.startMatchAction'};
 const keys=['all',...Object.keys(groups)],id=k=>document.getElementById('broadcastText-'+k);
 function normalize(value){return Object.fromEntries(keys.map(k=>{const n=Number(value?.[k]);return[k,Number.isFinite(n)?Math.max(80,Math.min(130,n)):100];}));}
 let config=normalize(window.__AI_FOOTBALL_SETTINGS?.broadcastText),signature='',raf=0,lastWidth=0;
@@ -20,18 +20,32 @@ function baseline(node){
 }
 function setSize(node,px){node.style.setProperty('font-size',Math.max(7,px).toFixed(3)+'px','important');}
 function fit(node,px){
- setSize(node,px);
- // Measure against the actual reserved cell; sliders never let text escape it.
- const box=node.matches('.teamTitle')?node.parentElement:node;
- const cellHeight=node.matches('.teamTitle')?parseFloat(getComputedStyle(box).gridTemplateRows.split(' ')[1]):null;
- if(cellHeight&&Number.isFinite(cellHeight)){const line=parseFloat(getComputedStyle(node).lineHeight)/px;px=Math.min(px,cellHeight/Math.max(1,line));setSize(node,px);}
- for(let i=0;i<4;i++){
-  let ratio=1;
-  if(node.clientWidth>0&&node.scrollWidth>node.clientWidth+1)ratio=Math.min(ratio,node.clientWidth/node.scrollWidth);
-  if(node.matches('.adminTeamQueue')){const label=node.querySelector('.queueLabel');if(label&&label.scrollHeight>node.clientHeight-2)ratio=Math.min(ratio,(node.clientHeight-2)/label.scrollHeight);}
-  if(ratio>=.995)break;px*=ratio*.98;setSize(node,px);
+ const padding=(style,axis)=>axis==='x'?parseFloat(style.paddingLeft)+parseFloat(style.paddingRight):parseFloat(style.paddingTop)+parseFloat(style.paddingBottom);
+ const parent=node.parentElement,parentStyle=getComputedStyle(parent);
+ const safe=Math.max(1,root.getBoundingClientRect().width*.003);
+ let maxWidth=node.clientWidth;
+ if(node.matches('.arenaTitle,.startMatchAction')||!maxWidth)maxWidth=parent.clientWidth-padding(parentStyle,'x');
+ if(node.matches('.frontKeeperTop strong')){const siblings=[...parent.children].filter(el=>el!==node).reduce((sum,el)=>sum+el.getBoundingClientRect().width,0);maxWidth=parent.clientWidth-padding(parentStyle,'x')-siblings-(parseFloat(parentStyle.columnGap)||0);}
+ let maxHeight=Infinity;
+ if(node.matches('.teamTitle,.num,#goalsHeading'))maxHeight=node.clientHeight;
+ if(node.matches('.queueLabel,.adminTeamQueue strong'))maxHeight=parent.clientHeight-padding(parentStyle,'y');
+ const lines=(node.innerText||node.textContent||'').trim().split(/\n/);
+ for(let i=0;i<5;i++){
+  setSize(node,px);const style=getComputedStyle(node);
+  const available=Math.max(1,maxWidth-padding(style,'x')-safe*2);
+  measure.font=(style.fontWeight||'900')+' '+px+'px '+style.fontFamily;
+  const tracking=parseFloat(style.letterSpacing)||0,words=parseFloat(style.wordSpacing)||0;
+  const textWidth=Math.max(...lines.map(text=>measure.measureText(text).width+Math.max(0,text.length-1)*tracking+(text.match(/\s/g)||[]).length*words),1);
+  let ratio=Math.min(1,available/textWidth);
+  if(Number.isFinite(maxHeight)){
+   const lineHeight=parseFloat(style.lineHeight)||px*1.15;
+   const metrics=measure.measureText('ŞAgj');const fontBox=(metrics.fontBoundingBoxAscent||metrics.actualBoundingBoxAscent||px)+(metrics.fontBoundingBoxDescent||metrics.actualBoundingBoxDescent||px*.3);
+   const textHeight=Math.max(lineHeight,fontBox)+Math.max(0,lines.length-1)*lineHeight;
+   ratio=Math.min(ratio,Math.max(1,maxHeight-padding(style,'y')-safe*2)/textHeight);
+  }
+  if(ratio>=.995)break;px*=ratio*.985;
  }
- return px;
+ setSize(node,px);return px;
 }
 function render(){raf=0;const width=root.getBoundingClientRect().width;if(!width)return;
  lastWidth=width;const entries=[];
@@ -42,7 +56,7 @@ function render(){raf=0;const width=root.getBoundingClientRect().width;if(!width
  // Read every baseline after restoring parents, before writing any scaled font.
  for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector))entries.push({node,group,px:baseline(node)*config.all*config[group]/10000});
  let teamSize=Infinity;
- for(const item of entries){if(config.all===100&&config[item.group]===100&&item.group!=='info')continue;const px=fit(item.node,item.px);if(item.group==='teams')teamSize=Math.min(teamSize,px);}
+ for(const item of entries){const px=fit(item.node,item.px);if(item.group==='teams')teamSize=Math.min(teamSize,px);}
  if(Number.isFinite(teamSize))for(const node of root.querySelectorAll(groups.teams))setSize(node,teamSize);
  window.dispatchEvent(new Event('resize'));
 }

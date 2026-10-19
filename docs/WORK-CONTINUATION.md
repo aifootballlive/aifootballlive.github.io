@@ -246,3 +246,9 @@ Current upstream behavior preserved: combined winner+league results duration (de
 ## 20.10.2026 — v234 arena title clarity
 - Removed inherited 10px blurred title shadow and the weight-1000 tightly spaced treatment. Arena title now uses white Arial bold, modest positive tracking, and a flat dark backing; no glow/filter/stroke. Font-size sliders and arena naming remain functional.
 - Phone/desktop typography preview/save tests and eight divider/gift viewport cases passed. Real TikTok encoding may still soften small text; no claim of eliminating external compression.
+
+## 20.10.2026 — v238/v239 readable heading and safe insets
+- Enlarged GOL SAYILARI heading, taller/wider shared bar and source-relative white outline. Added modest positive tracking/word spacing to broadcast labels; retained the recent smaller Admin label and yellow uppercase arena title.
+- Reserved interior padding around names, scores, gift art/captions and queues. Added explicit title/score grid cells and count space; kept glyphs away from borders, including Ş descenders.
+- Typography fitter now measures actual reserved width/height, padding, font metrics, word/letter spacing and multi-line labels at every adjustment. Default and maximum sliders preserve safe bounds; overflowing team names keep a common fitted size. Keeper count fitting uses available sibling space rather than its intrinsic width. Presentation only; no shot/game or authorization changes.
+- Eight viewport tests (320/360/390, desktop 80%, regular/source 720/1080) passed default and maximum settings with 999 score text and frame/art insets. Phone/desktop slider preview, draft rollback, saved payload, received settings, reset and score fit tests passed. Max-setting mobile preview inspected. No production setting mutation during QA.
