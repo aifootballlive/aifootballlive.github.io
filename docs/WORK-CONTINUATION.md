@@ -216,3 +216,6 @@ Current upstream behavior preserved: combined winner+league results duration (de
 - Refresh previously painted the provisional signed-out HUD before initial state/auth and the stadium video arrived. Added an inline startup presentation gate: neutral loading status until initial boot and video data/error settle, then reveal after two animation frames so layout can finish. No cached role grants access.
 - Six-second fallback releases the page if scripts, video, or auth fail; page cannot remain indefinitely hidden. Only initial presentation changes; match state, video accounting and backend permissions untouched.
 - Slow approved-auth browser tests passed at 390/1280, without provisional login flash; failed-dependency timeout passed. All 18 existing mobile/auth entry regression scenarios passed.
+
+## 20.10.2026 — v228 soft control corners
+- Unified rounded corners for Refresh, Admin Settings, Sound, Start/Stop and shot buttons (8–18px relative to broadcast frame). Positions and dimensions preserved. Existing six-viewport placement checks passed; desktop rendering visually inspected.

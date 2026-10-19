@@ -224,3 +224,12 @@ html body #broadcastViewport.adminView>.head>.headRight>#adminOpen{
 html body #broadcastViewport.adminView>.head>.headRight>#adminRefresh svg{
  width:68%!important;height:68%!important;max-width:none!important;
 }
+
+/* v228 — consistent soft corners for the broadcast controls. */
+html body #broadcastViewport.adminView>.head>.headRight>#adminRefresh:not([hidden]),
+html body #broadcastViewport.adminView>.head>.headRight>#adminOpen,
+html body #broadcastViewport>#soundEnable,
+html body #broadcastViewport>#matchClockHud>#liveStartButton,
+html body #broadcastViewport .broadcastControls button{
+ border-radius:clamp(8px,1.8cqw,18px)!important;
+}
