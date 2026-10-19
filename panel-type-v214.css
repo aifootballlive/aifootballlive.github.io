@@ -1,0 +1,89 @@
+/* Shared panel typography. 22px remains ~15px at the owner's 67% desktop zoom.
+   Scoped to settings/league so broadcast text and video framing stay unchanged. */
+#adminOverlay{--panel-copy:22px;--panel-heading:26px;--panel-number:26px}
+#adminOverlay .adminBody{font-size:var(--panel-copy)!important;line-height:1.5!important}
+#adminOverlay .adminHead,#adminOverlay .adminHead strong,
+#adminOverlay .adminSectionTitle{font-size:var(--panel-heading)!important;line-height:1.3!important}
+#adminOverlay .adminHead{min-height:64px!important;gap:12px!important;flex-wrap:wrap!important}
+#adminOverlay .adminField label,#adminOverlay .adminToggle,
+#adminOverlay .adminStat,#adminOverlay .adminStat .statLabel,
+#adminOverlay .adminValue,#adminOverlay .adminBody p,
+#adminOverlay .adminPreviewHint,#adminOverlay .giftToggleHelp,
+#adminOverlay .teamQueueClearHint,#adminOverlay .teamQueueClearStatus,
+#adminOverlay #adminSaveStatus{
+ font-size:var(--panel-copy)!important;line-height:1.5!important;
+ white-space:normal!important;overflow-wrap:anywhere!important;
+}
+#adminOverlay .adminBtn,#adminOverlay .adminActions button,
+#adminOverlay .adminRoundControls button,#adminOverlay .adminSecondaryActions button,
+#adminOverlay #giftProcessingToggle,#adminOverlay .drawerTab,#adminOverlay .closeBtn{
+ font-size:var(--panel-copy)!important;line-height:1.35!important;
+ min-height:48px!important;height:auto!important;padding:11px 14px!important;
+ white-space:normal!important;overflow-wrap:anywhere!important;
+}
+#adminOverlay .adminField input:not([type=range]),#adminOverlay .adminField select,
+#adminOverlay .adminStat input,#adminOverlay .adminStat strong{
+ font-size:var(--panel-number)!important;line-height:1.3!important;
+}
+#adminOverlay .adminField input:not([type=range]),#adminOverlay .adminField select,
+#adminOverlay .adminStat input{min-height:52px!important;padding:10px!important;max-width:100%!important}
+#adminOverlay .adminSection{padding:15px!important;margin-top:12px!important}
+#adminOverlay .adminGrid,#adminOverlay .adminStats{gap:12px!important}
+#adminOverlay .adminField{min-width:0!important}
+#adminOverlay .adminToggle{gap:12px!important;padding:12px!important}
+#adminOverlay .adminToggle input{width:24px!important;height:24px!important;flex:0 0 24px!important}
+#adminOverlay .adminField label{align-items:flex-start!important;gap:8px!important}
+#adminOverlay #adminTeamQueueReset .teamQueueClearBtn{
+ background:#254462!important;color:#fff!important;border:1px solid #91aec9!important;
+ font-size:var(--panel-copy)!important;line-height:1.35!important;min-height:48px!important;
+ padding:11px 14px!important;opacity:1!important;filter:none!important;
+}
+#adminOverlay #adminTeamQueueReset .teamQueueClearBtn:disabled{
+ background:#1a2d43!important;color:#c9d8e9!important;border-color:#607993!important;
+ opacity:1!important;cursor:wait!important;
+}
+
+#leaguePage{font-size:22px!important;line-height:1.5!important}
+#leaguePage main{max-width:1240px}
+#leaguePage h1{font-size:34px!important;line-height:1.25!important}
+#leaguePage h2{font-size:26px!important;line-height:1.3!important}
+#leaguePage .subtitle,#leaguePage .back,#leaguePage .note,#leaguePage .small,
+#leaguePage #status,#leaguePage .stat span,#leaguePage .leagueChoice,
+#leaguePage .result,#leaguePage .result strong,#leaguePage .result time{
+ font-size:22px!important;line-height:1.5!important;
+}
+#leaguePage .tablewrap th{font-size:22px!important;line-height:1.35!important}
+#leaguePage .tablewrap td,#leaguePage .tablewrap .team{font-size:24px!important;line-height:1.35!important}
+#leaguePage .stat strong{font-size:34px!important;line-height:1.25!important}
+#leaguePage .leagueChoice,#leaguePage .back{min-height:46px;padding:10px 14px!important}
+#leaguePage .result{grid-template-columns:minmax(0,1fr) auto}
+body.drawerMode>#leagueDrawer.show,body.settingsMode>#leagueDrawer.show{display:flex!important;flex-direction:column!important}
+#leagueDrawer .leagueDrawerHead{font-size:26px!important;line-height:1.3!important;min-height:64px!important;flex:0 0 auto!important;flex-wrap:wrap!important}
+body.drawerMode>#leagueDrawer .leagueDrawerHead strong{font-size:26px!important;line-height:1.3!important}
+body.drawerMode>#leagueDrawer .drawerTab,body.drawerMode>#leagueDrawer .closeBtn{font-size:22px!important;line-height:1.35!important;min-height:48px!important;padding:10px!important}
+body.drawerMode>#leagueDrawer iframe,body.settingsMode>#leagueDrawer iframe{height:auto!important;min-height:0!important;flex:1 1 0!important}
+
+@media(max-width:800px){
+ #adminOverlay{--panel-copy:17px;--panel-heading:21px;--panel-number:23px}
+ #adminOverlay .adminHead{min-height:56px!important;gap:8px!important}
+ #adminOverlay .adminBtn,#adminOverlay .adminActions button,
+ #adminOverlay .adminRoundControls button,#adminOverlay .adminSecondaryActions button,
+ #adminOverlay #giftProcessingToggle,#adminOverlay .drawerTab,#adminOverlay .closeBtn{padding:10px!important;min-height:44px!important}
+ #adminOverlay .adminSection{padding:12px!important}
+ #leaguePage{font-size:17px!important}
+ #leaguePage h1{font-size:28px!important}
+ #leaguePage h2{font-size:21px!important}
+ #leaguePage .subtitle,#leaguePage .back,#leaguePage .note,#leaguePage .small,
+ #leaguePage #status,#leaguePage .stat span,#leaguePage .leagueChoice,
+ #leaguePage .result,#leaguePage .result strong,#leaguePage .result time{font-size:17px!important}
+ #leaguePage .tablewrap th{font-size:18px!important}
+ #leaguePage .tablewrap td,#leaguePage .tablewrap .team{font-size:20px!important}
+ #leaguePage .stat strong{font-size:28px!important}
+ #leagueDrawer .leagueDrawerHead,body.drawerMode>#leagueDrawer .leagueDrawerHead strong{font-size:21px!important;min-height:56px!important}
+ body.drawerMode>#leagueDrawer .drawerTab,body.drawerMode>#leagueDrawer .closeBtn{font-size:17px!important;min-height:44px!important}
+}
+@media(max-width:480px){
+ #adminOverlay .adminGrid{grid-template-columns:minmax(0,1fr)!important}
+ #adminOverlay .adminActions{grid-template-columns:minmax(0,1fr)!important}
+ #leaguePage .result{grid-template-columns:minmax(0,1fr)}
+}
