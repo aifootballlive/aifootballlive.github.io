@@ -9,13 +9,14 @@ const originals=new WeakMap();
 function read(){return normalize(Object.fromEntries(keys.map(k=>[k,id(k)?.value??100])));}
 function fill(value){const clean=normalize(value);for(const k of keys){if(id(k))id(k).value=clean[k];const out=document.getElementById('broadcastTextValue-'+k);if(out)out.textContent=clean[k]+'%';}}
 const measure=document.createElement('canvas').getContext('2d');
+const waitingLabel=node=>node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase==='manual';
 function baseline(node){
  const style=getComputedStyle(node);
  if(measure&&node.matches('#leagueProfileHint,.clockLabel')&&node.clientWidth){
   const reference=root.getBoundingClientRect().width/390;
   const max=(node.id==='leagueProfileHint'?24:25)*reference,min=(node.id==='leagueProfileHint'?10:11)*reference;
   measure.font=(style.fontWeight||'900')+' '+max+'px '+style.fontFamily;
-  const available=node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase!=='result'?Math.min(node.clientWidth,root.getBoundingClientRect().width*.64):node.clientWidth;
+  const available=node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase!=='result'&&!waitingLabel(node)?Math.min(node.clientWidth,root.getBoundingClientRect().width*.64):node.clientWidth;
   return Math.max(min,Math.min(max,max*Math.max(1,available-10*reference)/Math.max(1,measure.measureText((node.textContent||'').trim()).width)));
  }
  return parseFloat(style.fontSize);
@@ -28,7 +29,7 @@ function fit(node,px){
  let maxWidth=node.clientWidth;
  if(node.matches('.teamTitle'))maxWidth/=.875;
  if(node.matches('.giftEffect'))maxWidth/=.85;
- if(node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase!=='result')maxWidth=Math.min(maxWidth,root.getBoundingClientRect().width*.64);
+ if(node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase!=='result'&&!waitingLabel(node))maxWidth=Math.min(maxWidth,root.getBoundingClientRect().width*.64);
  if(node.matches('.arenaTitle,.startMatchAction')||!maxWidth)maxWidth=parent.clientWidth-padding(parentStyle,'x');
  if(node.matches('.frontKeeperTop strong')){const siblings=[...parent.children].filter(el=>el!==node).reduce((sum,el)=>sum+el.getBoundingClientRect().width,0);maxWidth=parent.clientWidth-padding(parentStyle,'x')-siblings-(parseFloat(parentStyle.columnGap)||0);}
  let maxHeight=Infinity;
@@ -64,7 +65,7 @@ function render(){raf=0;const width=root.getBoundingClientRect().width;if(!width
   const old=originals.get(node);if(old.value)node.style.setProperty('font-size',old.value,old.priority);else node.style.removeProperty('font-size');
  }
  // Read every baseline after restoring parents, before writing any scaled font.
- for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector))entries.push({node,group,px:baseline(node)*config.all*config[group]/10000});
+ for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector))entries.push({node,group,px:waitingLabel(node)?width*.08:baseline(node)*config.all*config[group]/10000});
  let teamSize=Infinity;
  for(const item of entries){const px=fit(item.node,item.px);if(item.group==='teams')teamSize=Math.min(teamSize,px);}
  if(Number.isFinite(teamSize))for(const node of root.querySelectorAll(groups.teams))setSize(node,teamSize);
