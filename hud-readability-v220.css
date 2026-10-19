@@ -443,3 +443,26 @@ html body #broadcastViewport#broadcastViewport>#leagueProfileHint{line-height:1.
 html body #broadcastViewport#broadcastViewport>#matchClockHud:not([data-phase="result"]){
  display:grid!important;grid-template-columns:minmax(0,1fr) 26%!important;gap:.6cqw!important;align-items:center!important;
 }
+/* v245 — larger glyphs inside the existing score/name cells; card geometry is unchanged. */
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .panelHead.teamScore .teamTitle{
+ font-family:Arial,Helvetica,sans-serif!important;font-weight:800!important;font-size:3.55cqw!important;
+}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .panelHead.teamScore .num{font-size:7.1cqw!important}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .giftEffect{
+ font-family:Arial,Helvetica,sans-serif!important;font-weight:800!important;font-size:3.1cqw!important;
+ width:calc(100% + .4cqw)!important;margin-left:-.2cqw!important;margin-right:-.2cqw!important;
+ padding-left:.1cqw!important;padding-right:.1cqw!important;letter-spacing:.015em!important;word-spacing:.04em!important;
+}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .queueLabel{
+ text-transform:uppercase!important;font-size:3.35cqw!important;
+}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .panelHead.teamScore .teamTitle{transform:scaleX(.875)!important;transform-origin:center!important}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .giftbtn.shot{
+ height:13.7cqw!important;flex-basis:auto!important;padding-top:.3cqw!important;padding-bottom:.35cqw!important;gap:.2cqw!important;
+}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .giftEffect{
+ height:3.5cqw!important;line-height:1.05!important;padding-top:.1cqw!important;padding-bottom:.15cqw!important;
+}
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .giftEffect{transform:scaleX(.85)!important;transform-origin:center!important}
+/* Viewers have no Start button, so center the status across the entire bar. */
+html body #broadcastViewport#broadcastViewport:not(.adminView)>#matchClockHud:not([data-phase="result"]){grid-template-columns:minmax(0,1fr)!important}

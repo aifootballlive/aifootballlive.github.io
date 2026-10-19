@@ -3,7 +3,7 @@
 const root=document.getElementById('broadcastViewport');if(!root)return;
 const groups={headings:'.arenaTitle,#goalsHeading',teams:'.teamTitle',scores:'.panelHead.teamScore .num',shots:'.giftEffect',queues:'.queueLabel,.adminTeamQueue strong',info:'#leagueProfileHint,.clockLabel,.clockDigits,.keeperGroupTitle,.frontKeeperTop strong',buttons:'#adminOpen,#soundEnable,.startMatchAction'};
 const keys=['all',...Object.keys(groups)],id=k=>document.getElementById('broadcastText-'+k);
-function normalize(value){return Object.fromEntries(keys.map(k=>{const n=Number(value?.[k]);return[k,Number.isFinite(n)?Math.max(80,Math.min(k==='teams'||k==='scores'?200:130,n)):100];}));}
+function normalize(value){return Object.fromEntries(keys.map(k=>{const n=Number(value?.[k]);return[k,Number.isFinite(n)?Math.max(k==='info'?40:80,Math.min(k==='teams'||k==='scores'?200:130,n)):100];}));}
 let config=normalize(window.__AI_FOOTBALL_SETTINGS?.broadcastText),signature='',raf=0,lastWidth=0;
 const originals=new WeakMap();
 function read(){return normalize(Object.fromEntries(keys.map(k=>[k,id(k)?.value??100])));}
@@ -20,12 +20,14 @@ function baseline(node){
  }
  return parseFloat(style.fontSize);
 }
-function setSize(node,px){node.style.setProperty('font-size',Math.max(7,px).toFixed(3)+'px','important');}
+function setSize(node,px){node.style.setProperty('font-size',Math.max(node.matches('.panelHead.teamScore .num,.adminTeamQueue strong')?1:node.matches(groups.info)?3:7,px).toFixed(3)+'px','important');}
 function fit(node,px){
  const padding=(style,axis)=>axis==='x'?parseFloat(style.paddingLeft)+parseFloat(style.paddingRight):parseFloat(style.paddingTop)+parseFloat(style.paddingBottom);
  const parent=node.parentElement,parentStyle=getComputedStyle(parent);
  const safe=Math.max(1,root.getBoundingClientRect().width*.003);
  let maxWidth=node.clientWidth;
+ if(node.matches('.teamTitle'))maxWidth/=.875;
+ if(node.matches('.giftEffect'))maxWidth/=.85;
  if(node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase!=='result')maxWidth=Math.min(maxWidth,root.getBoundingClientRect().width*.64);
  if(node.matches('.arenaTitle,.startMatchAction')||!maxWidth)maxWidth=parent.clientWidth-padding(parentStyle,'x');
  if(node.matches('.frontKeeperTop strong')){const siblings=[...parent.children].filter(el=>el!==node).reduce((sum,el)=>sum+el.getBoundingClientRect().width,0);maxWidth=parent.clientWidth-padding(parentStyle,'x')-siblings-(parseFloat(parentStyle.columnGap)||0);}
@@ -42,8 +44,9 @@ function fit(node,px){
   let ratio=Math.min(1,available/textWidth);
   if(Number.isFinite(maxHeight)){
    const lineHeight=parseFloat(style.lineHeight)||px*1.15;
-   const metrics=measure.measureText('ŞAgj');const fontBox=(metrics.fontBoundingBoxAscent||metrics.actualBoundingBoxAscent||px)+(metrics.fontBoundingBoxDescent||metrics.actualBoundingBoxDescent||px*.3);
-   const textHeight=Math.max(lineHeight,fontBox)+Math.max(0,lines.length-1)*lineHeight;
+   const metrics=measure.measureText(lines.join(' ')||'ŞAgj');const fontBox=(metrics.actualBoundingBoxAscent||px)+(metrics.actualBoundingBoxDescent||px*.3);
+   const boundedBox=node.matches('.queueLabel,.adminTeamQueue strong')?(metrics.fontBoundingBoxAscent||metrics.actualBoundingBoxAscent||px)+(metrics.fontBoundingBoxDescent||metrics.actualBoundingBoxDescent||px*.3):fontBox;
+   const textHeight=Math.max(lineHeight,boundedBox)+Math.max(0,lines.length-1)*lineHeight;
    ratio=Math.min(ratio,Math.max(1,maxHeight-padding(style,'y')-safe*2)/textHeight);
   }
   if(ratio>=.995)break;px*=ratio*.985;
@@ -78,7 +81,7 @@ window.addEventListener('ai-football-settings',e=>{
  if(editing)return;fill(e.detail?.broadcastText);apply(e.detail?.broadcastText);
 });
 new ResizeObserver(()=>{const width=root.getBoundingClientRect().width;if(Math.abs(width-lastWidth)>.5)schedule();}).observe(root);
-for(const node of root.querySelectorAll('.panelHead.teamScore .num,.arenaTitle,.clockLabel,.clockDigits,.frontKeeperTop strong')){let previous=node.textContent;new MutationObserver(()=>{if(node.textContent===previous)return;previous=node.textContent;schedule();}).observe(node,{childList:true,characterData:true,subtree:true});}
+for(const node of root.querySelectorAll('.panelHead.teamScore .num,.arenaTitle,.clockLabel,.clockDigits,.frontKeeperTop strong,.adminTeamQueue strong')){let previous=node.textContent;new MutationObserver(()=>{if(node.textContent===previous)return;previous=node.textContent;schedule();}).observe(node,{childList:true,characterData:true,subtree:true});}
 window.AIFootballBroadcastText={normalize,read,fill,apply};
 fill(config);apply(config,true);
 })();
