@@ -211,3 +211,8 @@ Current upstream behavior preserved: combined winner+league results duration (de
 ## 20.10.2026 — v226 admin control position
 - Refresh and Admin Settings now anchor immediately above the team cards with a 1.2% frame-width gap (minimum 3px), instead of being pinned at the frame top. Existing button size retained; right edge aligned within the frame.
 - Built on upstream v225, preserving all v220-v225 readability and admin changes. Six mocked browser layouts passed: mobile, desktop at 80% scale, native 720/1080 portrait, regular 720/1080 portrait; no arena/control overlap and correct gap. Desktop screenshot visually inspected. Production match/queues untouched.
+
+## 20.10.2026 — v227 clean initial paint
+- Refresh previously painted the provisional signed-out HUD before initial state/auth and the stadium video arrived. Added an inline startup presentation gate: neutral loading status until initial boot and video data/error settle, then reveal after two animation frames so layout can finish. No cached role grants access.
+- Six-second fallback releases the page if scripts, video, or auth fail; page cannot remain indefinitely hidden. Only initial presentation changes; match state, video accounting and backend permissions untouched.
+- Slow approved-auth browser tests passed at 390/1280, without provisional login flash; failed-dependency timeout passed. All 18 existing mobile/auth entry regression scenarios passed.
