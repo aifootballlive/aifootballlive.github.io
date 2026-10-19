@@ -138,3 +138,13 @@ body.drawerMode>#leagueDrawer.show iframe{
  font-size:clamp(11px,calc(13px * var(--afl-admin-font,1.1)),18px)!important;
  margin:0!important;white-space:nowrap!important;text-align:center!important;
 }
+
+/* v240 — allow large management type without squeezing two-column fields. */
+#adminOverlay[data-large-type="true"] .adminStats,
+#adminOverlay[data-large-type="true"] .adminGrid,
+#adminOverlay[data-large-type="true"] .adminActions,
+#adminOverlay[data-large-type="true"] .adminRoundControls{grid-template-columns:minmax(0,1fr)!important}
+#adminOverlay[data-large-type="true"] .adminHead>strong{white-space:normal!important;overflow-wrap:anywhere!important}
+#adminOverlay[data-large-type="true"] .aflFontScalePanel label{flex-wrap:wrap!important}
+#adminOverlay[data-large-type="true"] .aflFontScalePanel output{margin-left:auto}
+#adminOverlay[data-large-type="true"] .adminBody label{overflow-wrap:anywhere!important;min-width:0!important}

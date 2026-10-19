@@ -344,7 +344,7 @@ window.addEventListener('message',event=>{
  if(event.origin!==location.origin||event.source!==window.parent)return;
  if(event.data?.type==='AIFootballAdminFontScaleV1'){
   const percent=Number(event.data.percent);
-  if(Number.isFinite(percent)&&percent>=85&&percent<=170)
+  if(Number.isFinite(percent)&&percent>=85&&percent<=300)
    document.body.style.setProperty('--afl-league-scale',String(percent/100));
   return;
  }

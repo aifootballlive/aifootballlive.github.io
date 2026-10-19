@@ -9,10 +9,10 @@ const slider=id('adminTextScale'),output=id('adminTextScaleValue');
 const key='afl-admin-text-scale-v220';
 const clamp=(n,lo,hi)=>Math.max(lo,Math.min(hi,n));
 let currentScale=110;
-try{const v=Number(localStorage.getItem(key));if(Number.isFinite(v)&&v>=85&&v<=170)currentScale=v;}catch(_){}
+try{const v=Number(localStorage.getItem(key));if(Number.isFinite(v)&&v>=85&&v<=300)currentScale=v;}catch(_){}
 function updateAdminScale(value,save){
- const p=clamp(Math.round(Number(value)||110),85,170);
- currentScale=p;
+ const p=clamp(Math.round(Number(value)||110),85,300);
+ currentScale=p;panel.dataset.largeType=String(p>170);
  panel.style.setProperty('--afl-admin-font',String(p/100));
  id('leagueDrawer')?.style.setProperty('--afl-admin-font',String(p/100));
  if(slider)slider.value=String(p);

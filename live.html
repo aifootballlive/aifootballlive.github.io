@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261020-v239-safe-text-insets">
+<meta name="aifootball-release" content="20261020-v240-admin-type-300">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script>if(new URLSearchParams(location.search).get('studio')==='tiktok1080')document.documentElement.classList.add('aflTikTokPortraitSource');</script>
 <title>AI Football Live</title>
@@ -2118,7 +2118,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
 }
 </style>
 <link rel="stylesheet" href="./panel-type-v214.css?v=218">
-<link rel="stylesheet" href="./broadcast-scale-v218.css"><link rel="stylesheet" href="./hud-readability-v220.css?v=239"><link rel="stylesheet" href="./admin-font-control-v220.css?v=220"><script>(()=>{const root=document.documentElement,q=matchMedia("(min-width:801px)"),p=matchMedia("(min-width:650px) and (max-aspect-ratio:9/16)"),sync=()=>root.classList.toggle("aflProportionalHud",q.matches||p.matches||root.classList.contains("aflTikTokPortraitSource"));sync();q.addEventListener("change",sync);p.addEventListener("change",sync);})();</script>
+<link rel="stylesheet" href="./broadcast-scale-v218.css"><link rel="stylesheet" href="./hud-readability-v220.css?v=239"><link rel="stylesheet" href="./admin-font-control-v220.css?v=240"><script>(()=>{const root=document.documentElement,q=matchMedia("(min-width:801px)"),p=matchMedia("(min-width:650px) and (max-aspect-ratio:9/16)"),sync=()=>root.classList.toggle("aflProportionalHud",q.matches||p.matches||root.classList.contains("aflTikTokPortraitSource"));sync();q.addEventListener("change",sync);p.addEventListener("change",sync);})();</script>
 </head>
 <body>
 <div id="startupStatus" role="status">Yayın hazırlanıyor…</div>
@@ -2217,7 +2217,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
 <div class="overlay" id="adminOverlay"><section class="admin"><div class="adminHead"><strong>ADMIN AYARLARI</strong><div class="drawerHeaderActions"><div class="drawerTabs" aria-label="Yönetim sekmeleri"><button id="adminSettingsTab" type="button" class="drawerTab" aria-pressed="true" onclick="openAdmin()">AYARLAR</button><button id="adminLeagueTab" type="button" class="drawerTab" aria-pressed="false" onclick="openLeagueDrawer()">LİG TABLOSU</button></div><button type="button" class="closeBtn" onclick="closeAdmin()">KAPAT</button></div></div><div class="adminBody"><div class="adminSection" id="broadcastTextSettings"><h3>ANA EKRAN YAZI BOYUTLARI</h3><button type="button" class="adminBtn" id="broadcastTextPreviewToggle">Telefonda canlı önizlemeyi aç</button><p>Kaydırıcıları değiştirirken video önizlemesinde anında görürsün. Ayarları Uygula ile tüm izleyiciler için kaydedilir. Dar alanlarda taşmayı önlemek için yazılar otomatik sığdırılır.</p><div class="adminGrid"><label>Tüm yayın yazıları <output id="broadcastTextValue-all">100%</output><input id="broadcastText-all" type="range" min="80" max="130" step="5" value="100" aria-label="Tüm yayın yazıları"></label><label>Arena ve gol başlığı <output id="broadcastTextValue-headings">100%</output><input id="broadcastText-headings" type="range" min="80" max="130" step="5" value="100" aria-label="Arena ve gol başlığı"></label><label>Takım adları <output id="broadcastTextValue-teams">100%</output><input id="broadcastText-teams" type="range" min="80" max="130" step="5" value="100" aria-label="Takım adları"></label><label>Gol rakamları <output id="broadcastTextValue-scores">100%</output><input id="broadcastText-scores" type="range" min="80" max="130" step="5" value="100" aria-label="Gol rakamları"></label><label>1 Şut / 5 Şut yazıları <output id="broadcastTextValue-shots">100%</output><input id="broadcastText-shots" type="range" min="80" max="130" step="5" value="100" aria-label="1 Şut / 5 Şut yazıları"></label><label>Bekleyen şutlar <output id="broadcastTextValue-queues">100%</output><input id="broadcastText-queues" type="range" min="80" max="130" step="5" value="100" aria-label="Bekleyen şutlar"></label><label>Süre ve bilgi yazıları <output id="broadcastTextValue-info">100%</output><input id="broadcastText-info" type="range" min="80" max="130" step="5" value="100" aria-label="Süre ve bilgi yazıları"></label><label>Yayın butonları <output id="broadcastTextValue-buttons">100%</output><input id="broadcastText-buttons" type="range" min="80" max="130" step="5" value="100" aria-label="Yayın butonları"></label></div><button type="button" class="adminBtn" id="broadcastTextDefaults">Yayın yazılarını varsayılana getir</button></div>
 <div class="aflFontScalePanel" aria-label="Yönetici yazı boyutu ayarı">
  <label for="adminTextScale">YÖNETİM YAZI BOYUTU <output id="adminTextScaleValue" for="adminTextScale">110%</output></label>
- <input type="range" id="adminTextScale" min="85" max="170" value="110" step="5" aria-label="Yönetici paneli ve lig tablosu yazılarının boyutu">
+ <input type="range" id="adminTextScale" min="85" max="300" value="110" step="5" aria-label="Yönetici paneli ve lig tablosu yazılarının boyutu">
  <p>Yazılar kaydırırken anında ve orantılı değişir. Ayar bu tarayıcıda saklanır; canlı yayın görüntüsünü değiştirmez.</p>
 </div><div class="adminStats">
   <div class="adminStat"><div class="statLabel"><span class="jerseyBadge"><span class="jersey adminMiniJersey jA"></span></span><span>BAŞLANGIÇ KALECİ GÜCÜ</span></div><input id="setInitialKeeperA" type="number" min="0" max="10000" step="1" aria-label="A başlangıç kaleci gücü"></div>
@@ -2294,7 +2294,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
 <p class="giftToggleHelp">Şutlar durdurulduğunda gelen hediyeler kuyruğa eklenir. TikTok'ta hediye gönderimini tamamen kapatmak için LIVE ayarlarından hediye seçeneğini kapatmalısın.</p></div></section></div>
 <aside id="leagueDrawer" class="leagueDrawer" aria-label="Lig puan durumu" aria-hidden="true">
  <div class="leagueDrawerHead"><strong>LİG TABLOSU</strong><div class="drawerHeaderActions"><div class="drawerTabs" aria-label="Yönetim sekmeleri"><button id="leagueSettingsTab" type="button" class="drawerTab" aria-pressed="false" onclick="openAdmin()">AYARLAR</button><button id="leagueTableTab" type="button" class="drawerTab" aria-pressed="true" onclick="openLeagueDrawer()">LİG TABLOSU</button></div><button type="button" class="closeBtn" onclick="closeAdmin()">KAPAT</button></div></div>
- <a class="aflLeagueExternal" href="./league.html" target="_blank" rel="noopener">Lig tablosunu ayrı sekmede aç</a><iframe id="leagueDrawerFrame" data-src="./league.html" title="Lig tablosu" loading="eager"></iframe>
+ <a class="aflLeagueExternal" href="./league.html" target="_blank" rel="noopener">Lig tablosunu ayrı sekmede aç</a><iframe id="leagueDrawerFrame" data-src="./league.html?v=240" title="Lig tablosu" loading="eager"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
 <script src="./broadcast-layout-v229.js?v=238"></script>
@@ -3027,7 +3027,7 @@ render();boot().finally(()=>window.dispatchEvent(new Event('afl-initial-state-re
 <script src="./shot-cache-v195.js"></script>
 <script id="game3dScript" src="./scene-video-v219.js?v=219"></script>
 <script src="./update-watch-v2.js?v=2"></script>
-<script src="./interface-fixes-v230.js?v=230"></script>
+<script src="./interface-fixes-v230.js?v=240"></script>
 <link rel="stylesheet" href="./broadcast-text-v230.css"><script src="./broadcast-text-v230.js?v=239"></script>
 </body>
 </html>

@@ -252,3 +252,8 @@ Current upstream behavior preserved: combined winner+league results duration (de
 - Reserved interior padding around names, scores, gift art/captions and queues. Added explicit title/score grid cells and count space; kept glyphs away from borders, including Ş descenders.
 - Typography fitter now measures actual reserved width/height, padding, font metrics, word/letter spacing and multi-line labels at every adjustment. Default and maximum sliders preserve safe bounds; overflowing team names keep a common fitted size. Keeper count fitting uses available sibling space rather than its intrinsic width. Presentation only; no shot/game or authorization changes.
 - Eight viewport tests (320/360/390, desktop 80%, regular/source 720/1080) passed default and maximum settings with 999 score text and frame/art insets. Phone/desktop slider preview, draft rollback, saved payload, received settings, reset and score fit tests passed. Max-setting mobile preview inspected. No production setting mutation during QA.
+
+## 20.10.2026 — v240 management type up to 300%
+- Expanded management/league type slider, persisted-value validation and iframe scale validation from 170% to 300%. Existing per-browser preference retained.
+- Above 170%, management form groups use one column and the title wraps, so large text is not squeezed into half-width fields. Header tab controls remain fitted for navigation.
+- Phone and desktop tests passed 300% selection, CSS scale 3, one-column layout, same-panel league scale 3 and persistence after reload. Mobile large-text layout inspected.
