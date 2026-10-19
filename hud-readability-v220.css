@@ -195,3 +195,32 @@ html body #broadcastViewport:not(.adminView)>#soundEnable[data-audio-unlocked="t
 html body #broadcastViewport.adminView>.head>.headRight{
  transform:translateY(7.4cqw)!important;
 }
+
+/* v225 — enlarge only admin control pair to exactly fill the marked top-right
+   33% wide, 7.3cqw tall strip without covering arena text or the team cards. */
+html body #broadcastViewport.adminView>.head>.headRight{
+ position:absolute!important;top:1cqw!important;bottom:auto!important;
+ left:auto!important;right:-1.3%!important;transform:none!important;
+ width:33.4%!important;max-width:none!important;min-width:0!important;
+ height:7.3cqw!important;min-height:0!important;
+ flex:none!important;display:grid!important;
+ grid-template-columns:7.3cqw minmax(0,1fr)!important;
+ align-items:stretch!important;gap:.55cqw!important;z-index:65!important;
+}
+html body #broadcastViewport.adminView>.head>.headRight>#adminRefresh:not([hidden]),
+html body #broadcastViewport.adminView>.head>.headRight>#adminOpen{
+ position:relative!important;inset:auto!important;transform:none!important;
+ display:flex!important;justify-content:center!important;align-items:center!important;
+ box-sizing:border-box!important;width:100%!important;min-width:0!important;
+ height:100%!important;min-height:0!important;max-height:none!important;
+ margin:0!important;padding:2px!important;border-radius:5px!important;
+ line-height:1!important;flex:none!important;
+}
+html body #broadcastViewport.adminView>.head>.headRight>#adminOpen{
+ font-size:clamp(10px,2.65cqw,23px)!important;
+ white-space:nowrap!important;font-weight:950!important;
+ padding:0 3px!important;
+}
+html body #broadcastViewport.adminView>.head>.headRight>#adminRefresh svg{
+ width:68%!important;height:68%!important;max-width:none!important;
+}
