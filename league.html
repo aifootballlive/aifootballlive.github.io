@@ -218,6 +218,28 @@ h2{font-size:clamp(22px,3.2vw,27px)!important}
 
 </style>
 <link rel="stylesheet" href="./panel-type-v214.css?v=218">
+<style>
+/* Parent admin font slider is a presentation preference; no change to public data. */
+#leaguePage{--afl-league-scale:1}
+#leaguePage h1{font-size:calc(32px * var(--afl-league-scale))!important}
+#leaguePage h2{font-size:calc(24px * var(--afl-league-scale))!important}
+#leaguePage .subtitle,#leaguePage .back,#leaguePage .note,#leaguePage .small,
+#leaguePage #status,#leaguePage .stat span,#leaguePage .leagueChoice,
+#leaguePage .result,#leaguePage .result strong,#leaguePage .result time{
+ font-size:calc(18px * var(--afl-league-scale))!important;line-height:1.3!important;
+}
+#leaguePage .tablewrap th{font-size:calc(17px * var(--afl-league-scale))!important}
+#leaguePage .tablewrap td,#leaguePage .tablewrap .team{font-size:calc(20px * var(--afl-league-scale))!important}
+#leaguePage .stat strong{font-size:calc(29px * var(--afl-league-scale))!important}
+#leaguePage .leagues{gap:6px!important}
+#leaguePage .leagueChoice{padding:9px 11px!important}
+#leaguePage .tablewrap{overflow-x:auto!important}
+#leaguePage .tablewrap table{min-width:870px!important}
+@media(max-width:600px){
+ #leaguePage .summary{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ #leaguePage .result{grid-template-columns:minmax(0,1fr)!important}
+}
+</style>
 </head>
 <body id="leaguePage">
 <main>
@@ -319,8 +341,15 @@ function applySnapshot(league,archive,origin){
  return true;
 }
 window.addEventListener('message',event=>{
- if(event.origin!==location.origin||event.data?.type!=='AIFootballLeagueSnapshotV1')return;
- applySnapshot(event.data.league,event.data.archive,'parent');
+ if(event.origin!==location.origin||event.source!==window.parent)return;
+ if(event.data?.type==='AIFootballAdminFontScaleV1'){
+  const percent=Number(event.data.percent);
+  if(Number.isFinite(percent)&&percent>=85&&percent<=170)
+   document.body.style.setProperty('--afl-league-scale',String(percent/100));
+  return;
+ }
+ if(event.data?.type==='AIFootballLeagueSnapshotV1')
+  applySnapshot(event.data.league,event.data.archive,'parent');
 });
 async function refresh(){
  if(working||document.hidden)return;working=true;
