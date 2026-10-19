@@ -955,7 +955,7 @@
     m.timing=validated;
     if(m.clock&&!Number.isFinite(m.clock.finishedAt))m.clock.durationMs=normalMs(m);
    },false);
-  },getMatchClock(){return match?.clock?{...match.clock}:null;},getBreakDeadlines(){return breakDeadlines(match);},getMatchState(){
+  },getMatchClock(){return match?.clock?{...match.clock}:null;},getCurrentCue(){return match?.cue?{id:match.cue.id,team:match.cue.team,startsAt:match.cue.startsAt,finishedAt:match.cue.finishedAt}:null;},getBreakDeadlines(){return breakDeadlines(match);},getMatchState(){
    const deadline=breakDeadlines(match);
    const now=Date.now();
    return {ready:!!match,running:matchRunning(match),starting:matchStarting(match),seasonComplete:seasonComplete(match),results:!!deadline&&now<deadline.summaryUntil,
