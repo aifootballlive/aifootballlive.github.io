@@ -18,6 +18,9 @@ function updateAdminScale(value,save){
  if(slider)slider.value=String(p);
  if(output)output.textContent=p+'%';
  if(save){try{localStorage.setItem(key,String(p));}catch(_){}}
+ // Refit fixed-width navigation labels after any font-size change.
+ for(const tab of document.querySelectorAll('#adminOverlay .drawerTab,#adminOverlay .closeBtn,#leagueDrawer .drawerTab,#leagueDrawer .closeBtn'))tab.style.removeProperty('font-size');
+ requestAnimationFrame(()=>{fitHeaderTabs();requestResize();});
  const frame=id('leagueDrawerFrame');
  if(frame?.contentWindow){
   try{frame.contentWindow.postMessage({type:'AIFootballAdminFontScaleV1',percent:p},location.origin);}catch(_){}
@@ -64,6 +67,14 @@ function fixAudioPlacement(){
   root.append(button); // Move the existing working control, never clone or replace its listeners.
  }
 }
+function fitHeaderTabs(){
+ for(const tab of document.querySelectorAll('#adminOverlay .drawerTab,#adminOverlay .closeBtn,#leagueDrawer .drawerTab,#leagueDrawer .closeBtn')){
+  if(tab.clientWidth<15)continue;
+  const style=getComputedStyle(tab),size=parseFloat(style.fontSize)||15;
+  const w=Math.max(1,tab.clientWidth-13),measured=fontWidth(tab.textContent.trim(),size,'900',style.fontFamily);
+  if(measured>w)tab.style.setProperty('font-size',Math.max(10,size*w/measured*.96).toFixed(2)+'px','important');
+ }
+}
 function alignDrawerTabs(){
  const showLeague=id('leagueDrawer')?.classList.contains('show')===true;
  const showSettings=id('adminOverlay')?.classList.contains('show')===true;
@@ -73,6 +84,7 @@ function alignDrawerTabs(){
 function resizeAll(){
  fixAudioPlacement();
  fitTeamNames();
+ fitHeaderTabs();
  fitSingleLine(id('leagueProfileHint'),24,10);
  const clock=root.querySelector('#matchClockHud:not([data-phase="result"]) .clockLabel');
  if(clock)fitSingleLine(clock,25,11);
