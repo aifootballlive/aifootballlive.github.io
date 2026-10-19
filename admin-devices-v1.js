@@ -4,6 +4,8 @@ async function rpc(name,args){const {data,error}=await db.rpc(name,args);if(erro
 function render(s){
  if(!s||typeof s.enabled!=='boolean'||typeof s.approved!=='boolean')throw Error('Sunucu güvenlik durumu doğrulanamadı');
  try{if(s.approved)localStorage.setItem('afl.approvedAdminBrowser.v1','approved');else localStorage.removeItem('afl.approvedAdminBrowser.v1');}catch{}
+ // A revoked session is a public viewer. Never strand it on an unusable setup form.
+ if(!s.approved&&s.current?.revoked===true){location.replace('./live.html');return;}
  $('controls').hidden=false;$('bootstrap').hidden=s.enabled;$('request').hidden=!s.enabled||s.approved||s.current?.revoked===true;$('done').hidden=s.enabled&&!s.approved;
  $('pairing').hidden=!s.enabled||s.approved||!s.current;$('code').textContent=s.code||'';
  $('message').textContent=!s.enabled?'Kısıtlama henüz açık değil. Önce kendi PC’ni aşağıdaki düğmeyle onayla.':s.approved?'Bu tarayıcı onaylı. Diğer cihazın isteğini yalnız kodunu karşılaştırdıktan sonra onayla.':s.current?.revoked?'Bu oturumun onayı kaldırılmış. Yeniden giriş yapıp diğer onaylı cihazdan izin iste.':'Bu tarayıcı yönetim için kilitli. İstek gönderip PC’den onayla.';
