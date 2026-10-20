@@ -63,8 +63,8 @@ window.AIFootballRoundCelebration={
   if(!stamp||spokenRound===stamp)return;
   spokenRound=stamp;showConfetti();applause();
   const winner=NAMES[team],english=currentLanguage()==='en';
-  speak(english?(winner?'The winner is '+winner+'! What a match! Congratulations!':'The match ends in a draw. Well played, everyone!'):
-   (winner?'Maç sona erdi! Kazanan '+winner+'! Harika bir mücadeleydi. Takımımızı alkışlıyoruz.':'Maç sona erdi! Beraberlik var. Her iki tarafı da alkışlıyoruz!'),true,team||'draw');
+  setTimeout(()=>{if(window.AIFootballTikTok?.getMatchClock?.()?.finishedAt!==stamp)return;speak(english?(winner?'The winner is '+winner+'! What a match! Congratulations!':'The match ends in a draw. Well played, everyone!'):
+   (winner?'Maç sona erdi! Kazanan '+winner+'! Harika bir mücadeleydi. Takımımızı alkışlıyoruz.':'Maç sona erdi! Beraberlik var. Her iki tarafı da alkışlıyoruz!'),true,team||'draw');},1650);
   setTimeout(()=>{if(window.AIFootballTikTok?.getMatchClock?.().finishedAt===stamp&&window.AIFootballTikTok.getMatchState()?.results)window.AIFootballRoundCelebration.announceNext();},11000);
  },
  announceNext(seconds){
@@ -83,11 +83,25 @@ window.AIFootballRoundCelebration={
  }
 };
 
-let lifecycleStamp=null,lifecyclePhase=null;
+let lifecycleStamp=null,lifecyclePhase=null,refereeClock=null;
+function watchRefereeClock(clock,phase){
+ const now=Date.now(),stamp=String(clock.round||0)+':'+String(clock.startedAt||0);
+ const previous=refereeClock;
+ refereeClock={stamp,running:phase.running===true,finishedAt:clock.finishedAt};
+ // Joining or refreshing an existing match never replays an old whistle.
+ if(!previous)return false;
+ const started=phase.running&&(previous.stamp!==stamp||!previous.running)&&now-clock.startedAt>=0&&now-clock.startedAt<2500;
+ if(started)window.AIFootballAudio?.refereeWhistle?.('start',stamp);
+ if(previous.running&&previous.stamp===stamp&&clock.finishedAt&&clock.finishedAt!==previous.finishedAt&&!clock.interrupted&&now-clock.finishedAt<4000)
+  window.AIFootballAudio?.refereeWhistle?.('end',stamp+':'+clock.finishedAt);
+ return started;
+}
 function watchKickoff(){
  const game=window.AIFootballTikTok,clock=game?.getMatchClock?.(),phase=game?.getMatchState?.();if(!clock||!phase)return;
+ const justStarted=watchRefereeClock(clock,phase);
+ if(justStarted){const stamp=clock.startedAt;setTimeout(()=>{if(game.getMatchClock?.()?.startedAt===stamp&&game.getMatchState?.()?.running)speak(currentLanguage()==='en'?'The match has started!':'Ve maç başladı!',true,'kickoff');},750);}
  if(phase.starting&&lifecycleStamp!==clock.startedAt){lifecycleStamp=clock.startedAt;lifecyclePhase='preparing';if(clock.startedAt-Date.now()>25000)speak(currentLanguage()==='en'?'The match starts in thirty seconds. Get ready!':'Maç başlamak üzere! Takımlar hazırlanıyor. Otuz saniye sonra başlıyoruz!',true,'prepare');}
- else if(phase.running&&lifecycleStamp===clock.startedAt&&lifecyclePhase==='preparing'){lifecyclePhase='playing';if(Date.now()-clock.startedAt<3000)speak(currentLanguage()==='en'?'The match has started!':'Ve maç başladı! Bütün takımlara başarılar. Futbol şölenine hazır olun!',true,'kickoff');}
+ else if(phase.running){lifecycleStamp=clock.startedAt;lifecyclePhase='playing';}
  else if(!phase.starting&&!phase.running&&lifecyclePhase==='preparing'){lifecyclePhase=null;window.AIFootballAudio?.stopAnnouncements?.();}
 }
 /* Varied, non-intrusive live commentary. Uses the broadcast's existing
@@ -144,7 +158,8 @@ function preMatchSpeechTick(){
    'Doruk Arenası’nda hazırlıklar sürüyor. Şimdi gelen şutlar başlayacak maça saklanıyor.'
   ];
   const lines=total>0?withShots:withoutShots;
-  if(speakLiveLine(lines[preWaitingVariant++%lines.length]))lastPreWaitingSpeech=now;
+  const variant=preWaitingVariant++%lines.length;
+  if(speakLiveLine(lines[variant],english?null:'waiting'+(variant+1)))lastPreWaitingSpeech=now;
   return;
  }
  preWaitingKey=null;
@@ -156,12 +171,12 @@ function preMatchSpeechTick(){
   const line=currentLanguage()==='en'?
    'Fifteen seconds until kickoff. All queued shots will begin playing in order when the match starts.':
    'Maçın başlamasına on beş saniye kaldı! Biriken şutlar başlama düdüğüyle sırayla oynanacak.';
-  if(speakLiveLine(line))prepMilestones.add('15');
+  if(speakLiveLine(line,currentLanguage()==='tr'?'prepare15':null))prepMilestones.add('15');
  }else if(remaining<=6&&remaining>=3&&!prepMilestones.has('5')){
   const line=currentLanguage()==='en'?
    'Five seconds! Get ready, the match is about to begin.':
    'Son beş saniye! Takımlar hazır, maç birazdan başlıyor!';
-  if(speakLiveLine(line))prepMilestones.add('5');
+  if(speakLiveLine(line,currentLanguage()==='tr'?'prepare5':null))prepMilestones.add('5');
  }
 }
 
@@ -203,7 +218,7 @@ function liveCommentaryTick(){
    'Hediyeler gelmeye devam ediyor. '+team+' için '+count+' şut bekliyor.'
   ];
   const variants=active?liveVariants:idleVariants;const pick=voiceSequence++;
-  if(speakLiveLine(variants[pick%variants.length],active?'support'+(pick%3+1):null)){lastSupportAt=now;lastAtmosphereAt=now;}
+  if(speakLiveLine(variants[pick%variants.length],active?'support'+(pick%3+1):'waiting'+(pick%4+1))){lastSupportAt=now;lastAtmosphereAt=now;}
  }
  if(!info.running||!Number.isFinite(clock.startedAt))return;
  const t=game.getTimings?.()||{},totalDuration=((Number(t.normalMinutes)||25)+(Number(t.overtimeMinutes)||0))*60000;
@@ -222,7 +237,7 @@ function liveCommentaryTick(){
   const tag=roundKey+':'+point;
   if(remaining<=point&&remaining>point-3&&!announcedMilestones.has(tag)){
    const pick=Math.max(0,Number(clock.round)||0)%lines.length;
-   if(speakLiveLine(lines[pick],point===30?'final30'+['a','b','c'][pick]:null,point===30)){announcedMilestones.add(tag);lastAtmosphereAt=now;lastSupportAt=now;}
+   if(speakLiveLine(lines[pick],point===30?'final30'+['a','b','c'][pick]:'final'+point,point===30)){announcedMilestones.add(tag);lastAtmosphereAt=now;lastSupportAt=now;}
    return;
   }
  }
@@ -238,7 +253,7 @@ function liveCommentaryTick(){
    'Kaleci gözünü topa dikti fakat henüz sırada şut yok. Taraftarların yeni hamlesini bekliyoruz.'
   ];
   const pick=voiceSequence++;
-  if(speakLiveLine(variants[pick%variants.length],null,false))lastAtmosphereAt=now;
+  if(speakLiveLine(variants[pick%variants.length],'empty'+(pick%3+1),false))lastAtmosphereAt=now;
   return;
  }
  if(remaining>30&&total>0&&now-lastAtmosphereAt>=48000){
@@ -248,7 +263,7 @@ function liveCommentaryTick(){
    'Oyuncular hazır; '+total+' şut henüz kullanılmadı. Yeni hediyeler geldikçe sıra güncelleniyor.',
    'Doruk Arenası’nda tempo yükseliyor. Bekleyen '+total+' şut bizi heyecanlandırıyor.'
   ];
-  const pick=voiceSequence++;if(speakLiveLine(variants[pick%variants.length],'atmosphere'+(pick%2+1)))lastAtmosphereAt=now;
+  const pick=voiceSequence++;if(speakLiveLine(variants[pick%variants.length],'queued'+(pick%2+1)))lastAtmosphereAt=now;
  }
 }
 setInterval(preMatchSpeechTick,1000);

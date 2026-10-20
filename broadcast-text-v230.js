@@ -62,6 +62,13 @@ function fit(node,px){
   const available=Math.max(1,maxWidth-padding(getComputedStyle(node),'x')-safe*2);
   if(!actual||actual<=available)break;px*=available/actual*.985;setSize(node,px);
  }
+ if(node.matches('.clockDigits'))for(let i=0;i<3;i++){
+  const range=document.createRange();range.selectNodeContents(node);
+  const actual=range.getBoundingClientRect(),bar=node.closest('#matchClockHud').getBoundingClientRect();
+  const available=Math.max(1,bar.height-safe*4);
+  if(!actual.height||actual.height<=available)break;
+  px*=available/actual.height*.985;setSize(node,px);
+ }
  return px;
 }
 function render(){raf=0;const width=root.getBoundingClientRect().width;if(!width)return;
@@ -77,7 +84,7 @@ function render(){raf=0;const width=root.getBoundingClientRect().width;if(!width
   const old=originals.get(node);if(old.value)node.style.setProperty('font-size',old.value,old.priority);else node.style.removeProperty('font-size');
  }
  // Read every baseline after restoring parents, before writing any scaled font.
- for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector))if(measurable(node))entries.push({node,group,px:waitingLabel(node)?width*.08:node.matches('.keeperGroupTitle')?width*.036*config.all/100:baseline(node)*config.all*config[group]/10000});
+ for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector))if(measurable(node))entries.push({node,group,px:waitingLabel(node)?width*.08:node.matches('.clockDigits')?width*.068*config.all/100:node.matches('.keeperGroupTitle')?width*.036*config.all/100:baseline(node)*config.all*config[group]/10000});
  let teamSize=Infinity;
  for(const item of entries){const px=fit(item.node,item.px);if(item.group==='teams')teamSize=Math.min(teamSize,px);}
  if(Number.isFinite(teamSize))for(const node of root.querySelectorAll(groups.teams))setSize(node,teamSize);

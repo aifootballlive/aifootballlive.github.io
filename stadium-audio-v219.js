@@ -74,7 +74,7 @@ async function enableSound(){
     if(!master){master=ctx.createGain();master.connect(ctx.destination)}
     syncSoundState();
     if(ctx.state!=='running'&&ctx.state!=='closed')await ctx.resume();
-    syncSoundState();setTimeout(warmSpeech,0);
+    syncSoundState();loadRefereeWhistle().catch(()=>{});setTimeout(warmSpeech,0);
 
   }catch(e){
     enabled=false;window.__aiFootballSoundEnabled=false;
@@ -82,7 +82,7 @@ async function enableSound(){
   }
 }
 function disableSound(){
-  stopAnnouncements();
+  stopAnnouncements();stopRefereeWhistles();
   leagueAudioGeneration++;for(const source of leagueAudioSources){try{source.stop();}catch{}}leagueAudioSources.clear();
   goalGeneration++;try{goalSource?.stop()}catch(e){}goalSource=null;
   userMuted=true;
@@ -113,6 +113,42 @@ function noiseBurst(at=0,dur=.08,vol=.07,freq=900,type='bandpass',gainGroup='eff
   s.connect(filter);filter.connect(g);g.connect(master);s.onended=()=>{s.disconnect();filter.disconnect();g.disconnect();};s.start(now);s.stop(now+dur+.04);
 }
 const whistledCues=new Set();
+let refereeBufferPromise=null;
+const refereeSources=new Set(),refereeEvents=new Set();
+function loadRefereeWhistle(){
+ if(!refereeBufferPromise)refereeBufferPromise=fetch('./assets/audio/referee-v254.mp3').then(r=>{if(!r.ok)throw Error('Referee whistle unavailable');return r.arrayBuffer();}).then(b=>ctx.decodeAudioData(b)).catch(e=>{refereeBufferPromise=null;throw e;});
+ return refereeBufferPromise;
+}
+function stopRefereeWhistles(){for(const source of refereeSources){try{source.stop();}catch{}}refereeSources.clear();}
+async function refereeWhistle(kind,eventId){
+ if(!['ready','start','end'].includes(kind)||userMuted||settings.soundEnabled===false)return false;
+ if(!enabled)await enableSound();
+ if(!enabled||!ctx||ctx.state!=='running')return false;
+ const key=eventId==null?null:kind+':'+eventId;
+ if(key&&refereeEvents.has(key))return false;
+ if(key){refereeEvents.add(key);if(refereeEvents.size>128)refereeEvents.delete(refereeEvents.values().next().value);}
+ const generation=leagueAudioGeneration;
+ if(kind!=='ready')stopAnnouncements();
+ const pattern=kind==='end'?[[0,.22],[.36,.22],[.72,.78]]:kind==='start'?[[0,.65]]:[[0,.16]];
+ try{
+  const buffer=await loadRefereeWhistle();
+  if(generation!==leagueAudioGeneration||userMuted||!enabled||ctx.state!=='running'||!settings.soundEnabled)return false;
+  for(const [delay,length] of pattern){
+   const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;
+   const time=ctx.currentTime+delay,duration=Math.min(length,buffer.duration);
+   gain.gain.setValueAtTime(0,time);gain.gain.linearRampToValueAtTime(.85*pct(settings.soundEffects,92),time+.012);
+   gain.gain.setValueAtTime(.85*pct(settings.soundEffects,92),time+Math.max(.013,duration-.035));gain.gain.linearRampToValueAtTime(0,time+duration);
+   source.connect(gain);gain.connect(master);refereeSources.add(source);
+   source.onended=()=>{refereeSources.delete(source);source.disconnect();gain.disconnect();};source.start(time,0,duration);
+  }
+  return true;
+ }catch(error){
+  if(generation!==leagueAudioGeneration||!enabled||userMuted)return false;
+  // Keep the same referee rhythm if the recording cannot be loaded.
+  for(const [delay,duration] of pattern){tone(2850,delay,duration,.065);tone(3420,delay+.005,Math.max(.08,duration-.02),.025);}
+  return true;
+ }
+}
 function whistle(cueKey){
  if(!enabled||!ctx||ctx.state!=='running'||settings.soundEnabled===false)return false;
  if(cueKey!=null){if(whistledCues.has(cueKey))return false;whistledCues.add(cueKey);if(whistledCues.size>256)whistledCues.delete(whistledCues.values().next().value);}
@@ -207,7 +243,7 @@ async function speakGoal(){
 async function applySettings(next){
   readSettings(next);if(settings.aiSpeechEnabled!==false)setTimeout(warmSpeech,0);
   if(settings.aiSpeechEnabled===false||!settings.soundEnabled)stopAnnouncements();
-  if(!settings.soundEnabled){syncSoundState();if(master)master.gain.value=0;return}
+  if(!settings.soundEnabled){stopRefereeWhistles();syncSoundState();if(master)master.gain.value=0;return}
   if(userMuted){syncSoundState();return}
   if(ctx&&ctx.state==='running'){
     syncSoundState();
@@ -260,7 +296,7 @@ function boot(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 const leagueAudioCache=new Map(),leagueAudioSources=new Set(),speechSources=new Set();let leagueAudioGeneration=0,speechGeneration=0,speechPending=false,lastSpeechKey=null;
-const extraSpeechKeys=new Set(['support1','support2','support3','final30a','final30b','final30c','atmosphere1','atmosphere2']);
+const extraSpeechKeys=new Set(['support1','support2','support3','final30a','final30b','final30c','atmosphere1','atmosphere2','waiting1','waiting2','waiting3','waiting4','prepare15','prepare5','final300','final120','final60','final20','final10','final5','empty1','empty2','empty3','queued1','queued2']);
 const speechKeys=new Set(['prepare','kickoff','shot1','shot2','goal1','goal2','save','league']);
 function stopAnnouncements(){speechGeneration++;speechPending=false;for(const source of speechSources){try{source.stop();}catch{}}speechSources.clear();try{window.speechSynthesis?.cancel();}catch{}}
 function loadLeagueClip(key){
@@ -288,5 +324,5 @@ async function announce(text,key,options={}){
  }finally{if(ticket===speechGeneration)speechPending=false;}
 }
 function applause(){if(!settings.crowdEnabled)return;leagueClip('applause','crowd',.65);}
-window.AIFootballAudio={announce,stopAnnouncements,applause,get speechStatus(){return {active:speechSources.size,pending:speechPending,lastKey:lastSpeechKey};},get announcing(){return speechSources.size>0||speechPending;},enableSound,disableSound,toggleSound,startTeamMusic,stopTeamMusic,speakGoal,whistle,sceneEffect,kick,bounce,applySettings,get effectStats(){return {activeGrassSources:0,noiseBuffers:noiseCache.size,grassBuffers:0};},get enabled(){return enabled},get settings(){return {...settings}}};
+window.AIFootballAudio={announce,stopAnnouncements,applause,get speechStatus(){return {active:speechSources.size,pending:speechPending,lastKey:lastSpeechKey};},get announcing(){return speechSources.size>0||speechPending;},enableSound,disableSound,toggleSound,startTeamMusic,stopTeamMusic,speakGoal,whistle,refereeWhistle,sceneEffect,kick,bounce,applySettings,get effectStats(){return {activeGrassSources:0,noiseBuffers:noiseCache.size,grassBuffers:0};},get enabled(){return enabled},get settings(){return {...settings}}};
 })();
