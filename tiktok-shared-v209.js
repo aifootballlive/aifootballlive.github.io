@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=278,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=280,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // A hidden overlay must never become a phantom dark sheet through stale CSS.
@@ -467,6 +467,24 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   }
   panel.hidden=false;
  }
+ // Prefer the broadcast computer over a signed-in phone. Equal-priority
+ // sessions keep the existing lease, so two desktops never steal it in a loop.
+ function controlPriority(){
+  if(connected)return 2;
+  const nav=typeof navigator==='undefined'?{}:navigator;
+  const mobile=/Android|iPhone|iPad|iPod/i.test(nav.userAgent||'')||(nav.platform==='MacIntel'&&Number(nav.maxTouchPoints)>1);
+  return mobile?0:1;
+ }
+ function canClaimControl(m){
+  return !m.lease||m.lease.protocol!==125||m.lease.until<matchNow()||controlPriority()>Number(m.lease.priority||0);
+ }
+ function claimControl(m){
+  if(!canClaimControl(m))return false;
+  const prior=m.lease,gap=matchNow()-Number(prior?.until||0);
+  if(Number(prior?.until)>0&&gap>OFFLINE_GRACE_MS&&matchRunning(m))interruptOfflineMatch(m,matchNow());
+  else if(prior?.owner!==owner&&m.cue&&!m.cue.finishedAt)returnUnplayedCues(m);
+  m.lease={owner,until:matchNow()+LEASE,protocol:125,priority:controlPriority()};
+ }
  function owns(m=match){return admin()&&m?.lease?.owner===owner&&m.lease.until>matchNow();}
  function paint(){document.documentElement.dataset.tiktokConnection=connected?'connected':'waiting';showMatchClock();if(!ready())return;const el=document.getElementById('connectionStatus');if(el&&admin())el.textContent=errorText||(!match?'Ortak maç bekleniyor':owns()?(connected?'TikFinity bağlı • Yönetici':'Yönetici açık • TikFinity bekleniyor'):'Yönetici açık • Ortak maç');}
  let lastPaintedMatch='';
@@ -736,7 +754,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    if(leaseRequired&&!owns(existing))return false;
    const next=clone(existing);if(edit(next)===false)return false;
    next.revision=existing.revision+1;next.updatedAt=matchNow();next.clientBuild=CLIENT_BUILD;next.clientRevision=next.revision;
-   if(next.lease?.owner===owner)next.lease.until=matchNow()+LEASE;
+   if(next.lease?.owner===owner){next.lease.until=matchNow()+LEASE;next.lease.priority=controlPriority();}
    const rules={...base.rules,...(patch||{}),[KEY]:next};
    const {data,error}=await db.from('games').update({rules}).eq('id',base.id).eq('rules->tiktok_match_v2->>revision',existing.revision).select('id,rules').abortSignal(requestSignal());
    if(error)throw error;if(data?.length){apply(data[0]);errorText='';return true;}
@@ -1050,14 +1068,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
       m.manualMatchStart=true;
      },false);
     }
-    if(!match&&connected)await seed();if(match&&!owns()&&(!match.lease||match.lease.protocol!==125||match.lease.until<matchNow()))await change(m=>{
-    if(m.lease?.protocol===125&&m.lease.until>matchNow())return false;
-    const gap=matchNow()-Number(m.lease?.until||0);
-    if(Number(m.lease?.until)>0&&gap>OFFLINE_GRACE_MS&&matchRunning(m)){
-     interruptOfflineMatch(m,matchNow());
-    }
-    m.lease={owner,until:matchNow()+LEASE,protocol:125};
-   },false);
+    if(!match&&connected)await seed();if(match&&!owns()&&canClaimControl(match))await change(claimControl,false);
     if(owns()){if(match.lease.until<matchNow()+6000)await change(()=>{});await flush();await flushRequestInbox();await advance();}}
    errorText='';paint();
   }catch(e){errorText='Maç bağlantısı bekleniyor';paint();console.warn(e.message);}finally{setTimeout(tick,350);}
