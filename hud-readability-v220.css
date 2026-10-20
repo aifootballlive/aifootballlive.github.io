@@ -572,11 +572,19 @@ html body #broadcastViewport#broadcastViewport>.liveArenaName .arenaTitle{
 }
 
 /* Active shot: a composited breathing gold outline; text and card size stay fixed. */
+html body #broadcastViewport#broadcastViewport .adminTeamQueue.shotBeacon{border-color:#b99b35!important}
 html body #broadcastViewport#broadcastViewport .adminTeamQueue.shotBeacon::after{
- content:"";position:absolute;inset:-.32cqw;border:.32cqw solid #ffdc4f;
+ content:"";position:absolute;inset:0;border:clamp(1.5px,.5cqw,5px) solid #ffe36a;
  border-radius:inherit;pointer-events:none;z-index:2;
- box-shadow:0 0 .9cqw .12cqw #ffd12abf,inset 0 0 .55cqw #ffd12a80;
+ box-shadow:inset 0 0 1cqw .08cqw #ffd12aa0;
  opacity:.22;animation:aflShotBeacon 1.8s ease-in-out infinite;
 }
 @keyframes aflShotBeacon{0%,100%{opacity:.22}50%{opacity:1}}
 @media(prefers-reduced-motion:reduce){html body #broadcastViewport#broadcastViewport .adminTeamQueue.shotBeacon::after{animation:none;opacity:.85}}
+
+/* Alternating notices share one fixed-height line, including during text fitting. */
+html body #broadcastViewport#broadcastViewport>#leagueProfileHint{
+ height:5cqw!important;min-height:5cqw!important;max-height:5cqw!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ padding:.3cqw .8cqw!important;white-space:nowrap!important;text-transform:uppercase!important;
+}
