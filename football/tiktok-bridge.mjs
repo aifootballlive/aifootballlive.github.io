@@ -65,6 +65,7 @@ function giftPayload(data){
   uniqueId:String(data.user?.uniqueId??data.uniqueId??''),
   giftId:String(giftId??''),giftName:String(giftName??''),
   giftDetails:{giftId:String(giftId??''),giftName:String(giftName??''),giftType},
+  ...(Number.isSafeInteger(Number(data.diamondCount??gift.diamondCount))?{diamondCount:Number(data.diamondCount??gift.diamondCount)}:{}),
   giftType,repeatCount,repeatEnd:true
  };
 }

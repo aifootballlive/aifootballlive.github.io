@@ -2,9 +2,21 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=284,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=285,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
+ // One catalog drives both the visible gift buttons and received TikTok events.
+ const GIFT_CATALOG=[
+  {team:'A',coins:1,shots:1,title:'Gül',icon:'rose',names:['rose','gul']},
+  {team:'A',coins:5,shots:5,title:'Türk Kahvesi',icon:'turkish-coffee',names:['turkish coffee','turk kahvesi']},
+  {team:'B',coins:1,shots:1,title:'TikTok',icon:'tiktok',names:['tiktok','tik tok']},
+  {team:'B',coins:5,shots:5,title:'Aşk Kokusu',icon:'love-in-scent',names:['love in scent','ask kokusu','love scent','scent of love']},
+  {team:'C',coins:1,shots:1,title:'Dondurma Külahı',icon:'ice-cream-cone',names:['ice cream cone','dondurma kulahi']},
+  {team:'C',coins:5,shots:5,title:'Aşırı Tepki',icon:'overreact',names:['overreact','asiri tepki','overreaction','over react','extreme reaction']},
+  {team:'D',coins:1,shots:1,title:'Mantap',icon:'mantap',names:['mantap']},
+  {team:'D',coins:5,shots:5,title:'İsimle Selamlama',icon:'name-shoutout',names:['name shoutout','name shout out','isimle selamlama','name greeting','greeting by name']}
+ ];
+
  // A hidden overlay must never become a phantom dark sheet through stale CSS.
  const summaryBoard=document.getElementById('roundSummary');
  summaryBoard?.remove();
@@ -570,10 +582,14 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   render();paint();
  }
  function legend(){
- const icons=[['rocket','jam'],['perfume','donut'],['overreact','capybara'],['name-greeting','roll']];
  for(const [i,panel]of [...document.querySelectorAll('.broadcastControls .panel')].entries())for(const [j,button]of [...panel.querySelectorAll('.shot')].entries()){
-  if(j>1){button.hidden=true;continue;}
-  const image=document.createElement('img');image.src='./assets/gifts-v193/'+icons[i][j]+'.png';image.alt='';image.width=112;image.height=112;button.querySelector('.giftVisual').replaceChildren(image);
+  const gift=GIFT_CATALOG.filter(g=>g.team===TEAMS[i])[j];
+  if(!gift){button.hidden=true;continue;}
+  const image=document.createElement('img');image.src='./assets/gifts-v285/'+gift.icon+'.webp';image.alt=gift.title;image.width=256;image.height=256;image.decoding='async';button.querySelector('.giftVisual').replaceChildren(image);
+  button.title=gift.title+' · '+gift.coins+' jeton · '+gift.shots+' şut';
+  button.setAttribute('aria-label',teamShort[gift.team]+' · '+button.title);
+  const effect=button.querySelector('.giftEffect');if(effect)effect.textContent=gift.shots+' ŞUT';
+  const coin=button.querySelector('.coin');if(coin)coin.textContent=gift.coins+' JETON';
  }
  }
 
@@ -794,17 +810,10 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   if(!id||Number(type)===1&&g.repeatEnd!==true)return false;
   const keyName=String(name||'').trim().toLowerCase().normalize('NFD')
    .replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').replace(/\s+/g,' ');
-  const gifts=[
-   {team:'A',shots:1,names:['roket','rocket']},
-   {team:'A',shots:5,names:['you are my jam','youre my jam']},
-   {team:'B',shots:1,names:['ask kokusu','love scent','scent of love']},
-   {team:'B',shots:5,names:['donat','donut','doughnut']},
-   {team:'C',shots:1,names:['asiri tepki','overreaction','overreact','over react','extreme reaction']},
-   {team:'C',shots:5,names:['kapibara','capybara']},
-   {team:'D',shots:1,names:['isimle selamlama','name greeting','greeting by name']},
-   {team:'D',shots:5,names:['you are on a roll','youre on a roll']}
-  ];
-  const selected=gifts.find(g=>g.names.includes(keyName));
+  const selected=GIFT_CATALOG.find(g=>g.names.includes(keyName));
+  // If TikTok reports a new price, never silently credit the old shot value.
+  const reportedCoins=g.diamondCount??g.giftDetails?.diamondCount;
+  if(selected&&reportedCoins!=null&&Number(reportedCoins)!==selected.coins){console.warn('Hediye fiyatı eşleşmiyor:',name,reportedCoins);return false;}
   const repeats=Number(g.repeatCount??1),count=repeats*(selected?.shots||0);
   if(!selected||!Number.isSafeInteger(repeats)||repeats<1||!Number.isSafeInteger(count)||count>10000)return false;
   const key=await digest(JSON.stringify([String(id),String(g.uniqueId||g.user?.uniqueId||g.userId||g.user?.userId||''),String(giftId||name||'')]));

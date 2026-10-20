@@ -1,0 +1,53 @@
+{
+  "catalog": "https://streamtoearn.io/gifts?region=TR",
+  "gifts": [
+    {
+      "name": "Rose",
+      "coins": 1,
+      "file": "rose.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp"
+    },
+    {
+      "name": "TikTok",
+      "coins": 1,
+      "file": "tiktok.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/802a21ae29f9fae5abe3693de9f874bd~tplv-obj.webp"
+    },
+    {
+      "name": "Mantap",
+      "coins": 1,
+      "file": "mantap.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/alisg/webcast-sg/resource/b80f9a9d4fd2c611dfcc96c4b959fbaa.png~tplv-obj.webp"
+    },
+    {
+      "name": "Ice Cream Cone",
+      "coins": 1,
+      "file": "ice-cream-cone.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/968820bc85e274713c795a6aef3f7c67~tplv-obj.webp"
+    },
+    {
+      "name": "Overreact",
+      "coins": 5,
+      "file": "overreact.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/alisg/webcast-sg/resource/dfd48ef1952b6d315856adda7705d02d.png~tplv-obj.webp"
+    },
+    {
+      "name": "Love in Scent",
+      "coins": 5,
+      "file": "love-in-scent.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/alisg/webcast-sg/resource/374430f1a9035c2f78ab0f918bf5df40.png~tplv-obj.webp"
+    },
+    {
+      "name": "Name shoutout",
+      "coins": 5,
+      "file": "name-shoutout.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/alisg/webcast-sg/resource/9b1d432109c95e77e8de11dd442c0a1f.png~tplv-obj.webp"
+    },
+    {
+      "name": "Turkish coffee",
+      "coins": 5,
+      "file": "turkish-coffee.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/b0892f1eca2c7b34c1bc9c15fe6c4393~tplv-obj.webp"
+    }
+  ]
+}
