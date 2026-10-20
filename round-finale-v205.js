@@ -107,7 +107,7 @@ function watchKickoff(){
 /* Varied, non-intrusive live commentary. Uses the broadcast's existing
    speech settings; no separate audio stream or duplicate live players. */
 const LIVE_TEAM_NAMES={A:'Altın Pusula',B:'Kızıl Kıvılcım',C:'Gece Yıldızı',D:'Bordo Dalga'};
-let liveRoundKey=null,lastLiveQueues=null,lastLiveGift=null,lastSupportAt=0,lastAtmosphereAt=0,voiceSequence=0;
+let liveRoundKey=null,lastLiveQueues=null,lastLiveGift=null,lastSupportAt=0,lastAtmosphereAt=0,lastDuringMatchAt=0,voiceSequence=0;
 const announcedMilestones=new Set();
 function speakLiveLine(line,key=null,important=false){
  const audio=window.AIFootballAudio;
@@ -188,7 +188,7 @@ function liveCommentaryTick(){
  const roundKey=String(clock.round||0)+':'+String(clock.startedAt||'waiting');
  if(roundKey!==liveRoundKey){
   liveRoundKey=roundKey;lastLiveQueues={...queues};lastLiveGift=game.getStatus?.().lastGift?.id||null;
-  announcedMilestones.clear();lastAtmosphereAt=Date.now();return;
+  announcedMilestones.clear();lastAtmosphereAt=Date.now();lastDuringMatchAt=0;return;
  }
  const now=Date.now();
  const gift=game.getStatus?.().lastGift;
@@ -240,6 +240,12 @@ function liveCommentaryTick(){
    if(speakLiveLine(lines[pick],point===30?'final30'+['a','b','c'][pick]:'final'+point,point===30)){announcedMilestones.add(tag);lastAtmosphereAt=now;lastSupportAt=now;}
    return;
   }
+ }
+ // Explain explicitly that shot gifts are accepted throughout a running match.
+ if(remaining>30&&now-clock.startedAt>=12000&&(!lastDuringMatchAt||now-lastDuringMatchAt>=60000)){
+  const line='Maç devam ederken de şut hediyesi gönderebilirsiniz! Gelen şutlar sıraya alınır ve oynatılır. Takımınızı maç boyunca destekleyin!';
+  if(speakLiveLine(line,'liveGifts',false)){lastDuringMatchAt=now;lastAtmosphereAt=now;lastSupportAt=now;}
+  return;
  }
  // A quiet pitch should still invite the audience to participate.
  // Only when the match is actually running, no shot is in progress and

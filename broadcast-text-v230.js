@@ -24,14 +24,13 @@ function baseline(node){
  }
  return parseFloat(style.fontSize);
 }
-function setSize(node,px){node.style.setProperty('font-size',Math.max(node.matches('.panelHead.teamScore .num,.adminTeamQueue strong')?1:node.matches(groups.info)?3:7,px).toFixed(3)+'px','important');}
+function setSize(node,px){node.style.setProperty('font-size',Math.max(node.matches('.teamTitle,.panelHead.teamScore .num,.adminTeamQueue strong')?1:node.matches(groups.info)?3:7,px).toFixed(3)+'px','important');}
 function fit(node,px){
  const padding=(style,axis)=>axis==='x'?parseFloat(style.paddingLeft)+parseFloat(style.paddingRight):parseFloat(style.paddingTop)+parseFloat(style.paddingBottom);
  const parent=node.parentElement,parentStyle=getComputedStyle(parent);
  const safe=Math.max(1,root.getBoundingClientRect().width*.003);
  let maxWidth=node.clientWidth;
  if(node.matches('.clockLabel'))maxWidth=Math.min(maxWidth,parent.clientWidth-padding(parentStyle,'x'));
- if(node.matches('.teamTitle'))maxWidth/=.875;
  if(node.matches('.giftEffect'))maxWidth/=.85;
  if(node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase!=='result'&&!waitingLabel(node))maxWidth=Math.min(maxWidth,root.getBoundingClientRect().width*.64);
  if(node.matches('.arenaTitle,.startMatchAction')||!maxWidth)maxWidth=parent.clientWidth-padding(parentStyle,'x');
@@ -39,7 +38,7 @@ function fit(node,px){
  let maxHeight=Infinity;
  if(node.matches('.teamTitle,.num,#goalsHeading,.keeperGroupTitle'))maxHeight=node.clientHeight;
  if(node.matches('.queueLabel,.adminTeamQueue strong'))maxHeight=parent.clientHeight-padding(parentStyle,'y');
- const lines=node.matches('.teamTitle')&&root.dataset.largeTeamType==='true'?(node.textContent||'').trim().split(/\s+/):(node.innerText||node.textContent||'').trim().split(/\n/);
+ const lines=(node.innerText||node.textContent||'').trim().split(/\n/);
  for(let i=0;i<5;i++){
   setSize(node,px);const style=getComputedStyle(node);
   const available=Math.max(1,maxWidth-padding(style,'x')-safe*2);
@@ -58,7 +57,7 @@ function fit(node,px){
  }
  setSize(node,px);
  // Browser-rendered text is the final authority (native buttons can differ from canvas metrics).
- if(node.matches('.clockLabel,#adminOpen,#soundEnable,.startMatchAction'))for(let i=0;i<3;i++){
+ if(node.matches('.teamTitle,.clockLabel,#adminOpen,#soundEnable,.startMatchAction'))for(let i=0;i<3;i++){
   const range=document.createRange();range.selectNodeContents(node);const actual=range.getBoundingClientRect().width;
   const available=Math.max(1,maxWidth-padding(getComputedStyle(node),'x')-safe*2);
   if(!actual||actual<=available)break;px*=available/actual*.985;setSize(node,px);
@@ -74,9 +73,9 @@ function fit(node,px){
 }
 function render(){raf=0;const width=root.getBoundingClientRect().width;if(!width)return;
  const entries=[];
- const teamFactor=config.all*config.teams/10000,scoreFactor=config.all*config.scores/10000;
- const multiline=teamFactor>1.35;root.dataset.largeTeamType=String(multiline);
- root.style.setProperty('--afl-name-cell',(multiline?Math.min(11.2,8.2+(teamFactor-1.35)*2.4):4.6)+'cqw');
+ const scoreFactor=config.all*config.scores/10000;
+ root.dataset.largeTeamType='false'; // Team names always use one bounded line.
+ root.style.setProperty('--afl-name-cell','4.6cqw');
  root.style.setProperty('--afl-score-cell',Math.min(12.5,9.2+Math.max(0,scoreFactor-1)*2.1)+'cqw');
  for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector)){
   if(!measurable(node))continue;

@@ -1,0 +1,17 @@
+const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),http=require('http'),vm=require('vm'),assert=require('assert/strict');const root=path.join(__dirname,'..');
+const fixture=fs.readFileSync(path.join(__dirname,'mfa-ui-v204.cjs'),'utf8').match(/const mock=(`[^`]*`);/);const mock=vm.runInNewContext(fixture[1]);
+const server=http.createServer((req,res)=>{try{const file=path.join(root,req.url.split('?')[0]);res.setHeader('Content-Type',file.endsWith('.css')?'text/css':file.endsWith('.js')?'text/javascript':file.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(file));}catch{res.writeHead(404).end();}}).listen(8998,'127.0.0.1');
+(async()=>{const b=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});try{
+ for(const [width,height,studio] of [[320,740,false],[360,800,false],[390,844,false],[1440,1100,false],[720,1280,false],[1080,1920,false],[720,1280,true],[1080,1920,true]]){
+  const c=await b.newContext({viewport:{width,height},deviceScaleFactor:width===1440?.8:1});await c.route('**/npm/@supabase/supabase-js@2',r=>r.fulfill({contentType:'text/javascript',body:mock}));await c.route('**/*.supabase.co/**',r=>r.abort());await c.route('**/*.mp4*',r=>r.abort());const p=await c.newPage();
+  await p.goto('http://127.0.0.1:8998/live.html'+(studio?'?studio=tiktok1080':''));await p.waitForFunction(()=>window.AIFootballBroadcastText);
+  let cardHeight,lastAll;
+  for(const config of [{all:80,teams:80},{all:105,teams:80},{all:105,teams:125},{all:105,teams:200},{all:130,teams:200}]){
+   await p.evaluate(config=>AIFootballBroadcastText.apply(config,true),config);await p.waitForTimeout(160);
+   const data=await p.locator('.teamTitle').evaluateAll(nodes=>nodes.map(node=>{const range=document.createRange();range.selectNodeContents(node);const text=range.getBoundingClientRect(),box=node.getBoundingClientRect(),style=getComputedStyle(node);return{name:node.textContent,font:parseFloat(style.fontSize),single:range.getClientRects().length===1&&style.whiteSpace==='nowrap',transform:style.transform,left:text.left-box.left,right:box.right-text.right,top:text.top-box.top,bottom:box.bottom-text.bottom,height:node.closest('.teamScore').getBoundingClientRect().height};}));
+   for(const r of data){assert(r.single,r.name+' wrapped');assert.equal(r.transform,'none');assert(r.left>=1&&r.right>=1,r.name+' touches edge '+JSON.stringify(r));assert(r.top>=0&&r.bottom>=0,r.name+' clips vertically '+JSON.stringify(r));assert(r.font>=6.5,'must remain legible '+JSON.stringify(r));}
+   assert.equal(new Set(data.map(r=>r.font)).size,1,'uniform team name size');if(lastAll!==config.all)cardHeight=data[0].height;else assert(Math.abs(cardHeight-data[0].height)<1,'team names must not grow cards');lastAll=config.all;
+  }
+  await p.screenshot({path:path.join(root,'qa261-team-names-'+width+(studio?'-studio':'')+'.png')});console.log(width+(studio?' studio':'')+': full first/last glyphs, one line, equal size, unchanged card height, 80–200% PASS');await c.close();
+ }
+}finally{await b.close();server.close();}})().catch(e=>{console.error(e);process.exitCode=1;server.close();});

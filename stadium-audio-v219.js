@@ -296,7 +296,7 @@ function boot(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 const leagueAudioCache=new Map(),leagueAudioSources=new Set(),speechSources=new Set();let leagueAudioGeneration=0,speechGeneration=0,speechPending=false,lastSpeechKey=null;
-const extraSpeechKeys=new Set(['support1','support2','support3','final30a','final30b','final30c','atmosphere1','atmosphere2','waiting1','waiting2','waiting3','waiting4','prepare15','prepare5','final300','final120','final60','final20','final10','final5','empty1','empty2','empty3','queued1','queued2']);
+const extraSpeechKeys=new Set(['support1','support2','support3','final30a','final30b','final30c','atmosphere1','atmosphere2','waiting1','waiting2','waiting3','waiting4','prepare15','prepare5','final300','final120','final60','final20','final10','final5','empty1','empty2','empty3','queued1','queued2','liveGifts']);
 const speechKeys=new Set(['prepare','kickoff','shot1','shot2','goal1','goal2','save','league']);
 function stopAnnouncements(){speechGeneration++;speechPending=false;for(const source of speechSources){try{source.stop();}catch{}}speechSources.clear();try{window.speechSynthesis?.cancel();}catch{}}
 function loadLeagueClip(key){

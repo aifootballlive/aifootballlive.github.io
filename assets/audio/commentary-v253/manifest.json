@@ -44,7 +44,8 @@
     "empty2": "[confident] Dört takım da hazır, gözler taraftarda! [excited] Şut hediyenizle takımınızı destekleyin, şampiyonluk yarışına renk katın!",
     "empty3": "[excited] Haydi Doruk Arenası! Şut hediyelerinizi gönderin, tribündeki coşkunuz sahaya yansısın! Bakalım sıradaki gol hangi takımdan gelecek!",
     "queued1": "[excited] Şutlar sırada, şampiyonluk yarışı kızışıyor! Takımınızın arkasında durun, şut hediyelerinizle desteğinizi gösterin!",
-    "queued2": "[confident] Mücadele son düdüğe kadar sürer! [excited] Takımınıza şut hediyenizi gönderin, birlikte gol sevincini yaşayalım!"
+    "queued2": "[confident] Mücadele son düdüğe kadar sürer! [excited] Takımınıza şut hediyenizi gönderin, birlikte gol sevincini yaşayalım!",
+    "liveGifts": "[confident] Maç devam ederken de şut hediyesi gönderebilirsiniz! Gelen şutlar sıraya alınır ve oynatılır. [excited] Haydi taraftarlar, takımınızı maç boyunca destekleyin!"
   },
   "tasks": {
     "prepare": "320610fc-3a3e-4bc6-8435-38ede80c3408",
@@ -85,6 +86,7 @@
     "empty3": "e92bf79d-1871-49a2-b698-8d79c73487d7",
     "queued1": "5f9d6a57-64c5-4704-aa1d-9420d44e901a",
     "queued2": "b0ea4e93-fefc-4585-ac97-c250be490233",
-    "empty1": "605ae2b7-22a0-461a-a744-e49cee47d50b"
+    "empty1": "605ae2b7-22a0-461a-a744-e49cee47d50b",
+    "liveGifts": "1f498dd4-e18d-4650-849e-52493728ab88"
   }
 }

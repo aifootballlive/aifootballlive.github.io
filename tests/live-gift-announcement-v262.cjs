@@ -1,0 +1,14 @@
+const vm=require('vm'),fs=require('fs'),assert=require('assert/strict');let now=10000000;
+let clock={round:1,startedAt:null},phase={waiting:true},busy=false;const calls=[],timers=[];
+const settings={aiSpeechEnabled:true,soundEnabled:true};
+const sandbox={console,Date:{now:()=>now},setInterval:fn=>timers.push(fn),setTimeout:()=>{},document:{hidden:false,visibilityState:'visible',getElementById:()=>null},window:{__AI_FOOTBALL_SETTINGS:settings,AIFootballTikTok:{getMatchClock:()=>clock,getMatchState:()=>phase,getPendingQueue:()=>({A:0,B:0,C:0,D:0}),getStatus:()=>({}),getTimings:()=>({normalMinutes:3,overtimeMinutes:0,language:'tr'}),getCurrentCue:()=>null},AIFootballAudio:{enabled:true,get announcing(){return busy;},announce:async(line,key)=>{calls.push({line,key});return true;}}}};
+vm.runInNewContext(fs.readFileSync(require.resolve('../round-finale-v205.js'),'utf8'),sandbox);
+const tick=timers[1],count=()=>calls.filter(c=>c.key==='liveGifts').length;
+tick();now+=15000;tick();assert.equal(count(),0,'no live-match explanation before kickoff');
+clock={round:1,startedAt:now};phase={running:true};tick();now+=13000;tick();assert.equal(count(),1);assert(calls.at(-1).line.includes('Maç devam ederken de şut hediyesi gönderebilirsiniz'));
+tick();assert.equal(count(),1,'do not repeat immediately');
+now+=61000;busy=true;tick();assert.equal(count(),1,'do not interrupt a current announcement');busy=false;tick();assert.equal(count(),2);
+settings.aiSpeechEnabled=false;now+=61000;tick();assert.equal(count(),2,'respect announcer setting');settings.aiSpeechEnabled=true;
+now=clock.startedAt+155000;tick();assert.equal(count(),2,'last thirty seconds are reserved for final calls');
+phase={results:true,running:false};tick();assert.equal(count(),2,'no in-match explanation during results');
+console.log('PASS: explicitly explains gifts during play, running-only, once per minute, respects busy/mute and final thirty seconds');
