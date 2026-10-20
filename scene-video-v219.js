@@ -1,6 +1,7 @@
 /* Unified stadium video — two-deck, on-demand playback for mobile browsers. */
 (()=>{
 'use strict';
+const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
 let shot=null,settings={},shotVideo=null,repairing=false,lastRepair=0,holdingForQueue=false;
 const stage=document.createElement('div');stage.id='game3dStage';
 const video=document.createElement('video');video.id='sceneWaitingVideo';
@@ -69,7 +70,7 @@ function reportRealVideoFrame(deck,frameConfirmed,mediaTime=deck.currentTime){
   if(delta>0&&delta<0.3)shot.verifiedProgressSeconds=(shot.verifiedProgressSeconds||0)+delta;
  }
  shot.progressLastMediaTime=mediaTime;
- const now=Date.now();
+ const now=matchNow();
  if(shot.lastFrameReportAt&&now-shot.lastFrameReportAt<1200)return;
  shot.lastFrameReportAt=now;
  window.AIFootballTikTok?.onShotVideoStarted?.({
@@ -162,8 +163,8 @@ function revealCurrent(target,confirmedFrame=false){
  if(!confirmedFrame&&typeof target.requestVideoFrameCallback==='function'&&target.style.opacity==='0')return;
  if(target.style.opacity!=='1'){
   // A cold/private tab can buffer before its first frame: align once before revealing it.
-  if(!shot.controller&&!shot.initialFrameAligned){shot.initialFrameAligned=true;const expected=Math.max(0,(Date.now()-shot.syncStartedAt)/1000);if(expected-target.currentTime>.35&&Number.isFinite(target.duration)&&expected<target.duration-.1){try{target.currentTime=expected;armFirstFrame(target);return;}catch{}}}
-  if(shot.controller){shot.syncStartedAt=Date.now()-target.currentTime*1000;shot.resumeAt=null;}shot.visibleSince??=performance.now();
+  if(!shot.controller&&!shot.initialFrameAligned){shot.initialFrameAligned=true;const expected=Math.max(0,(matchNow()-shot.syncStartedAt)/1000);if(expected-target.currentTime>.35&&Number.isFinite(target.duration)&&expected<target.duration-.1){try{target.currentTime=expected;armFirstFrame(target);return;}catch{}}}
+  if(shot.controller){shot.syncStartedAt=matchNow()-target.currentTime*1000;shot.resumeAt=null;}shot.visibleSince??=performance.now();
   video.pause();
   target.style.zIndex='4';target.style.opacity='1';
   lastFrameAt=performance.now();lastMediaTime=target.currentTime;
@@ -175,11 +176,11 @@ function revealCurrent(target,confirmedFrame=false){
 }
 function playShot(){
  if(!shot||!shotVideo)return;
- const target=shotVideo,elapsed=shot.controller?(shot.resumeAt??(shot.visibleSince!=null?target.currentTime:0)):Math.max(0,(Date.now()-shot.syncStartedAt)/1000);
+ const target=shotVideo,elapsed=shot.controller?(shot.resumeAt??(shot.visibleSince!=null?target.currentTime:0)):Math.max(0,(matchNow()-shot.syncStartedAt)/1000);
  const duration=Number.isFinite(target.duration)?target.duration:(durationByKey.get(target.dataset.clipKey)||0);
  if(duration>0&&elapsed>=duration&&target.ended){endShot(false,true);return;}
  // Keep the current visible stream moving until a decoded replacement frame is ready.
- lastRepair=Date.now();
+ lastRepair=matchNow();
  target.muted=true;
  // A fresh/prewarmed clip already sits on frame zero: avoid a costly initial seek.
  const needsSeek=elapsed>.30?Math.abs(target.currentTime-elapsed)>.55:target.currentTime>.20;
@@ -233,7 +234,7 @@ function beginShot(team,options={}){
  if(old)old.playbackRate=1;
  target.playbackRate=1;target.style.opacity='0';
  shotVideo=target;lastFrameAt=performance.now();lastMediaTime=-1;recoveryCount=0;reloading=false;
- shot={controller:window.AIFootballTikTok?.getStatus?.().leader===true,playbackOwner:options.playbackOwner,team,result:options.result,cueId:options.cueId||null,cueStartsAt:options.cueStartsAt??options.startsAt??Date.now(),syncStartedAt:options.startsAt??Date.now()};
+ shot={controller:window.AIFootballTikTok?.getStatus?.().leader===true,playbackOwner:options.playbackOwner,team,result:options.result,cueId:options.cueId||null,cueStartsAt:options.cueStartsAt??options.startsAt??matchNow(),syncStartedAt:options.startsAt??matchNow()};
  warmedCueKey=null;
  playShot();
  return true;
@@ -259,18 +260,18 @@ function maintainShot(){
  if(shot&&window.AIFootballTikTok?.getMatchState?.().running===false){endShot(true);return;}
  if(!shot||!shotVideo||document.hidden||repairing)return;
  const v=shotVideo;
- const expected=shot.controller?v.currentTime:Math.max(0,(Date.now()-shot.syncStartedAt)/1000),duration=v.duration;
+ const expected=shot.controller?v.currentTime:Math.max(0,(matchNow()-shot.syncStartedAt)/1000),duration=v.duration;
  const liveCue=window.AIFootballTikTok?.getCurrentCue?.();
  // On spectators, stale cue frames do not belong to the next match.
  // Recover visually without changing server-side shot/goal accounting.
  if(!shot.controller&&liveCue?.id&&shot.cueId&&liveCue.id!==shot.cueId){endShot(true);return;}
  if(!shot.controller&&Number.isFinite(duration)&&duration>0&&
-    (Date.now()-shot.syncStartedAt)>duration*1000+6000&&
+    (matchNow()-shot.syncStartedAt)>duration*1000+6000&&
     performance.now()-lastFrameAt>3000){endShot(true);return;}
  if(Number.isFinite(duration)&&expected>=duration&&v.ended){endShot(false,true);return;}
  noteProgress(v);
- if(performance.now()-lastFrameAt>1500&&Date.now()-lastRecovery>1800&&!v.seeking){
-  lastRecovery=Date.now();recoveryCount++;
+ if(performance.now()-lastFrameAt>1500&&matchNow()-lastRecovery>1800&&!v.seeking){
+  lastRecovery=matchNow();recoveryCount++;
   const cachedURL=mediaCache.getURL(v.dataset.clipKey);
   if(cachedURL&&v.getAttribute('src')!==cachedURL){if(shot.controller)shot.resumeAt=v.currentTime;const replacement=spareDeck();assignClip(replacement,v.dataset.clipKey,cachedURL);replacement.style.opacity='0';shotVideo=replacement;playShot();return;}
   mediaCache.warm(v.dataset.clipKey,{priority:200}).catch(()=>{});
@@ -279,7 +280,7 @@ function maintainShot(){
  }
  // Do not repeatedly seek a mobile decoder while it is buffering.
  const drift=expected-v.currentTime;
- if(!shot.controller&&v.readyState>=3&&!v.seeking){v.playbackRate=Math.abs(drift)>.15?(drift>0?1.03:.97):1;if(Math.abs(drift)>2.5&&(v.paused||Date.now()-lastRepair>4000)){lastRepair=Date.now();try{v.currentTime=Math.min(expected,Math.max(0,duration-.05));}catch{}}}
+ if(!shot.controller&&v.readyState>=3&&!v.seeking){v.playbackRate=Math.abs(drift)>.15?(drift>0?1.03:.97):1;if(Math.abs(drift)>2.5&&(v.paused||matchNow()-lastRepair>4000)){lastRepair=matchNow();try{v.currentTime=Math.min(expected,Math.max(0,duration-.05));}catch{}}}
  if(v.paused){
    repairing=true;v.play().catch(()=>{v.dataset.autoplayMuted='true';v.muted=true;return v.play();}).catch(()=>{}).finally(()=>repairing=false);
  }
@@ -305,7 +306,7 @@ document.addEventListener('pointerdown',()=>{for(const v of decks)delete v.datas
 function sync(){
  const epoch=window.AIFootballTikTok?.getClock?.()?.epoch;
  if(!Number.isFinite(epoch)||!video.duration||document.hidden)return;
- video.currentTime=((Date.now()-epoch)/1000%video.duration+video.duration)%video.duration;
+ video.currentTime=((matchNow()-epoch)/1000%video.duration+video.duration)%video.duration;
 }
 function startWaitingIfEmpty(){
  if(shot){playShot();return;}
@@ -331,7 +332,7 @@ window.AIFootball3D={
  getShotTiming,prepareUpcomingShot,
  syncCue(cue){if(shot&&!shot.controller&&cue?.id===shot.cueId&&cue.videoStartedAt)shot.syncStartedAt=cue.videoStartedAt;},
  beginShot,finishShot,
- playTestShot(){if(this.isAnimating||!video.readyState)return false;beginShot('A',{startsAt:Date.now(),result:'save'});return true;},
+ playTestShot(){if(this.isAnimating||!video.readyState)return false;beginShot('A',{startsAt:matchNow(),result:'save'});return true;},
  async waitForShot(){while(this.isAnimating)await new Promise(r=>setTimeout(r,60));},
  finishSyncedShot(startsAt){if((!shot&&holdingForQueue)||(shot&&(shot.cueStartsAt??shot.syncStartedAt)===startsAt))endShot(true);},
  get isAnimating(){return !!shot;},

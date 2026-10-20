@@ -1,6 +1,7 @@
 /* Original sound cues for match winners; no third-party audio files. */
 (()=>{
 'use strict';
+const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
 let spokenRound='',spokenNext='',context=null;
 const NAMES={A:'Altın Pusula',B:'Kızıl Kıvılcım',C:'Gece Yıldızı',D:'Bordo Dalga'};
 function showConfetti(){
@@ -85,7 +86,7 @@ window.AIFootballRoundCelebration={
 
 let lifecycleStamp=null,lifecyclePhase=null,refereeClock=null;
 function watchRefereeClock(clock,phase){
- const now=Date.now(),stamp=String(clock.round||0)+':'+String(clock.startedAt||0);
+ const now=matchNow(),stamp=String(clock.round||0)+':'+String(clock.startedAt||0);
  const previous=refereeClock;
  refereeClock={stamp,running:phase.running===true,finishedAt:clock.finishedAt};
  // Joining or refreshing an existing match never replays an old whistle.
@@ -100,7 +101,7 @@ function watchKickoff(){
  const game=window.AIFootballTikTok,clock=game?.getMatchClock?.(),phase=game?.getMatchState?.();if(!clock||!phase)return;
  const justStarted=watchRefereeClock(clock,phase);
  if(justStarted){const stamp=clock.startedAt;setTimeout(()=>{if(game.getMatchClock?.()?.startedAt===stamp&&game.getMatchState?.()?.running)speak(currentLanguage()==='en'?'The match has started!':'Ve maç başladı!',true,'kickoff');},750);}
- if(phase.starting&&lifecycleStamp!==clock.startedAt){lifecycleStamp=clock.startedAt;lifecyclePhase='preparing';if(clock.startedAt-Date.now()>25000)speak(currentLanguage()==='en'?'The match starts in thirty seconds. Get ready!':'Maç başlamak üzere! Takımlar hazırlanıyor. Otuz saniye sonra başlıyoruz!',true,'prepare');}
+ if(phase.starting&&lifecycleStamp!==clock.startedAt){lifecycleStamp=clock.startedAt;lifecyclePhase='preparing';if(clock.startedAt-matchNow()>25000)speak(currentLanguage()==='en'?'The match starts in thirty seconds. Get ready!':'Maç başlamak üzere! Takımlar hazırlanıyor. Otuz saniye sonra başlıyoruz!',true,'prepare');}
  else if(phase.running){lifecycleStamp=clock.startedAt;lifecyclePhase='playing';}
  else if(!phase.starting&&!phase.running&&lifecyclePhase==='preparing'){lifecyclePhase=null;window.AIFootballAudio?.stopAnnouncements?.();}
 }
@@ -126,7 +127,7 @@ function preMatchSpeechTick(){
  const game=window.AIFootballTikTok;
  const clock=game?.getMatchClock?.(),phase=game?.getMatchState?.();
  if(!clock||!phase||document.hidden)return;
- const now=Date.now();
+ const now=matchNow();
  if(phase.waiting&&!phase.results&&!phase.running&&!phase.starting){
   const key=String(clock.round||0)+':'+String(clock.finishedAt||0)+':'+String(clock.startedAt||'idle');
   if(preWaitingKey!==key){
@@ -188,9 +189,9 @@ function liveCommentaryTick(){
  const roundKey=String(clock.round||0)+':'+String(clock.startedAt||'waiting');
  if(roundKey!==liveRoundKey){
   liveRoundKey=roundKey;lastLiveQueues={...queues};lastLiveGift=game.getStatus?.().lastGift?.id||null;
-  announcedMilestones.clear();lastAtmosphereAt=Date.now();lastDuringMatchAt=0;return;
+  announcedMilestones.clear();lastAtmosphereAt=matchNow();lastDuringMatchAt=0;return;
  }
- const now=Date.now();
+ const now=matchNow();
  const gift=game.getStatus?.().lastGift;
  let addedTeam=null,addedCount=0;
  for(const t of ['A','B','C','D']){

@@ -1,7 +1,8 @@
 /* One durable match for every viewer of the permanent broadcast URL. */
 (()=>{
  'use strict';
- const KEY='tiktok_match_v2',CLIENT_BUILD=250,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
+ const KEY='tiktok_match_v2',CLIENT_BUILD=266,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // A hidden overlay must never become a phantom dark sheet through stale CSS.
@@ -28,7 +29,7 @@
  }
  // Only an admin-started or confirmed auto-started match is running.
  // Legacy default clocks do not count as having been started by the referee.
- function matchRunning(m,now=Date.now()){
+ function matchRunning(m,now=matchNow()){
   const c=m?.clock;
   if(!c||Number.isFinite(c.finishedAt)||!Number.isFinite(Number(c.startedAt))||Number(c.startedAt)<=0)return false;
   return (c.manualStarted===true||c.autoStarted===true)&&now>=Number(c.startedAt);
@@ -46,7 +47,7 @@
    m.jobs.unshift({id:'unplayed:'+cue.id,team:cue.team,count:1,nextIndex:0});
   m.cue=null;m.nextCue=null;
  }
- function matchStarting(m,now=Date.now()){
+ function matchStarting(m,now=matchNow()){
   const c=m?.clock;return !!c&&!Number.isFinite(c.finishedAt)&&(c.manualStarted===true||c.autoStarted===true)&&Number.isFinite(c.startedAt)&&c.startedAt>now;
  }
  function seasonComplete(m){return !!m?.league?.champion&&Number(m.league.completedRounds)>=Number(m.league.plannedRounds);}
@@ -76,7 +77,7 @@
 
  const teamShort={A:'Altın Pusula',B:'Kızıl Kıvılcım',C:'Gece Yıldızı',D:'Bordo Dalga'};
  const badgePaths={A:'altin-pusula.svg',B:'kizil-kivilcim.svg',C:'gece-yildizi.svg',D:'bordo-dalga.svg'};
- function matchClockView(m,now=Date.now()){
+ function matchClockView(m,now=matchNow()){
   const clock=m?.clock,timing=timingFor(m),en=timing.language==='en';
   const automatic=canContinueAutomatically(m);
   if(matchStarting(m,now))return {label:en?'Match Starting':'Maç Başlıyor',digits:formatClock(Math.ceil((clock.startedAt-now)/1000)),phase:'countdown'};
@@ -132,7 +133,7 @@
  }
  function showMatchClock(){
   const hud=document.getElementById('matchClockHud');if(!hud)return;
-  const now=Date.now(),state=matchClockView(match,now),timing=timingFor(match),ends=breakDeadlines(match);
+  const now=matchNow(),state=matchClockView(match,now),timing=timingFor(match),ends=breakDeadlines(match);
   const heading=document.getElementById('goalsHeading');
   if(heading){
    const league=match?.league||{},season=Math.max(1,Math.floor(Number(league.season)||1));
@@ -217,7 +218,7 @@
   return validRequest(p)&&p.guestTrial===true&&typeof p.clientId==='string'&&
    /^[0-9a-f-]{36}$/i.test(p.clientId)&&(p.count===1||p.count===5);
  }
- function guestBudget(p,now=Date.now()){
+ function guestBudget(p,now=matchNow()){
   if(!validGuestRequest(p))return false;
   const clientHistory=guestTrialSeen.get(p.clientId)||[];
   const recent=clientHistory.filter(x=>now-x.at<60000);
@@ -235,7 +236,7 @@
  function flushManualBurst(team){
   const burst=manualBursts.get(team);if(!burst)return;
   manualBursts.delete(team);clearTimeout(burst.timer);
-  const payload={id:crypto.randomUUID(),team,count:burst.count,sentAt:Date.now()};
+  const payload={id:crypto.randomUUID(),team,count:burst.count,sentAt:matchNow()};
   pendingRequests.set(payload.id,{payload,lastSent:0,resolve:ok=>burst.resolvers.forEach(done=>done(ok))});
   rememberRequests();sendRequests().catch(e=>console.warn(e.message));
  }
@@ -259,7 +260,7 @@
  }
  function detectStoredGiftNotice(){
   if(!match)return;
-  for(const [team,notice]of Object.entries(match.giftNotices||{}))if(notice?.id&&seenTeamNotices.get(team)!==notice.id){seenTeamNotices.set(team,notice.id);if(Date.now()-notice.at<3000)showQueuedGiftNotice(notice.id,team);}
+  for(const [team,notice]of Object.entries(match.giftNotices||{}))if(notice?.id&&seenTeamNotices.get(team)!==notice.id){seenTeamNotices.set(team,notice.id);if(matchNow()-notice.at<3000)showQueuedGiftNotice(notice.id,team);}
   const n=Math.max(0,Number(match.accepted)||0);
   if(lastGiftNoticeCount!==null&&n>lastGiftNoticeCount&&!matchRunning(match))
    showQueuedGiftNotice(match.lastGift?.id||String(n),match.lastGift?.team);
@@ -269,13 +270,13 @@
   if(!owns()||!payload||payload.playbackOwner!==owner||typeof payload.cueId!=='string'||!Number.isFinite(payload.mediaTime)||payload.mediaTime<.08||payload.clockStartedAt!==match?.clock?.startedAt)return;
   const cue=[match?.cue,match?.nextCue].find(c=>c?.id===payload.cueId);
   if(cue===match?.nextCue&&match.cue&&!hasVideoProof(match,match.cue))return;
-  if(!cue||cue.startsAt<match.clock.startedAt||cue.playbackOwner!==owner||Date.now()<cue.startsAt||cue.id!==payload.cueId||cue.startsAt!==payload.startsAt||hasVideoProof(match,cue)||!matchRunning(match)||videoAckInFlight.has(payload.cueId))return;
+  if(!cue||cue.startsAt<match.clock.startedAt||cue.playbackOwner!==owner||matchNow()<cue.startsAt||cue.id!==payload.cueId||cue.startsAt!==payload.startsAt||hasVideoProof(match,cue)||!matchRunning(match)||videoAckInFlight.has(payload.cueId))return;
   videoAckInFlight.add(payload.cueId);
   change(m=>{
    const target=[m.cue,m.nextCue].find(c=>c?.id===payload.cueId);
    if(target===m.nextCue&&m.cue&&!hasVideoProof(m,m.cue))return false;
-   if(!owns(m)||!matchRunning(m)||!target||target.startsAt!==payload.startsAt||Date.now()<target.startsAt||hasVideoProof(m,target))return false;
-   target.videoStartedAt=Date.now();
+   if(!owns(m)||!matchRunning(m)||!target||target.startsAt!==payload.startsAt||matchNow()<target.startsAt||hasVideoProof(m,target))return false;
+   target.videoStartedAt=matchNow();
    target.outcomeAt=Math.max(target.outcomeAt,target.videoStartedAt+750);
    target.endsAt=Math.max(target.endsAt,target.videoStartedAt+1500);
   },false).catch(error=>console.warn('Video başlangıcı onaylanamadı',error)).finally(()=>videoAckInFlight.delete(payload.cueId));
@@ -294,8 +295,8 @@
    if(!owns(m)||!matchRunning(m)||!target||target.startsAt!==payload.startsAt||hasVideoCompletionProof(m,target))return false;
    // The HTMLVideoElement 'ended' event plus actual end mediaTime is the
    // authoritative proof of spending a shot, not a guessed timeout.
-   target.videoStartedAt||=Math.max(target.startsAt,Date.now()-Math.min(payload.duration*1000,60000));
-   target.videoFinishedAt=Date.now();target.videoPlayedSeconds=payload.playedSeconds;target.videoElapsedMs=payload.elapsedMs;target.videoPlaybackOwner=owner;
+   target.videoStartedAt||=Math.max(target.startsAt,matchNow()-Math.min(payload.duration*1000,60000));
+   target.videoFinishedAt=matchNow();target.videoPlayedSeconds=payload.playedSeconds;target.videoElapsedMs=payload.elapsedMs;target.videoPlaybackOwner=owner;
   },false).catch(e=>console.warn('Video bitiş onayı yazılamadı',e))
    .finally(()=>videoAckInFlight.delete('finish:'+payload.cueId));
  }
@@ -408,7 +409,7 @@
  }
  function ready(){try{return typeof db!=='undefined'&&typeof state!=='undefined'&&typeof render==='function';}catch{return false;}}
  function needsRefresh(){return !!match&&Number(match.minClientBuild||0)>CLIENT_BUILD;}
- function admin(){try{return adminAuthed===true&&!needsRefresh();}catch{return false;}}
+ function admin(){try{return adminAuthed===true&&!needsRefresh()&&(!window.AIFootballTime||window.AIFootballTime.synced);}catch{return false;}}
  function enforceRefreshOnOldBuild(){
   const stale=needsRefresh()&&typeof adminAuthed!=='undefined'&&adminAuthed===true;
   let panel=document.getElementById('aiFootballUpdateRequired');
@@ -429,7 +430,7 @@
   }
   panel.hidden=false;
  }
- function owns(m=match){return admin()&&m?.lease?.owner===owner&&m.lease.until>Date.now();}
+ function owns(m=match){return admin()&&m?.lease?.owner===owner&&m.lease.until>matchNow();}
  function paint(){document.documentElement.dataset.tiktokConnection=connected?'connected':'waiting';showMatchClock();if(!ready())return;const el=document.getElementById('connectionStatus');if(el&&admin())el.textContent=errorText||(!match?'Ortak maç bekleniyor':owns()?(connected?'TikFinity bağlı • Yönetici':'Yönetici açık • TikFinity bekleniyor'):'Yönetici açık • Ortak maç');}
  let lastPaintedMatch='';
  const displayedQueues={A:null,B:null,C:null,D:null};
@@ -474,7 +475,7 @@
    const target=m.cue;
    if(!owns(m)||!matchRunning(m)||!target||target.id!==payload.cueId||target.startsAt!==payload.startsAt||
       target.team!==payload.team||target.playbackOwner!==owner||Number.isFinite(target.kickedAt))return false;
-   target.kickedAt=Date.now();
+   target.kickedAt=matchNow();
   },false).catch(error=>console.warn('Şut temas onayı bekleniyor',error)).finally(()=>ballKickAckInFlight.delete(cue.id));
  }
  function restore(){
@@ -525,7 +526,7 @@
   // A promoted cue must not wait for a previous video's ended event on a new/reconnected client.
   // Do not mark an expired cue as played without a video. The leader will
   // return it to the queue and give it a fresh real playback window.
-  if(match?.cue?.id===cue.id&&Date.now()>=cue.endsAt&&!window.AIFootball3D?.isAnimating)return;
+  if(match?.cue?.id===cue.id&&matchNow()>=cue.endsAt&&!window.AIFootball3D?.isAnimating)return;
   if(match?.clock?.finishedAt||played.has(cue.id)||timers.has(cue.id))return;
   const start=async(actualStart)=>{
    timers.delete(cue.id);if(!matchRunning(match))return;const liveCue=[match?.cue,match?.nextCue].find(c=>c?.id===cue.id&&!c.finishedAt);if(!liveCue)return;if(liveCue.startsAt!==cue.startsAt||liveCue.result!==cue.result){consider(liveCue);return;}if(liveCue===match.nextCue&&match.cue&&!hasVideoProof(match,match.cue)){timers.set(cue.id,setTimeout(start,150));return;}
@@ -534,7 +535,7 @@
    if(!window.AIFootball3D?.beginShot){
     timers.set(cue.id,setTimeout(start,200));return;
    }
-   if(Date.now()>=cue.endsAt)return; // Never consume an expired slot.
+   if(matchNow()>=cue.endsAt)return; // Never consume an expired slot.
    const accepted=window.AIFootball3D.beginShot(cue.team,{startsAt:cue.videoStartedAt||cue.startsAt,playbackOwner:cue.playbackOwner,variation:cue.variation,result:cue.result,cueStartsAt:cue.startsAt,cueId:cue.id});
    if(accepted!==true){
     timers.set(cue.id,setTimeout(start,240));return;
@@ -544,13 +545,13 @@
    window.AIFootball3D.prepareUpcomingShot?.(match?.nextCue?.id===cue.id?null:match?.nextCue);
    prepareQueuedPreview(match);
    log(nameOf(cue.team)+' şut çekiyor!');
-   setTimeout(()=>{if(![match?.cue,match?.nextCue].some(c=>c?.id===cue.id))return;log(cue.result==='goal'?'GOL! '+nameOf(cue.team):(['C','D'].includes(cue.team)?'Kaleci':nameOf(cue.team==='A'?'B':'A')+' kalecisi')+' kurtardı!');},Math.max(0,cue.outcomeAt-Date.now()));
+   setTimeout(()=>{if(![match?.cue,match?.nextCue].some(c=>c?.id===cue.id))return;log(cue.result==='goal'?'GOL! '+nameOf(cue.team):(['C','D'].includes(cue.team)?'Kaleci':nameOf(cue.team==='A'?'B':'A')+' kalecisi')+' kurtardı!');},Math.max(0,cue.outcomeAt-matchNow()));
   };
   // Every viewer uses the published boundary, including private tabs and late joiners.
   // Local ended events must never give the next clip a different start time.
-  timers.set(cue.id,setTimeout(start,Math.max(0,cue.startsAt-Date.now())));
+  timers.set(cue.id,setTimeout(start,Math.max(0,cue.startsAt-matchNow())));
  }
- function validRequest(p){return p&&typeof p.id==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(p.id)&&['A','B','C','D'].includes(p.team)&&Number.isSafeInteger(p.count)&&p.count>=1&&p.count<=50&&Number.isFinite(p.sentAt)&&Math.abs(Date.now()-p.sentAt)<600000;}
+ function validRequest(p){return p&&typeof p.id==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(p.id)&&['A','B','C','D'].includes(p.team)&&Number.isSafeInteger(p.count)&&p.count>=1&&p.count<=50&&Number.isFinite(p.sentAt)&&Math.abs(matchNow()-p.sentAt)<600000;}
  function rememberRequests(){try{sessionStorage.setItem(REQUEST_STORE,JSON.stringify([...pendingRequests.values()].map(r=>r.payload)));}catch{}}
  function acknowledgeRequests(){
   let changed=false;
@@ -572,7 +573,7 @@
  }
  async function sendGuestRequests(){
   if(admin()||guestSending||!match||!pendingRequests.size)return;
-  const now=Date.now();
+  const now=matchNow();
   if(now-lastGuestSendAt<1200)return;
   const batch=[...pendingRequests.values()].filter(r=>r.payload?.guestTrial===true&&validGuestRequest(r.payload)
    &&now-(r.lastSent||0)>=GUEST_RETRY_MS).slice(0,12);
@@ -607,11 +608,11 @@
      if(Number(p.sentAt||0)<=Number(m.queueClearAt?.[p.team]||0)){seen.add(id);m.commandReceipts.push(id);changed=true;continue;}
      seen.add(id);m.commandReceipts.push(id);
      m.jobs.push({id:'guest-test:'+id,team:p.team,count:p.count,nextIndex:0});
-     m.giftNotices||={};m.giftNotices[p.team]={id,at:Date.now()};
+     m.giftNotices||={};m.giftNotices[p.team]={id,at:matchNow()};
      changed=true;
     }
     if(!changed)return false;
-    m.lastShotQueuedAt=Date.now();primeQueuedShots(m,Date.now());
+    m.lastShotQueuedAt=matchNow();primeQueuedShots(m,matchNow());
     m.commandReceipts=m.commandReceipts.slice(-2000);
    },false);
    for(const [id] of batch)if(match?.commandReceipts?.includes(id))requestInbox.delete(id);
@@ -641,7 +642,7 @@
   try{const requests=[...pendingRequests.values()].map(r=>r.payload).filter(validRequest).slice(0,80);
    if(!requests.length)return;
    // Supabase's authenticated write/RLS path also works from a non-leader admin phone.
-   await change(m=>{m.commandReceipts||=[];const seen=new Set(m.commandReceipts);let added=false;for(const p of requests){if(seen.has(p.id))continue;seen.add(p.id);m.commandReceipts.push(p.id);added=true;if(Number(p.sentAt||0)<=Number(m.queueClearAt?.[p.team]||0))continue;m.jobs.push({id:'button:'+p.id,team:p.team,count:p.count,nextIndex:0});m.giftNotices||={};m.giftNotices[p.team]={id:p.id,at:Date.now()};added=true;}if(!added)return false;m.lastShotQueuedAt=Date.now();primeQueuedShots(m,Date.now());m.commandReceipts=m.commandReceipts.slice(-4000);},false);
+   await change(m=>{m.commandReceipts||=[];const seen=new Set(m.commandReceipts);let added=false;for(const p of requests){if(seen.has(p.id))continue;seen.add(p.id);m.commandReceipts.push(p.id);added=true;if(Number(p.sentAt||0)<=Number(m.queueClearAt?.[p.team]||0))continue;m.jobs.push({id:'button:'+p.id,team:p.team,count:p.count,nextIndex:0});m.giftNotices||={};m.giftNotices[p.team]={id:p.id,at:matchNow()};added=true;}if(!added)return false;m.lastShotQueuedAt=matchNow();primeQueuedShots(m,matchNow());m.commandReceipts=m.commandReceipts.slice(-4000);},false);
    for(const p of requests)if(match.commandReceipts?.includes(p.id)&&!matchRunning(match))showQueuedGiftNotice(p.id,p.team);
    acknowledgeRequests();
   }finally{sendingRequests=false;}
@@ -681,15 +682,15 @@
    }
   }else paint();
  }
- async function read(){if(reading)return reading;reading=(async()=>{const {data,error}=await db.from('games').select('id,rules').eq('name','AI Football Live').limit(1).abortSignal(requestSignal()).single();if(error)throw error;apply(data);lastRead=Date.now();return data;})().finally(()=>reading=null);return reading;}
+ async function read(){if(reading)return reading;reading=(async()=>{const {data,error}=await db.from('games').select('id,rules').eq('name','AI Football Live').limit(1).abortSignal(requestSignal()).single();if(error)throw error;apply(data);lastRead=matchNow();return data;})().finally(()=>reading=null);return reading;}
  function change(edit,leaseRequired=true,patch=null){const run=async()=>{
   if(!admin())return false;
   for(let attempt=0;attempt<6;attempt++){
    const base=await read(),existing=base.rules?.[KEY];if(!existing)return false;
    if(leaseRequired&&!owns(existing))return false;
    const next=clone(existing);if(edit(next)===false)return false;
-   next.revision=existing.revision+1;next.updatedAt=Date.now();next.clientBuild=CLIENT_BUILD;next.clientRevision=next.revision;
-   if(next.lease?.owner===owner)next.lease.until=Date.now()+LEASE;
+   next.revision=existing.revision+1;next.updatedAt=matchNow();next.clientBuild=CLIENT_BUILD;next.clientRevision=next.revision;
+   if(next.lease?.owner===owner)next.lease.until=matchNow()+LEASE;
    const rules={...base.rules,...(patch||{}),[KEY]:next};
    const {data,error}=await db.from('games').update({rules}).eq('id',base.id).eq('rules->tiktok_match_v2->>revision',existing.revision).select('id,rules').abortSignal(requestSignal());
    if(error)throw error;if(data?.length){apply(data[0]);errorText='';return true;}
@@ -702,7 +703,7 @@
   const base=await read();if(base.rules?.[KEY])return;
   let legacy=null;try{legacy=JSON.parse(localStorage.getItem('aiFootballTikTokMatch.v1'));}catch{}
   // The user explicitly chose the current broadcast's 0–0, rather than the old cloud's 17–9.
-  const initial={version:2,revision:1,clock:{startedAt:null,manualStarted:false,autoStarted:false,durationMs:MATCH_MS,round:1,finishedAt:null},timing:{...DEFAULT_TIMING},scores:{A:0,B:0,C:0,D:0},keeper:Object.fromEntries(['A','B','C','D'].map(t=>[t,Number(state.startKeeper)||10])),jobs:[],cue:null,receipts:await Promise.all((legacy?.seen||[]).slice(-4000).map(digest)),accepted:Number(legacy?.accepted)||0,lastGift:null,shotSequence:0,idleEpoch:Date.now(),updatedAt:Date.now(),lease:{owner,until:Date.now()+LEASE}};
+  const initial={version:2,revision:1,clock:{startedAt:null,manualStarted:false,autoStarted:false,durationMs:MATCH_MS,round:1,finishedAt:null},timing:{...DEFAULT_TIMING},scores:{A:0,B:0,C:0,D:0},keeper:Object.fromEntries(['A','B','C','D'].map(t=>[t,Number(state.startKeeper)||10])),jobs:[],cue:null,receipts:await Promise.all((legacy?.seen||[]).slice(-4000).map(digest)),accepted:Number(legacy?.accepted)||0,lastGift:null,shotSequence:0,idleEpoch:matchNow(),updatedAt:matchNow(),lease:{owner,until:matchNow()+LEASE}};
   initial.clientBuild=CLIENT_BUILD;initial.clientRevision=initial.revision;initial.minClientBuild=CLIENT_BUILD;
   const rules={...base.rules,[KEY]:initial};const {data,error}=await db.from('games').update({rules}).eq('id',base.id).eq('rules',JSON.stringify(base.rules)).select('id,rules');
   if(error)throw error;if(data?.length)apply(data[0]);else await read();
@@ -728,7 +729,7 @@
   if(!selected||!Number.isSafeInteger(repeats)||repeats<1||!Number.isSafeInteger(count)||count>10000)return false;
   const key=await digest(JSON.stringify([String(id),String(g.uniqueId||g.user?.uniqueId||g.userId||g.user?.userId||''),String(giftId||name||'')]));
   if(match?.receipts.includes(key))return false;
-  inbox.set(key,{team:selected.team,count,name:String(name||giftId),receivedAt:Date.now()});
+  inbox.set(key,{team:selected.team,count,name:String(name||giftId),receivedAt:matchNow()});
   saveGiftInbox();
   if(!matchRunning(match))showQueuedGiftNotice(key,selected.team);
   // Update the team's pending-shot number immediately without starting any clip.
@@ -748,12 +749,12 @@
      seen.add(key);m.receipts.push(key);changed=true;
      if(Number(g.receivedAt||0)<=Number(m.queueClearAt?.[g.team]||0))continue;
      m.accepted++;
-     m.lastGift={id:key,team:g.team,count:g.count,name:g.name};m.giftNotices||={};m.giftNotices[g.team]={id:key,at:Date.now()};
+     m.lastGift={id:key,team:g.team,count:g.count,name:g.name};m.giftNotices||={};m.giftNotices[g.team]={id:key,at:matchNow()};
      m.jobs.push({id:key,team:g.team,count:g.count,nextIndex:0});
      changed=true;
     }
     if(!changed)return false;
-    m.lastShotQueuedAt=Date.now();primeQueuedShots(m,Date.now());
+    m.lastShotQueuedAt=matchNow();primeQueuedShots(m,matchNow());
     m.receipts=m.receipts.slice(-4000);
    });
    for(const [key] of batch)if(match?.receipts.includes(key))inbox.delete(key);
@@ -863,12 +864,12 @@
  }
  async function advance(){
   if(!owns())return;
-  const now=Date.now();
+  const now=matchNow();
   // A dead local TikTok gift bridge must not allow an invisible match to keep running.
   if(bridgeEverConnected&&(!connected||bridgeWasOffline)){
    if(bridgeWasOffline||connectionLostAt!==null&&now-connectionLostAt>OFFLINE_GRACE_MS){
     if(matchRunning(match)){
-     await change(m=>matchRunning(m)?interruptOfflineMatch(m,Date.now()):false);
+     await change(m=>matchRunning(m)?interruptOfflineMatch(m,matchNow()):false);
     }
     bridgeWasOffline=false;
    }
@@ -883,15 +884,15 @@
   if(Number.isFinite(match.clock.finishedAt)){
    // Gifts received during the results screen still belong to this season.
    if(match.league?.completionPending&&now>=breakDeadlines(match).summaryUntil){
-    await change(m=>{if(!m.league?.completionPending||Date.now()<breakDeadlines(m).summaryUntil)return false;return resolveSeasonCompletion(m);});
+    await change(m=>{if(!m.league?.completionPending||matchNow()<breakDeadlines(m).summaryUntil)return false;return resolveSeasonCompletion(m);});
     return;
    }
    // Only an explicitly enabled automatic switch can start the next round.
    if(!canContinueAutomatically(match)||now<breakDeadlines(match).summaryUntil)return;
    await change(m=>{
     const deadline=breakDeadlines(m);
-    if(!deadline||!canContinueAutomatically(m)||Date.now()<deadline.summaryUntil)return false;
-    beginNextRound(m,Date.now());
+    if(!deadline||!canContinueAutomatically(m)||matchNow()<deadline.summaryUntil)return false;
+    beginNextRound(m,matchNow());
    });
    return;
   }
@@ -899,7 +900,7 @@
   if(!matchRunning(match))return;
   // Never run the round past 25+5 minutes, even if gifts arrive endlessly.
   if(now-match.clock.startedAt>=normalMs(match)+overtimeMs(match)){
-   await change(m=>{if(m.clock?.finishedAt||Date.now()-m.clock.startedAt<normalMs(m)+overtimeMs(m))return false;return closeRound(m,m.clock.startedAt+normalMs(m)+overtimeMs(m));});
+   await change(m=>{if(m.clock?.finishedAt||matchNow()-m.clock.startedAt<normalMs(m)+overtimeMs(m))return false;return closeRound(m,m.clock.startedAt+normalMs(m)+overtimeMs(m));});
    return;
   }
   const cue=match.cue;
@@ -940,12 +941,12 @@
       m.jobs.unshift({id:'return-next:'+m.nextCue.id,team:m.nextCue.team,count:1,nextIndex:0});
      m.nextCue=null;
     }
-    m.cue.finishedAt=Date.now();m.cooldownUntil=0;
+    m.cue.finishedAt=matchNow();m.cooldownUntil=0;
     // Once the previous video is proven complete, commit it and launch the
     // next queued shot in this same CAS instead of waiting for another tick.
-    if(!m.processingPaused&&hasPlayableJobs(m)&&window.AIFootball3D?.getShotTiming&&matchRunning(m)&&Date.now()<m.clock.startedAt+normalMs(m)+overtimeMs(m)){
+    if(!m.processingPaused&&hasPlayableJobs(m)&&window.AIFootball3D?.getShotTiming&&matchRunning(m)&&matchNow()<m.clock.startedAt+normalMs(m)+overtimeMs(m)){
      const job=takeJob(m,m.cue.team);
-     if(job)m.cue=makeCue(m,job,Date.now()+40);
+     if(job)m.cue=makeCue(m,job,matchNow()+40);
     }
    });
    return;
@@ -969,12 +970,12 @@
    const job=takeJob(m,m.cue?.team);if(!job)return false;
    // The cue gets a fresh published start time after kickoff. No shot is
    // consumed unless the real video reaches its natural end.
-   m.cue=makeCue(m,job,Date.now()+280);m.nextCue=null;m.cooldownUntil=0;
+   m.cue=makeCue(m,job,matchNow()+280);m.nextCue=null;m.cooldownUntil=0;
   });
  }
  async function tick(){
   try{
-   if(Date.now()-lastRead>(channelReady?3000:1000))await read();ensureChannel();sendRequests().catch(e=>console.warn(e.message));if(admin()&&!connected&&!retry)connect();
+   if(matchNow()-lastRead>(channelReady?3000:1000))await read();ensureChannel();sendRequests().catch(e=>console.warn(e.message));if(admin()&&!connected&&!retry)connect();
    if(admin()){
     if(match&&Number(match.minClientBuild||0)<CLIENT_BUILD)await change(m=>{if(Number(m.minClientBuild||0)>=CLIENT_BUILD)return false;m.minClientBuild=CLIENT_BUILD;},false);
     // Upgrade old match settings to a one-time MANUAL default. This is saved
@@ -986,28 +987,34 @@
       m.manualMatchStart=true;
      },false);
     }
-    if(!match&&connected)await seed();if(match&&!owns()&&(!match.lease||match.lease.protocol!==125||match.lease.until<Date.now()))await change(m=>{
-    if(m.lease?.protocol===125&&m.lease.until>Date.now())return false;
-    const gap=Date.now()-Number(m.lease?.until||0);
+    if(!match&&connected)await seed();if(match&&!owns()&&(!match.lease||match.lease.protocol!==125||match.lease.until<matchNow()))await change(m=>{
+    if(m.lease?.protocol===125&&m.lease.until>matchNow())return false;
+    const gap=matchNow()-Number(m.lease?.until||0);
     if(Number(m.lease?.until)>0&&gap>OFFLINE_GRACE_MS&&matchRunning(m)){
-     interruptOfflineMatch(m,Date.now());
+     interruptOfflineMatch(m,matchNow());
     }
-    m.lease={owner,until:Date.now()+LEASE,protocol:125};
+    m.lease={owner,until:matchNow()+LEASE,protocol:125};
    },false);
-    if(owns()){if(match.lease.until<Date.now()+6000)await change(()=>{});await flush();await flushRequestInbox();await advance();}}
+    if(owns()){if(match.lease.until<matchNow()+6000)await change(()=>{});await flush();await flushRequestInbox();await advance();}}
    errorText='';paint();
   }catch(e){errorText='Maç bağlantısı bekleniyor';paint();console.warn(e.message);}finally{setTimeout(tick,350);}
  }
  function connect(){if(!admin())return;if(socket&&[WebSocket.CONNECTING,WebSocket.OPEN].includes(socket.readyState))return;clearTimeout(retry);retry=null;try{const w=socket=new WebSocket(API);w.onopen=()=>{
-    if(connectionLostAt!==null&&Date.now()-connectionLostAt>OFFLINE_GRACE_MS)bridgeWasOffline=true;
+    if(connectionLostAt!==null&&matchNow()-connectionLostAt>OFFLINE_GRACE_MS)bridgeWasOffline=true;
     connectionLostAt=null;bridgeEverConnected=true;connected=true;paint();
    };w.onmessage=e=>{try{receive(JSON.parse(e.data)).catch(console.warn);}catch{}};w.onerror=()=>{};w.onclose=()=>{
     connected=false;
-    if(bridgeEverConnected&&connectionLostAt===null)connectionLostAt=Date.now();
+    if(bridgeEverConnected&&connectionLostAt===null)connectionLostAt=matchNow();
     paint();retry=setTimeout(connect,5000);
    };}catch{retry=setTimeout(connect,5000);}}
- function install(){if(installed)return;if(!ready()){setTimeout(install,50);return;}installed=true;setInterval(showMatchClock,1000);showMatchClock();legend();read().then(ensureChannel).catch(e=>console.warn(e.message));tick();}
- window.AIFootballTikTok={get active(){return true;},get connected(){return connected;},getStatus(){return {clientBuild:CLIENT_BUILD,updateRequired:needsRefresh(),autoMatches:autoMatchEnabled(match),guestTrialEnabled:match?.guestTrialEnabled===true,manualMatchStart:!autoMatchEnabled(match),active:true,connected,shared:!!match,leader:owns(),revision:match?.revision,accepted:match?.accepted||0,lastGift:match?.lastGift||null,lastShotQueuedAt:match?.lastShotQueuedAt||0,pending:Object.values(pendingShotCounts(match)).reduce((a,b)=>a+b,0),waitingRequests:pendingRequests.size,channelReady,adminAvailable:!!match?.lease&&match.lease.until>Date.now(),lastError:errorText};},getClock(){return match?{epoch:match.idleEpoch}:null;},getTimings(){return timingFor(match);},
+ async function install(){
+  if(installed)return;if(!ready()){setTimeout(install,50);return;}installed=true;
+  // No match writes, cue playback or countdown before the initial UTC sample.
+  const clock=window.AIFootballTime;
+  if(clock){await clock.ready;if(!clock.synced){installed=false;setTimeout(install,1000);return;}}
+  setInterval(showMatchClock,200);showMatchClock();legend();read().then(ensureChannel).catch(e=>console.warn(e.message));tick();
+ }
+ window.AIFootballTikTok={get active(){return true;},get connected(){return connected;},getStatus(){return {clientBuild:CLIENT_BUILD,updateRequired:needsRefresh(),autoMatches:autoMatchEnabled(match),guestTrialEnabled:match?.guestTrialEnabled===true,manualMatchStart:!autoMatchEnabled(match),active:true,connected,shared:!!match,leader:owns(),revision:match?.revision,accepted:match?.accepted||0,lastGift:match?.lastGift||null,lastShotQueuedAt:match?.lastShotQueuedAt||0,pending:Object.values(pendingShotCounts(match)).reduce((a,b)=>a+b,0),waitingRequests:pendingRequests.size,channelReady,adminAvailable:!!match?.lease&&match.lease.until>matchNow(),lastError:errorText};},getClock(){return match?{epoch:match.idleEpoch}:null;},getTimings(){return timingFor(match);},
   async setTimings(next){
    if(!admin())return false;
    const validated=timingFor({timing:next});
@@ -1017,7 +1024,7 @@
    },false);
   },getMatchClock(){return match?.clock?{...match.clock}:null;},getCurrentCue(){return match?.cue?{id:match.cue.id,team:match.cue.team,startsAt:match.cue.startsAt,finishedAt:match.cue.finishedAt}:null;},getBreakDeadlines(){return breakDeadlines(match);},getMatchState(){
    const deadline=breakDeadlines(match);
-   const now=Date.now();
+   const now=matchNow();
    return {ready:!!match,running:matchRunning(match),starting:matchStarting(match),seasonComplete:seasonComplete(match),results:!!deadline&&now<deadline.summaryUntil,
     waiting:!matchRunning(match)&&!matchStarting(match)&&(!deadline||now>=deadline.summaryUntil),
     canStart:!!match&&!matchRunning(match)&&!matchStarting(match)&&(!deadline||now>=deadline.summaryUntil),
@@ -1033,7 +1040,7 @@
     m.autoContinuationPaused=true;
     // End the current match with the existing score; queued/uncommitted shots
     // stay available for the next round.
-    return closeRound(m,Date.now());
+    return closeRound(m,matchNow());
    },false);
   },getGuestTrialEnabled(){return match?.guestTrialEnabled===true;},
   async setGuestTrialEnabled(enabled){
@@ -1060,8 +1067,8 @@
    return change(m=>{
     if(matchRunning(m)||matchStarting(m))return false;
     const deadline=breakDeadlines(m);
-    if(deadline&&Date.now()<deadline.summaryUntil)return false;
-    const now=Date.now();
+    if(deadline&&matchNow()<deadline.summaryUntil)return false;
+    const now=matchNow();
     m.autoContinuationPaused=false;
     if(deadline){
      beginNextRound(m,now);
@@ -1107,7 +1114,7 @@
    const saved=await change(m=>{
     if(matchRunning(m)||matchStarting(m)||m.cue&&!m.cue.finishedAt&&hasVideoProof(m,m.cue))return false;
     if((Number(m.league?.season)||1)!==options.expectedSeason||(m.seasonReset?.id||'')!==options.resetToken)return false;
-    const now=Date.now();cutoff=now;
+    const now=matchNow();cutoff=now;
     m.seasonResetHistory||=[];
     m.seasonResetHistory.push({id:crypto.randomUUID(),at:now,leagueId:'doruk',previous:clone(m.league||newLeague()),
      targetSeason:options.season,clearPending:options.clearPending,clearHistory:options.clearHistory,pending:pendingShotCounts(m)});
@@ -1139,7 +1146,7 @@
   },
   async clearTeamPendingShots(team){
    if(!admin()||!TEAMS.includes(team)||!match)return false;
-   const cutoff=Date.now();
+   const cutoff=matchNow();
    const saved=await change(m=>{
     m.queueClearAt||={};
     m.queueClearAt[team]=Math.max(Number(m.queueClearAt[team]||0),cutoff);
@@ -1191,11 +1198,11 @@
     if(admin())return this.manualShot(team,n);
     n=Number(n);
     if(!match||match.guestTrialEnabled!==true||!TEAMS.includes(team)||!(n===1||n===5))return false;
-    if(Date.now()-lastGuestClickAt<GUEST_SEND_COOLDOWN_MS)return false;
+    if(matchNow()-lastGuestClickAt<GUEST_SEND_COOLDOWN_MS)return false;
     const pendingCount=[...pendingRequests.values()].filter(x=>x.payload?.guestTrial).length;
     if(pendingCount>=12)return false;
-    lastGuestClickAt=Date.now();
-    const payload={id:crypto.randomUUID(),team,count:n,sentAt:Date.now(),guestTrial:true,clientId:guestRequestClient};
+    lastGuestClickAt=matchNow();
+    const payload={id:crypto.randomUUID(),team,count:n,sentAt:matchNow(),guestTrial:true,clientId:guestRequestClient};
     pendingRequests.set(payload.id,{payload,lastSent:0,resolve:null});
     rememberRequests();
     // Same optimistic queue as host; shared state supersedes when leader confirms.
@@ -1223,7 +1230,7 @@
     return true;
    },
    manualKeeper(team,n){if(!admin()||!['A','B','C','D'].includes(team))return false;return change(m=>{m.keeper[team]+=Math.max(0,Number(n)||0);},false);},
-  reset(){if(!admin())return false;return change(m=>{if(m.cue&&!m.cue.finishedAt)return false;const initial=Object.fromEntries(['A','B','C','D'].map(t=>[t,Number(m.initialKeeper?.[t]??state.startKeepers?.[t]??10)]));m.queueEdit={id:crypto.randomUUID(),kind:'reset'};m.scores={A:0,B:0,C:0,D:0};m.keeper=initial;m.jobs=[];m.cue=null;m.nextCue=null;m.cooldownUntil=0;m.clock={startedAt:Date.now(),durationMs:normalMs(m),round:(Number(m.clock?.round)||1)+1,finishedAt:null};m.idleEpoch=m.clock.startedAt;stagedStarts.clear();timers.forEach(clearTimeout);timers.clear();window.AIFootball3D?.reset?.();},false);}
+  reset(){if(!admin())return false;return change(m=>{if(m.cue&&!m.cue.finishedAt)return false;const initial=Object.fromEntries(['A','B','C','D'].map(t=>[t,Number(m.initialKeeper?.[t]??state.startKeepers?.[t]??10)]));m.queueEdit={id:crypto.randomUUID(),kind:'reset'};m.scores={A:0,B:0,C:0,D:0};m.keeper=initial;m.jobs=[];m.cue=null;m.nextCue=null;m.cooldownUntil=0;m.clock={startedAt:matchNow(),durationMs:normalMs(m),round:(Number(m.clock?.round)||1)+1,finishedAt:null};m.idleEpoch=m.clock.startedAt;stagedStarts.clear();timers.forEach(clearTimeout);timers.clear();window.AIFootball3D?.reset?.();},false);}
  };
  window.addEventListener('online',()=>{ensureChannel();sendRequests().catch(()=>{});});document.addEventListener('visibilitychange',()=>{if(!document.hidden){ensureChannel();read().then(()=>sendRequests()).catch(()=>{});}});
  install();connect();document.addEventListener('pointerdown',()=>{if(!connected)connect();});window.addEventListener('pagehide',()=>{

@@ -21,6 +21,6 @@ const count=()=>Object.values(p.pendingShotCounts(p.get())).reduce((a,b)=>a+b,0)
  // The user's automatic-continuation switch still controls whether the extra match starts.
  m=base();m.autoMatches=false;m.manualMatchStart=true;p.set(m);p.closeRound(m,now);now+=10001;await p.advance();assert(p.get().clock.finishedAt);assert.equal(p.get().clock.round,20);assert(await api.startNextMatch());assert.equal(p.get().clock.round,21);assert.equal(p.get().league.season,7);assert.equal(p.get().clock.manualStarted,true);
  m=base();delete m.timing;m.clock.startedAt=now-30*60000;p.set(m);await p.advance();assert.equal(p.get().clock.finishedAt,now);assert.equal(p.get().league.plannedRounds,21);assert.equal(count(),18);
- m=base(false);m.minClientBuild=251;p.set(m);assert(api.getStatus().updateRequired);assert.equal(await api.startNextMatch(),false);
+ m=base(false);m.minClientBuild=267;p.set(m);assert(api.getStatus().updateRequired);assert.equal(await api.startNextMatch(),false);
  console.log('PASS: scored extra rounds in the same season; normal point accounting; each hard match deadline retained; incomplete shots preserved; late/unflushed gifts block championship; outsiders receive scored matches; ties retain finals; single cup only after empty results window; automatic toggle respected. Mocked state only.');
 })().catch(e=>{console.error(e);process.exitCode=1;});
