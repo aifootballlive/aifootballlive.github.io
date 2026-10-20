@@ -133,6 +133,16 @@
  function showMatchClock(){
   const hud=document.getElementById('matchClockHud');if(!hud)return;
   const now=Date.now(),state=matchClockView(match,now),timing=timingFor(match),ends=breakDeadlines(match);
+  const heading=document.getElementById('goalsHeading');
+  if(heading){
+   const league=match?.league||{},season=Math.max(1,Math.floor(Number(league.season)||1));
+   const total=Math.max(1,Math.floor(Number(league.plannedRounds)||20));
+   const completed=Math.max(0,Math.floor(Number(league.completedRounds)||0));
+   const playing=matchRunning(match,now)||matchStarting(match,now);
+   const current=Math.min(total,completed+(playing?1:0));
+   const text=season+'. SEZON · '+current+'/'+total+' MAÇ · GOL SAYILARI';
+   if(heading.textContent!==text)heading.textContent=text;
+  }
   const arena=document.getElementById('liveArenaName');
   const draftArena=window.AIFootballAdminPreviewArena?.();
   const arenaName=draftArena||timing.arenaName;
