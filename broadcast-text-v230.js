@@ -106,7 +106,7 @@ function render(){raf=0;const width=root.getBoundingClientRect().width;if(!width
   const old=originals.get(node);if(old.value)node.style.setProperty('font-size',old.value,old.priority);else node.style.removeProperty('font-size');
  }
  // Read every baseline after restoring parents, before writing any scaled font.
- for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector))if(needsFit(node)&&measurable(node))entries.push({node,group,px:waitingLabel(node)?width*.08:activeClockLabel(node)?width*.065*config.all*config.info/10000:node.matches('.clockDigits')?width*.068*config.all/100:node.matches('.frontKeeperTop strong')?width*.047*config.all/100:node.matches('.keeperGroupTitle')?width*.036*config.all/100:baseline(node)*config.all*config[group]/10000});
+ for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector))if(needsFit(node)&&measurable(node))entries.push({node,group,px:waitingLabel(node)?width*.08:activeClockLabel(node)?width*.065*config.all*config.info/10000:node.matches('#leagueProfileHint')?Math.max(baseline(node)*config.all*config.info/10000,width*.0365):node.matches('.clockDigits')?width*.068*config.all/100:node.matches('.frontKeeperTop strong')?width*.047*config.all/100:node.matches('.keeperGroupTitle')?width*.036*config.all/100:baseline(node)*config.all*config[group]/10000});
  let teamSize=Infinity;
  for(const item of entries){const px=fit(item.node,item.px);if(item.group==='teams')teamSize=Math.min(teamSize,px);}
  if(Number.isFinite(teamSize))for(const node of root.querySelectorAll(groups.teams))setSize(node,teamSize);

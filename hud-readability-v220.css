@@ -588,3 +588,9 @@ html body #broadcastViewport#broadcastViewport>#leagueProfileHint{
  display:flex!important;align-items:center!important;justify-content:center!important;
  padding:.3cqw .8cqw!important;white-space:nowrap!important;text-transform:uppercase!important;
 }
+
+/* A little more room for the alternating reward/league line. */
+html body #broadcastViewport#broadcastViewport>#leagueProfileHint{
+ height:5.7cqw!important;min-height:5.7cqw!important;max-height:5.7cqw!important;
+ letter-spacing:.015em!important;word-spacing:.025em!important;
+}

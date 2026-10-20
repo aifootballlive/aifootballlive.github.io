@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=282,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=284,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // A hidden overlay must never become a phantom dark sheet through stale CSS.
@@ -771,7 +771,24 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   const rules={...base.rules,[KEY]:initial};const {data,error}=await db.from('games').update({rules}).eq('id',base.id).eq('rules',JSON.stringify(base.rules)).select('id,rules');
   if(error)throw error;if(data?.length)apply(data[0]);else await read();
  }
+ const LIKE_STORE='afl.pending-likes.v284',likeInbox=new Map();let bridgeRoomId='',likeFlushAt=0;
+ try{for(const e of JSON.parse(localStorage.getItem(LIKE_STORE)||'[]'))if(e&&typeof e.key==='string'&&Number.isFinite(e.at))likeInbox.set(e.key+':'+(e.id||e.total),e);}catch{}
+ function saveLikes(){try{localStorage.setItem(LIKE_STORE,JSON.stringify([...likeInbox.values()].slice(-2500)));}catch{}}
+ function receiveLike(raw){
+  const e=window.AIFootballLikeBonus?.parse(raw,bridgeRoomId,matchNow());if(!e)return false;
+  likeInbox.set(e.key+':'+(e.id||e.total),e);saveLikes();return true;
+ }
+ async function flushLikes(){
+  if(!owns()||!likeInbox.size||matchNow()-likeFlushAt<1000)return;likeFlushAt=matchNow();
+  const batch=[...likeInbox.entries()].slice(0,250);
+  const saved=await change(m=>{const result=window.AIFootballLikeBonus?.apply(m,batch.map(([,e])=>e),matchNow());if(!result?.changed)return false;if(result.rounds)primeQueuedShots(m,matchNow());});
+  if(!saved&&!owns())return;
+  for(const [key,e]of batch)if(likeInbox.get(key)===e)likeInbox.delete(key);saveLikes();
+ }
  async function receive(raw){
+  const kind=String(raw?.event||raw?.type||'').toLowerCase();
+  if(kind==='connected'||kind==='roominfo'){const room=raw.data?.roomId??raw.data?.state?.roomId;if(room)bridgeRoomId=String(room);return false;}
+  if(kind==='like')return receiveLike(raw);
   if(raw?.event!=='gift'&&raw?.type!=='gift')return false;
   const g=raw.data||{},id=g.transactionId||g.msgId||g.id,name=g.giftName??g.giftDetails?.giftName,giftId=g.giftId??g.giftDetails?.giftId,type=g.giftType??g.giftDetails?.giftType;
   if(!id||Number(type)===1&&g.repeatEnd!==true)return false;
@@ -1068,7 +1085,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
      },false);
     }
     if(!match&&connected)await seed();if(match&&!owns()&&canClaimControl(match))await change(claimControl,false);
-    if(owns()){if(match.lease.until<matchNow()+6000)await change(()=>{});await flush();await flushRequestInbox();await advance();}}
+    if(owns()){if(match.lease.until<matchNow()+6000)await change(()=>{});await flush();await flushLikes();await flushRequestInbox();await advance();}}
    errorText='';paint();
   }catch(e){errorText='Maç bağlantısı bekleniyor';paint();console.warn(e.message);}finally{setTimeout(tick,350);}
  }
@@ -1088,6 +1105,9 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   setInterval(showMatchClock,200);showMatchClock();legend();read().then(ensureChannel).catch(e=>console.warn(e.message));tick();
  }
  window.AIFootballTikTok={get active(){return true;},get connected(){return connected;},getStatus(){return {clientBuild:CLIENT_BUILD,updateRequired:needsRefresh(),autoMatches:autoMatchEnabled(match),guestTrialEnabled:match?.guestTrialEnabled===true,manualMatchStart:!autoMatchEnabled(match),active:true,connected,shared:!!match,leader:owns(),revision:match?.revision,accepted:match?.accepted||0,lastGift:match?.lastGift||null,lastShotQueuedAt:match?.lastShotQueuedAt||0,pending:Object.values(pendingShotCounts(match)).reduce((a,b)=>a+b,0),waitingRequests:pendingRequests.size,channelReady,adminAvailable:!!match?.lease&&match.lease.until>matchNow(),lastError:errorText};},getClock(){return match?{epoch:match.idleEpoch}:null;},getTimings(){return timingFor(match);},
+  getLikeBonusStatus(){return window.AIFootballLikeBonus?.status(match)||{enabled:true,progress:0,awarded:0,observed:0};},
+  async setLikeBonusEnabled(enabled){if(!admin()||typeof enabled!=='boolean')return false;return change(m=>{m.likeBonus||={progress:0,awarded:0,observed:0,retired:[]};m.likeBonus.enabled=enabled;},false);},
+  async resetLikeBonusCounter(){if(!admin())return false;const saved=await change(m=>{m.likeBonus||={enabled:true,retired:[]};m.likeBonus.progress=0;m.likeBonus.observed=0;m.likeBonus.awarded=0;m.likeBonus.resetAt=matchNow();},false);if(saved){likeInbox.clear();saveLikes();}return saved;},
   async setTimings(next){
    if(!admin())return false;
    const validated=timingFor({timing:next});

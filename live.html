@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261020-v283-beacon-and-announcements">
+<meta name="aifootball-release" content="20261020-v284-like-bonus-and-settings">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script>if(new URLSearchParams(location.search).get('studio')==='tiktok1080')document.documentElement.classList.add('aflTikTokPortraitSource');</script>
 <title>AI Football Live</title>
@@ -2135,7 +2135,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
 }
 </style>
 <link rel="stylesheet" href="./panel-type-v214.css?v=218">
-<link rel="stylesheet" href="./broadcast-scale-v218.css"><link rel="stylesheet" href="./hud-readability-v220.css?v=283"><link rel="stylesheet" href="./admin-font-control-v220.css?v=241"><script>(()=>{const root=document.documentElement,q=matchMedia("(min-width:801px)"),p=matchMedia("(min-width:650px) and (max-aspect-ratio:9/16)"),sync=()=>root.classList.toggle("aflProportionalHud",q.matches||p.matches||root.classList.contains("aflTikTokPortraitSource"));sync();q.addEventListener("change",sync);p.addEventListener("change",sync);})();</script>
+<link rel="stylesheet" href="./broadcast-scale-v218.css"><link rel="stylesheet" href="./hud-readability-v220.css?v=284"><link rel="stylesheet" href="./admin-font-control-v220.css?v=241"><script>(()=>{const root=document.documentElement,q=matchMedia("(min-width:801px)"),p=matchMedia("(min-width:650px) and (max-aspect-ratio:9/16)"),sync=()=>root.classList.toggle("aflProportionalHud",q.matches||p.matches||root.classList.contains("aflTikTokPortraitSource"));sync();q.addEventListener("change",sync);p.addEventListener("change",sync);})();</script>
 </head>
 <body>
 <div id="startupStatus" role="status">Yayın hazırlanıyor…</div>
@@ -2315,7 +2315,8 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
 <script src="./broadcast-layout-v229.js?v=263"></script>
-<script src="./tiktok-shared-v209.js?v=282"></script>
+<script src="./like-bonus-v284.js?v=284"></script>
+<script src="./tiktok-shared-v209.js?v=284"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2582,6 +2583,7 @@ function openAdmin(){
  if(!adminAuthed)return;
  const overlay=$('adminOverlay'),drawer=$('leagueDrawer');
  if(!overlay||!drawer)return;
+ try{sessionStorage.setItem('afl.adminPane.v284','settings');}catch{}
  const fromLeague=drawer.classList.contains('show');
  // Keep unsaved Settings draft when switching back from League.
  if(!overlay.classList.contains('show')){
@@ -2627,6 +2629,7 @@ function openLeagueDrawer(){
  requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
 }
 function closeAdmin(){
+ try{sessionStorage.removeItem('afl.adminPane.v284');}catch{}
  document.body.classList.remove('aflTextPreview');
  if(document.body.classList.contains('settingsMode')){location.replace('./live.html');return;}
  $('adminOverlay').classList.remove('show');
@@ -2656,17 +2659,20 @@ function applyRules(r){
 }
 function handleEventRow(row,animate=true){if(window.AIFootballTikTok?.active)return;if(!row||!row.id||seenEvents.has(row.id))return;seenEvents.add(row.id);const attack=teamFromId(row.attacking_team_id),defend=teamFromId(row.defending_team_id);if(row.event_type==='goal'){log('GOL! '+(attack?nameOf(attack):''));if(animate&&attack){window.AIFootball3D?.finishShot?.(attack,'goal');celebrateGoal(attack)}}else if(row.event_type==='saved'){log((defend?nameOf(defend)+' ':'')+'kalecisi kurtardı!')}else if(row.event_type==='reset'){log('Maç sıfırlandı')}}
 let authCheck=null,authGeneration=0;
-function applyAuthRole(user){
+function applyAuthRole(user,checking=false){
  adminAuthed=!!(user&&user.id===ADMIN_UID);
+ // Keep the current panel/draft visible through token checks, without granting writes.
+ const body=$('adminOverlay')?.querySelector('.adminBody');if(body)body.inert=!adminAuthed;
+ $('adminOverlay')?.setAttribute('aria-busy',String(checking));
  // getAuth() verifies MFA and server-side device permission before unlocking admin.
  render();setConn();
  if(document.body.classList.contains('settingsMode')){
   if(adminAuthed&&!$('leagueDrawer').classList.contains('show'))openAdmin();
-  else if(!adminAuthed)$('adminOverlay').classList.remove('show');
+  else if(!adminAuthed&&!checking)$('adminOverlay').classList.remove('show');
  }
  $('leagueSettingsTab').hidden=!adminAuthed;
- // Lock management immediately, but keep public standings open during auth checks.
- if(!adminAuthed){
+ // Explicit sign-out/failed verification still closes management. Token refresh only locks fields.
+ if(!adminAuthed&&!checking){
   $('adminOverlay').classList.remove('show');
   if(document.body.classList.contains('drawerMode')&&!$('leagueDrawer').classList.contains('show'))closeAdmin();
  }
@@ -2948,7 +2954,7 @@ async function boot(){
   if(event==='INITIAL_SESSION'){if(!session)applyAuthRole(null);return;}
   // Cached session claims cannot directly open the admin panel. Verify
   // the current user through Supabase Auth before restoring any controls.
-  authGeneration++;applyAuthRole(null);
+  authGeneration++;applyAuthRole(null,true);
   setTimeout(async()=>{
    // Supabase can emit TOKEN_REFRESHED while a prior getUser is still in
    // flight. Wait for that check to settle, then verify this generation.
@@ -2964,6 +2970,7 @@ async function boot(){
   if(!adminAuthed){location.replace('./admin-edm2026.html?next=settings');return;}
   openAdmin();
  }
+ try{if(adminAuthed&&sessionStorage.getItem('afl.adminPane.v284')==='settings')openAdmin();}catch{}
  if(window.AIFootballTikTok?.active){await loadTikTokPresentation();window.AIFootballTikTok.activate();return;}await loadRemote(true);setupRealtime();setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
 $('adminOverlay').addEventListener('input',previewAdminDraft);
 $('adminOverlay').addEventListener('change',previewAdminToggle);
@@ -3059,7 +3066,7 @@ render();boot().finally(()=>window.dispatchEvent(new Event('afl-initial-state-re
 <script id="game3dScript" src="./scene-video-v219.js?v=281"></script>
 <script src="./update-watch-v2.js?v=2"></script>
 <script src="./interface-fixes-v230.js?v=270"></script>
-<link rel="stylesheet" href="./broadcast-text-v230.css"><script src="./broadcast-text-v230.js?v=270"></script>
+<link rel="stylesheet" href="./broadcast-text-v230.css"><script src="./broadcast-text-v230.js?v=284"></script>
 <script src="./broadcast-announcements-v283.js?v=283"></script>
 <script src="./season-control-v248.js?v=250"></script>
 </body>
