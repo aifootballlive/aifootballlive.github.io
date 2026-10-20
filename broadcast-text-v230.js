@@ -4,9 +4,10 @@ const root=document.getElementById('broadcastViewport');if(!root)return;
 const groups={headings:'.arenaTitle,#goalsHeading',teams:'.teamTitle',scores:'.panelHead.teamScore .num',shots:'.giftEffect',queues:'.queueLabel,.adminTeamQueue strong',info:'#leagueProfileHint,.clockLabel,.clockDigits,.keeperGroupTitle,.frontKeeperTop strong',buttons:'#adminOpen,#soundEnable,.startMatchAction'};
 const keys=['all',...Object.keys(groups)],id=k=>document.getElementById('broadcastText-'+k);
 function normalize(value){return Object.fromEntries(keys.map(k=>{const n=Number(value?.[k]);return[k,Number.isFinite(n)?Math.max(k==='info'?40:80,Math.min(k==='teams'||k==='scores'?200:130,n)):100];}));}
-let config=normalize(window.__AI_FOOTBALL_SETTINGS?.broadcastText),signature='',raf=0;
+let config=normalize(window.__AI_FOOTBALL_SETTINGS?.broadcastText),signature='',raf=0,fullFit=true;
+const dirtyText=new Set();
 const originals=new WeakMap(),observedText=new WeakSet();
-function watchText(node){if(observedText.has(node))return;observedText.add(node);let previous=node.textContent;new MutationObserver(()=>{if(node.textContent===previous)return;previous=node.textContent;schedule();}).observe(node,{childList:true,characterData:true,subtree:true});}
+function watchText(node){if(observedText.has(node))return;observedText.add(node);let previous=node.textContent;new MutationObserver(()=>{if(node.textContent===previous)return;previous=node.textContent;schedule(node);}).observe(node,{childList:true,characterData:true,subtree:true});}
 const measurable=node=>node.getClientRects().length>0&&node.clientWidth>0&&node.clientHeight>0;
 function read(){return normalize(Object.fromEntries(keys.map(k=>[k,id(k)?.value??100])));}
 function fill(value){const clean=normalize(value);for(const k of keys){if(id(k))id(k).value=clean[k];const out=document.getElementById('broadcastTextValue-'+k);if(out)out.textContent=clean[k]+'%';}}
@@ -88,25 +89,30 @@ function fit(node,px){
  return px;
 }
 function render(){raf=0;const width=root.getBoundingClientRect().width;if(!width)return;
+ const full=fullFit,dirty=new Set(dirtyText);fullFit=false;dirtyText.clear();
+ const teamsChanged=[...dirty].some(node=>node.matches(groups.teams));
+ const needsFit=node=>full||dirty.has(node)||(teamsChanged&&node.matches(groups.teams));
  const entries=[];
  const scoreFactor=config.all*config.scores/10000;
+ if(full){
  root.dataset.largeTeamType='false'; // Team names always use one bounded line.
  root.style.setProperty('--afl-name-cell','4.6cqw');
  root.style.setProperty('--afl-score-cell',Math.min(12.5,9.2+Math.max(0,scoreFactor-1)*2.1)+'cqw');
+ }
  for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector)){
-  if(!measurable(node))continue;
+  if(!needsFit(node)||!measurable(node))continue;
   watchText(node);
   if(!originals.has(node))originals.set(node,{value:node.style.getPropertyValue('font-size'),priority:node.style.getPropertyPriority('font-size')});
   const old=originals.get(node);if(old.value)node.style.setProperty('font-size',old.value,old.priority);else node.style.removeProperty('font-size');
  }
  // Read every baseline after restoring parents, before writing any scaled font.
- for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector))if(measurable(node))entries.push({node,group,px:waitingLabel(node)?width*.08:activeClockLabel(node)?width*.065*config.all*config.info/10000:node.matches('.clockDigits')?width*.068*config.all/100:node.matches('.frontKeeperTop strong')?width*.047*config.all/100:node.matches('.keeperGroupTitle')?width*.036*config.all/100:baseline(node)*config.all*config[group]/10000});
+ for(const [group,selector]of Object.entries(groups))for(const node of root.querySelectorAll(selector))if(needsFit(node)&&measurable(node))entries.push({node,group,px:waitingLabel(node)?width*.08:activeClockLabel(node)?width*.065*config.all*config.info/10000:node.matches('.clockDigits')?width*.068*config.all/100:node.matches('.frontKeeperTop strong')?width*.047*config.all/100:node.matches('.keeperGroupTitle')?width*.036*config.all/100:baseline(node)*config.all*config[group]/10000});
  let teamSize=Infinity;
  for(const item of entries){const px=fit(item.node,item.px);if(item.group==='teams')teamSize=Math.min(teamSize,px);}
  if(Number.isFinite(teamSize))for(const node of root.querySelectorAll(groups.teams))setSize(node,teamSize);
- window.dispatchEvent(new Event('resize'));
+ if(full)window.dispatchEvent(new Event('resize'));
 }
-function schedule(){if(!raf)raf=requestAnimationFrame(render);}
+function schedule(node){if(node instanceof Element)dirtyText.add(node);else fullFit=true;if(!raf)raf=requestAnimationFrame(render);}
 function apply(value,force=false){const clean=normalize(value),next=JSON.stringify(clean);config=clean;if(force||next!==signature){signature=next;schedule();}}
 document.getElementById('broadcastTextPreviewToggle')?.addEventListener('click',e=>{const open=document.body.classList.toggle('aflTextPreview');e.currentTarget.textContent=open?'Tam ekran ayarlara dön':'Telefonda canlı önizlemeyi aç';schedule();window.dispatchEvent(new Event('resize'));});
 for(const k of keys)id(k)?.addEventListener('input',()=>{fill(read());apply(read());});

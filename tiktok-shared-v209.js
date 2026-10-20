@@ -149,14 +149,14 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   const arenaName=draftArena||timing.arenaName;
   const arenaTitle=arena?.querySelector('.arenaTitle');
   if(arenaTitle&&arenaTitle.textContent!==arenaName)arenaTitle.textContent=arenaName;
-  document.documentElement.lang=timing.language;
+  if(document.documentElement.lang!==timing.language)document.documentElement.lang=timing.language;
   const label=hud.querySelector('.clockLabel'),digits=hud.querySelector('.clockDigits');
   if(label&&label.textContent!==state.label)label.textContent=state.label;
   if(digits&&digits.textContent!==state.digits)digits.textContent=state.digits;
-  hud.dataset.phase=state.phase;
-  hud.setAttribute('aria-label',state.label);
+  if(hud.dataset.phase!==state.phase)hud.dataset.phase=state.phase;
+  if(hud.getAttribute('aria-label')!==state.label)hud.setAttribute('aria-label',state.label);
   const clockHidden=state.digits==='';
-  if(digits)digits.hidden=clockHidden;
+  if(digits&&digits.hidden!==clockHidden)digits.hidden=clockHidden;
   const ended=!!ends;
   const automatic=canContinueAutomatically(match);
   const showingSummary=ended&&now<ends.summaryUntil;
@@ -167,7 +167,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   const autoButton=document.getElementById('autoMatchesToggle');
   if(autoButton){
    const text='MAÇLAR OTOMATİK DEVAM ETSİN: '+(automatic?'AÇIK':'KAPALI');
-   autoButton.dataset.enabled=String(automatic);
+   if(autoButton.dataset.enabled!==String(automatic))autoButton.dataset.enabled=String(automatic);
    if(autoButton.textContent!==text)autoButton.textContent=text;
   }
   const summary=summaryBoard;
@@ -176,19 +176,19 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   if(summary){
    // Explicit view flag blocks stale CSS from exposing an empty dark overlay.
    // Hidden state is synchronized with the same clock phase used for the HUD.
-   summary.dataset.showing=showingSummary?'true':'false';
-   summary.hidden=!showingSummary;
-   summary.setAttribute('aria-hidden',String(!showingSummary));
+   if(summary.dataset.showing!==String(showingSummary))summary.dataset.showing=String(showingSummary);
+   if(summary.hidden!==!showingSummary)summary.hidden=!showingSummary;
+   if(summary.getAttribute('aria-hidden')!==String(!showingSummary))summary.setAttribute('aria-hidden',String(!showingSummary));
    // Keep the physical panel and HUD phase in lockstep, even if an old CSS
    // declaration tries to force display:flex in the signed-in admin view.
    summary.style.setProperty('display',showingSummary?'flex':'none','important');
    summary.style.setProperty('visibility',showingSummary?'visible':'hidden','important');
   }
   // The old large waiting overlay is retired; the status is in the referee HUD.
-  if(waiting)waiting.hidden=true;
+  if(waiting&&!waiting.hidden)waiting.hidden=true;
   const result=document.getElementById('matchResultBanner'),league=document.getElementById('leagueBreakPanel');
-  if(result)result.hidden=!showingSummary;
-  if(league)league.hidden=!showingSummary;
+  if(result&&result.hidden!==!showingSummary)result.hidden=!showingSummary;
+  if(league&&league.hidden!==!showingSummary)league.hidden=!showingSummary;
   if(showingSummary){
    announceMatchResult(match);
    const winner=match.clock.interrupted?'MAÇ TEKNİK NEDENLE DURDU':

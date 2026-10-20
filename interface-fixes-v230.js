@@ -101,8 +101,8 @@ let raf=0;
 function requestResize(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;resizeAll();});}
 new ResizeObserver(requestResize).observe(root);
 for(const node of cardNodes) new ResizeObserver(requestResize).observe(node);
-const clockObserver=new MutationObserver(requestResize);
-for(const node of [id('matchClockHud'),id('liveStartButton')])if(node)clockObserver.observe(node,{attributes:true,attributeFilter:['style','class','hidden','data-phase']});
+const clockObserver=new MutationObserver(records=>{if(records.some(r=>r.oldValue!==r.target.getAttribute(r.attributeName)))requestResize();});
+for(const node of [id('matchClockHud'),id('liveStartButton')])if(node)clockObserver.observe(node,{attributes:true,attributeOldValue:true,attributeFilter:['style','class','hidden','data-phase']});
 const paneObserver=new MutationObserver(requestResize);
 for(const node of [id('adminOverlay'),id('leagueDrawer')]){
  if(node)paneObserver.observe(node,{attributes:true,attributeFilter:['class']});

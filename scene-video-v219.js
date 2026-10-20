@@ -274,7 +274,7 @@ function maintainShot(){
   lastRecovery=matchNow();recoveryCount++;
   const cachedURL=mediaCache.getURL(v.dataset.clipKey);
   if(cachedURL&&v.getAttribute('src')!==cachedURL){if(shot.controller)shot.resumeAt=v.currentTime;const replacement=spareDeck();assignClip(replacement,v.dataset.clipKey,cachedURL);replacement.style.opacity='0';shotVideo=replacement;playShot();return;}
-  mediaCache.warm(v.dataset.clipKey,{priority:200}).catch(()=>{});
+  mediaCache.warm(v.dataset.clipKey,{priority:200,recovery:true}).catch(()=>{});
   if(recoveryCount===2){if(shot.controller)shot.resumeAt=v.currentTime;reloading=true;v.pause();v.load();return;}
   try{if(v.readyState>=1)v.currentTime=Math.min(expected,Math.max(0,duration-.05));}catch{}
  }

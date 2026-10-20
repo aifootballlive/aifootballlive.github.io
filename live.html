@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261020-v269-arena-wordmark">
+<meta name="aifootball-release" content="20261020-v270-mobile-performance">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script>if(new URLSearchParams(location.search).get('studio')==='tiktok1080')document.documentElement.classList.add('aflTikTokPortraitSource');</script>
 <title>AI Football Live</title>
@@ -2315,7 +2315,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
 <script src="./broadcast-layout-v229.js?v=263"></script>
-<script src="./tiktok-shared-v209.js?v=268"></script>
+<script src="./tiktok-shared-v209.js?v=270"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2441,16 +2441,18 @@ function syncMainMatchStart(){
  const info=window.AIFootballTikTok?.getMatchState?.();
  const running=info?.running===true||info?.starting===true;
  const showingResults=info?.results===true;
- button.hidden=!adminAuthed||showingResults;
- button.disabled=!adminAuthed||!info?.ready||(!running&&!info?.canStart)||button.dataset.busy==='true';
+ const hidden=!adminAuthed||showingResults;
+ if(button.hidden!==hidden)button.hidden=hidden;
+ const disabled=!adminAuthed||!info?.ready||(!running&&!info?.canStart)||button.dataset.busy==='true';
+ if(button.disabled!==disabled)button.disabled=disabled;
  const action=button.querySelector('.startMatchAction');
  const label=running?'DURDUR':'BAŞLAT';
  if(action&&action.textContent!==label)action.textContent=label;
- button.dataset.action=running?'stop':'start';
- button.title=running?(info?.starting?'Maç başlangıcını iptal et':'Aktif maçı sonlandır'):'30 saniye geri sayımla maçı başlat';
- button.setAttribute('aria-label',running?'Maçı durdur':'Maçı başlat');
- button.setAttribute('aria-disabled',String(button.disabled));
- hud.classList.toggle('hasAdminMatchButton',adminAuthed&&!showingResults);
+ const nextAction=running?'stop':'start';if(button.dataset.action!==nextAction)button.dataset.action=nextAction;
+ const title=running?(info?.starting?'Maç başlangıcını iptal et':'Aktif maçı sonlandır'):'30 saniye geri sayımla maçı başlat';if(button.title!==title)button.title=title;
+ const ariaLabel=running?'Maçı durdur':'Maçı başlat';if(button.getAttribute('aria-label')!==ariaLabel)button.setAttribute('aria-label',ariaLabel);
+ if(button.getAttribute('aria-disabled')!==String(button.disabled))button.setAttribute('aria-disabled',String(button.disabled));
+ const hasButton=adminAuthed&&!showingResults;if(hud.classList.contains('hasAdminMatchButton')!==hasButton)hud.classList.toggle('hasAdminMatchButton',hasButton);
 }
 window.AIFootballUpdateMainMatchLaunch=syncMainMatchStart;
 function render(){
@@ -3053,11 +3055,11 @@ render();boot().finally(()=>window.dispatchEvent(new Event('afl-initial-state-re
 
 <script src="./scene-audio-cues-v219.js?v=219"></script>
 <script src="./round-finale-v205.js?v=266"></script>
-<script src="./shot-cache-v195.js"></script>
-<script id="game3dScript" src="./scene-video-v219.js?v=266"></script>
+<script src="./shot-cache-v195.js?v=270"></script>
+<script id="game3dScript" src="./scene-video-v219.js?v=270"></script>
 <script src="./update-watch-v2.js?v=2"></script>
-<script src="./interface-fixes-v230.js?v=241"></script>
-<link rel="stylesheet" href="./broadcast-text-v230.css"><script src="./broadcast-text-v230.js?v=269"></script>
+<script src="./interface-fixes-v230.js?v=270"></script>
+<link rel="stylesheet" href="./broadcast-text-v230.css"><script src="./broadcast-text-v230.js?v=270"></script>
 <script src="./season-control-v248.js?v=250"></script>
 </body>
 </html>
