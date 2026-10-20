@@ -36,6 +36,10 @@ function fit(node,px){
  if(node.matches('.arenaTitle,.startMatchAction')||!maxWidth)maxWidth=parent.clientWidth-padding(parentStyle,'x');
  if(node.matches('.frontKeeperTop strong')){const siblings=[...parent.children].filter(el=>el!==node).reduce((sum,el)=>sum+el.getBoundingClientRect().width,0);maxWidth=parent.clientWidth-padding(parentStyle,'x')-siblings-(parseFloat(parentStyle.columnGap)||0);}
  let maxHeight=Infinity;
+ if(node.matches('.arenaTitle')){
+  const heading=document.getElementById('goalsHeading'),scale=root.getBoundingClientRect().width/root.clientWidth;
+  if(heading)maxHeight=Math.max(1,(heading.getBoundingClientRect().top-parent.getBoundingClientRect().top)/scale);
+ }
  if(node.matches('.teamTitle,.num,#goalsHeading,.keeperGroupTitle'))maxHeight=node.clientHeight;
  if(node.matches('.queueLabel,.adminTeamQueue strong'))maxHeight=parent.clientHeight-padding(parentStyle,'y');
  if(node.matches('.frontKeeperTop strong')){

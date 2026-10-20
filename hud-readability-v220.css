@@ -561,3 +561,12 @@ html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .panelH
 /* Larger keeper values use the existing card height with less interior spacing. */
 html body #broadcastViewport#broadcastViewport .frontKeeperCard{padding:1px 3px!important;gap:1px!important}
 html body #broadcastViewport#broadcastViewport .frontKeeperBar{margin-top:0!important}
+/* Arena wordmark: a compact, heavy sports face with crisp gold depth. */
+html body #broadcastViewport#broadcastViewport>.liveArenaName .arenaTitle{
+ font-family:'AFL Team Names','Arial Narrow',Arial,sans-serif!important;
+ font-weight:900!important;font-style:italic!important;font-size:4.8cqw!important;
+ color:#ffdc73!important;letter-spacing:.055em!important;word-spacing:.1em!important;
+ line-height:.95!important;padding:0 .25em!important;
+ text-shadow:0 .065em 0 #95621e,0 .11em 0 #071525!important;
+ background:transparent!important;filter:none!important;
+}
