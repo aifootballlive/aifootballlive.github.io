@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=281,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=282,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // A hidden overlay must never become a phantom dark sheet through stale CSS.
@@ -333,8 +333,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    // authoritative proof of spending a shot, not a guessed timeout.
    target.videoStartedAt||=Math.max(target.startsAt,matchNow()-Math.min(payload.duration*1000,60000));
    target.videoFinishedAt=matchNow();target.videoPlayedSeconds=payload.playedSeconds;target.videoElapsedMs=payload.elapsedMs;target.videoPlaybackOwner=owner;
-   settleCompletedCue(m);
-  },false,null,true).catch(e=>console.warn('Video bitiş onayı yazılamadı',e))
+  },false,null,true).then(saved=>{if(saved&&owns())return advance();}).catch(e=>console.warn('Video bitiş onayı yazılamadı',e))
    .finally(()=>videoAckInFlight.delete('finish:'+payload.cueId));
  }
  function reportVideoFinish(payload){
@@ -949,8 +948,8 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    m.nextCue=null;
   }
   m.cue.finishedAt=matchNow();m.cooldownUntil=0;
-  // Completion proof, settlement and the next cue share one CAS write.
-  // No extra read/write or polling tick between naturally completed clips.
+  // The server must already contain completion proof before this cue is
+  // replaced. This second CAS runs immediately after the proof is saved.
   if(!m.processingPaused&&hasPlayableJobs(m)&&window.AIFootball3D?.getShotTiming&&matchRunning(m)&&matchNow()<m.clock.startedAt+normalMs(m)+overtimeMs(m)){
    const job=takeJob(m,m.cue.team);
    if(job)m.cue=makeCue(m,job,matchNow()+40);
@@ -1029,7 +1028,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    await change(m=>{
     if(m.cue?.id!==cue.id||!hasVideoCompletionProof(m,m.cue)||m.cue.finishedAt)return false;
     settleCompletedCue(m);
-   });
+   },true,null,true);
    return;
   }
   // Recover a clip flagged finished by older engines before real
