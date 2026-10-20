@@ -1,7 +1,16 @@
 # TikTok CANLI hediye bağlantısı (bilgisayar)
 Bu altyapı, **gerçek TikTok LIVE** hediyelerini `https://aifootballlive.github.io/live.html` oyunundaki takımlara yönlendirmek üzere hazırlanmıştır. Yalnızca tarayıcı test düğmelerini taklit etmez.
 
-## Windows hızlı kurulum
+## TikFinity zaten açıksa
+TikFinity Desktop bu bilgisayarda `127.0.0.1:21213` hediye hattını açar.
+Oyun bu hatta doğrudan bağlanır. Bu durumda `TIKTOK-BASLAT.cmd` çalıştırılmaz;
+aynı portta ikinci program açmak port çakışmasına neden olur.
+TikFinity'yi kendi TikTok canlı yayınına bağlayın ve bilgisayardaki oyunda
+MFA ve cihaz onayı tamamlanmış yönetici oturumunu açık tutun.
+Yalnız yerel bağlantının açık olması, TikTok yayınının bağlı olduğunu göstermez.
+Yayın ve bir gerçek hediye ile uçtan uca kontrol ayrıca yapılmalıdır.
+
+## TikFinity kullanılmıyorsa alternatif Windows kurulumu
 1. **Node.js LTS** kurulu değilse https://nodejs.org/ adresinden kurun.
 2. Proje klasörünü bilgisayara indirin veya güncel GitHub kodunu çekin.
 3. `TIKTOK-BASLAT.cmd` dosyasını açın.
@@ -32,6 +41,10 @@ Oyun şu sekiz isim eşlemesini kullanır:
 - Portu internete yönlendirmeyin. Bilgisayarınızdaki yerel bağlantıda sorun varsa Node, Chrome/WebSocket ve tarayıcının yerel ağa erişim izinlerini kontrol edin.
 
 ## Test kontrolü
-Bilgisayarda köprü konsolunda `TikTok LIVE baglandi` yazmalı. Yönetici görünümünde bağlantı `Canlı bağlı` olmalı. Bir adet eşleşen hediye gelirken konsolda `Hediye:` görünür, ilgili takımın bekleyen şutu artar. Maç geri sayımı bitince şut başlar; topa vurduğu an sayaç düşer.
+TikFinity kullanılıyorsa kendi canlı yayınınıza bağlı olduğunu TikFinity'den kontrol edin.
+Alternatif köprü kullanılıyorsa konsolda `TikTok LIVE baglandi` yazmalı.
+Oyunun yönetici görünümünde `TikFinity bağlı` yerel hattın açık olduğunu gösterir.
+Bir adet eşleşen gerçek hediye gönderildiğinde ilgili takımın bekleyen şutu artmalı.
+Maç geri sayımı bitince şut başlar; topa vurduğu an sayaç düşer.
 
 **Not:** Burada gerçek TikTok canlı yayınına bağlanılıp test yapılmış değildir. Canlı test kullanıcı tarafından yapılacaktır.
