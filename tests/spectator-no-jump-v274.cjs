@@ -6,7 +6,7 @@ const server=http.createServer((req,res)=>{if(req.url==='/fixture.html'){res.set
  const page=await context.newPage();await page.goto('http://127.0.0.1:'+server.address().port+'/fixture.html');await page.setContent('<div class="wrap" style="position:relative;width:390px;height:844px"></div>');
  await page.evaluate(()=>{
   document.addEventListener('ended',event=>{if(event.target.id==='sceneShotVideo'||event.target.id==='sceneNextShotVideo')window.actualEnds=(window.actualEnds||0)+1;},true);window.finishes=[];window.actualEnds=0;window.start=Date.now();
-  window.AIFootballClipCache={mobile:true,waitingSrc:'./assets/mobile-v274/waiting.mp4',manifest:{A_save:{seconds:10.005,src:'./assets/mobile-v274/a-save.mp4'}},getURL:()=>null,warm:async()=>null,warmAll(){},stats:{}};
+  window.AIFootballClipCache={mobile:true,waitingSrc:'./assets/scene-v111/waiting.mp4',manifest:{A_save:{seconds:10.005,src:'./assets/scene-v112/fb-shot.mp4'}},getURL:()=>null,warm:async()=>null,warmAll(){},stats:{}};
   window.AIFootballTikTok={getMatchState:()=>({running:true}),getStatus:()=>({leader:false}),getCurrentCue:()=>({id:'cold'}),getMatchClock:()=>({startedAt:start}),getClock:()=>({}),hasPendingShot:()=>false,onShotVideoStarted(){},onShotVideoFinished:p=>finishes.push(p),onVideoEnded:()=>false};
  });await page.addScriptTag({url:'http://127.0.0.1:'+server.address().port+'/scene-video-v219.js'});
  await page.evaluate(()=>AIFootball3D.beginShot('A',{cueId:'cold',result:'save',startsAt:Date.now(),playbackOwner:'test'}));

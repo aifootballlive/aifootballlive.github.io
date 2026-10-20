@@ -427,7 +427,7 @@ window.AIFootball3D={
  get shotStatus(){return shot?{...shot,phase:'waiting',returnComplete:false}:null;},
  get videoStatus(){return {ready:video.readyState>=2,
    motionReady:video.readyState>=2,
-   mode:'cached-two-deck-video',mediaProfile:mediaCache.mobile?'mobile-540p':'original',cache:mediaCache.stats,recoveryCount,shotClipsReady:allKeys.every(key=>durationByKey.has(key)||failedMetadata.has(key)),
+   mode:'cached-two-deck-video',mediaProfile:'original',cache:mediaCache.stats,recoveryCount,shotClipsReady:allKeys.every(key=>durationByKey.has(key)||failedMetadata.has(key)),
    cachedShotClips:0,cacheFailures:failedMetadata.size,metadataProbes:probes.length,deckCount:decks.length};},
  get ready(){return video.readyState>=2;},
  applySettings(value){

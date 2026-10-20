@@ -1,9 +1,8 @@
-/* On-demand original/mobile MP4s: bounded disk cache, one network fetch, at most three blob URLs. */
+/* On-demand original-quality MP4s: bounded disk cache, one network fetch, at most three blob URLs. */
 (()=>{'use strict';
 const originals={"A_save": {"src": "./assets/scene-v112/fb-shot.mp4", "seconds": 10.01, "bytes": 7237013}, "A_goal": {"src": "./assets/scene-v110/fb-shot.mp4", "seconds": 8.0, "bytes": 6592959}, "B_save": {"src": "./assets/scene-v116/gs-shot.mp4", "seconds": 14.02, "bytes": 11202821}, "B_goal": {"src": "./assets/scene-v126/gs-goal.mp4", "seconds": 10.01, "bytes": 7529480}, "C_save": {"src": "./assets/scene-v125/bjk-save.mp4", "seconds": 10.01, "bytes": 7664786}, "C_goal": {"src": "./assets/scene-v132/bjk-goal.mp4", "seconds": 10.01, "bytes": 6980251}, "D_save": {"src": "./assets/scene-v123/ts-save.mp4", "seconds": 10.01, "bytes": 7611015}, "D_goal": {"src": "./assets/scene-v140/ts-goal.mp4", "seconds": 10.01, "bytes": 6761835}},CACHE='football-original-shots-v195',MAX_URLS=3;
 const mobile=!!(window.matchMedia?.('(pointer:coarse)').matches||/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||''));
-const mobileBytes={"A_save":1361326,"A_goal":1097308,"B_save":1926862,"B_goal":1327468,"C_save":1348656,"C_goal":1346343,"D_save":1354600,"D_goal":1346175};
-const manifest=Object.fromEntries(Object.entries(originals).map(([key,item])=>[key,{...item,originalSrc:item.src,...(mobile?{src:'./assets/mobile-v274/'+key.toLowerCase().replace('_','-')+'.mp4',bytes:mobileBytes[key]}:{})}]));
+const manifest=Object.fromEntries(Object.entries(originals).map(([key,item])=>[key,{...item,originalSrc:item.src}]));
 const urls=new Map(),pending=new Map(),queue=[],cached=new Set(),temporary=new Map();let active=0,networkFetches=0,failures=0,storageDisabled=false;
 const absolute=key=>new URL(manifest[key].src,location.href).href;
 const storePromise=typeof caches==='undefined'?Promise.resolve(null):caches.open(CACHE).catch(()=>null);
@@ -36,5 +35,5 @@ async function warm(key,options={}){const priority=options.priority??10,material
 let backgroundStarted=false;
 function warmAll(){if(backgroundStarted||constrained()||document.hidden)return;backgroundStarted=true;storePromise.then(store=>{if(store&&!storageDisabled)for(const key of Object.keys(manifest))ensure(key,-10,false);});}
 window.addEventListener('pagehide',()=>{for(const url of urls.values())URL.revokeObjectURL(url);urls.clear();temporary.clear();});
-window.AIFootballClipCache={mobile,waitingSrc:mobile?'./assets/mobile-v274/waiting.mp4':'./assets/scene-v111/waiting.mp4',manifest,getURL,warm,warmAll,get stats(){return {cachedClips:cached.size,blobURLs:urls.size,inFlight:active,queued:queue.length,networkFetches,failures,storageDisabled};}};
+window.AIFootballClipCache={mobile,waitingSrc:'./assets/scene-v111/waiting.mp4',manifest,getURL,warm,warmAll,get stats(){return {cachedClips:cached.size,blobURLs:urls.size,inFlight:active,queued:queue.length,networkFetches,failures,storageDisabled};}};
 })();

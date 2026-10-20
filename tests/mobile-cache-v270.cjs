@@ -8,8 +8,11 @@ async function fixture({mobile=false,saveData=false,effectiveType='4g'}={}){
 }
 const settle=()=>new Promise(r=>setTimeout(r,30));
 (async()=>{
+ const mobileOriginals=(await fixture({mobile:true})).cache,desktopOriginals=(await fixture()).cache;
+ assert.equal(JSON.stringify(mobileOriginals.manifest),JSON.stringify(desktopOriginals.manifest),'All 8 mobile clips must use identical original URLs and bytes as desktop');
+ assert.equal(mobileOriginals.waitingSrc,desktopOriginals.waitingSrc,'Waiting video must also retain original quality');
  for(const options of [{mobile:true},{saveData:true},{effectiveType:'3g'}]){
-  const {cache,requests}=await fixture(options);if(options.mobile){assert(cache.mobile);assert(cache.waitingSrc.includes('mobile-v274'));assert(cache.manifest.A_save.src.includes('mobile-v274'));assert(cache.manifest.A_save.bytes<3000000);}cache.warmAll();await settle();assert.equal(requests.length,0,'No bulk downloads on constrained devices');
+  const {cache,requests}=await fixture(options);if(options.mobile){assert(cache.mobile);assert(cache.waitingSrc.includes('scene-v111'));assert(cache.manifest.A_save.src.includes('scene-v112'));assert.equal(cache.manifest.A_save.bytes,7237013);}cache.warmAll();await settle();assert.equal(requests.length,0,'No bulk downloads on constrained devices');
   assert.equal(await cache.warm('A_save',{priority:100}),null);assert.equal(requests.length,0,'Cold video deck must not compete with a duplicate full fetch');
   const blob=await cache.warm('A_save',{priority:200,recovery:true});assert(blob.startsWith('blob:'));assert.equal(requests.length,1,'Stall recovery can still fetch original');
   assert.equal(await cache.warm('A_save'),blob);assert.equal(requests.length,1,'Reuse cached original');
