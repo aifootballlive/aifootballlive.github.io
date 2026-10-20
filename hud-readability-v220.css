@@ -1,3 +1,4 @@
+@font-face{font-family:'AFL Team Names';src:url('./assets/fonts/RobotoCondensed-ExtraBold.ttf') format('truetype');font-style:normal;font-weight:800;font-display:swap}
 /* v220 — readability-first portrait HUD, shared by the live game, OBS and TikTok.
    Never scales the MP4. Keep every team label exactly one line, uniformly sized. */
 #broadcastViewport{--afl-team-name-fit:13px;--afl-hud-top:9.0%;--afl-hud-gap:3px}
@@ -550,3 +551,10 @@ html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .panelH
 html.aflMobileApp body #broadcastViewport#broadcastViewport.adminView{--afl-app-control-gap:14px}
 html.aflMobileApp body #broadcastViewport#broadcastViewport.adminView>.liveArenaName{top:calc(4.8cqw + var(--afl-app-control-gap))!important}
 html.aflMobileApp body #broadcastViewport#broadcastViewport.adminView>.broadcastControls{top:calc(var(--afl-hud-top) + var(--afl-app-control-gap))!important}
+/* v264 — bold condensed capitals remain clear without squeezing the glyphs. */
+html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .panelHead.teamScore .teamTitle{
+ font-family:'AFL Team Names','Arial Narrow',Arial,sans-serif!important;
+ font-weight:800!important;font-size:4cqw!important;text-transform:uppercase!important;
+ letter-spacing:.012em!important;word-spacing:.025em!important;
+ line-height:1!important;padding:.15cqw .6cqw!important;
+}
