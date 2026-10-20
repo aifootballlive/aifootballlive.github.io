@@ -129,6 +129,12 @@ function assignClip(deck,key,forcedURL=null){
  deck.preload='auto';deck.src=desired;deck.load();
 }
 function spareDeck(){return decks.find(d=>d!==shotVideo)||decks[0];}
+function bufferedAt(v,time,headroom=.2){
+ if(!Number.isFinite(time)||time<0)return false;
+ const end=Number.isFinite(v.duration)?Math.min(v.duration,time+headroom):time+headroom;
+ for(let i=0;i<v.buffered.length;i++)if(v.buffered.start(i)<=time&&v.buffered.end(i)>=end)return true;
+ return false;
+}
 function prepareUpcomingShot(cue){
  if(!cue||cue.finishedAt||!clips[cue.team])return;
  const key=keyFor(cue.team,cue.result),identity=cue.id+':'+key;
@@ -163,7 +169,7 @@ function revealCurrent(target,confirmedFrame=false){
  if(!confirmedFrame&&typeof target.requestVideoFrameCallback==='function'&&target.style.opacity==='0')return;
  if(target.style.opacity!=='1'){
   // A cold/private tab can buffer before its first frame: align once before revealing it.
-  if(!shot.controller&&!shot.initialFrameAligned){shot.initialFrameAligned=true;const expected=Math.max(0,(matchNow()-shot.syncStartedAt)/1000);if(expected-target.currentTime>.35&&Number.isFinite(target.duration)&&expected<target.duration-.1){try{target.currentTime=expected;armFirstFrame(target);return;}catch{}}}
+  if(!shot.controller&&!shot.initialFrameAligned){shot.initialFrameAligned=true;const expected=Math.max(0,(matchNow()-shot.syncStartedAt)/1000);if(expected-target.currentTime>.35&&Number.isFinite(target.duration)&&expected<target.duration-.1&&bufferedAt(target,expected)){try{target.currentTime=expected;armFirstFrame(target);return;}catch{}}}
   if(shot.controller){shot.syncStartedAt=matchNow()-target.currentTime*1000;shot.resumeAt=null;}shot.visibleSince??=performance.now();
   video.pause();
   target.style.zIndex='4';target.style.opacity='1';
@@ -184,7 +190,8 @@ function playShot(){
  target.muted=true;
  // A fresh/prewarmed clip already sits on frame zero: avoid a costly initial seek.
  const needsSeek=elapsed>.30?Math.abs(target.currentTime-elapsed)>.55:target.currentTime>.20;
- if(needsSeek){try{target.currentTime=Math.min(elapsed,Math.max(0,duration-.04)||elapsed);}catch{}}
+ const seekTo=Math.min(elapsed,Math.max(0,duration-.04)||elapsed);
+ if(needsSeek&&bufferedAt(target,seekTo)){try{target.currentTime=seekTo;}catch{}}
  if(target.style.opacity==='0'){
   armFirstFrame(target);
   // Some mobile browsers suppress callbacks on an off-screen or transparent video.
@@ -271,16 +278,24 @@ function maintainShot(){
  if(Number.isFinite(duration)&&expected>=duration&&v.ended){endShot(false,true);return;}
  noteProgress(v);
  if(performance.now()-lastFrameAt>1500&&matchNow()-lastRecovery>1800&&!v.seeking){
-  lastRecovery=matchNow();recoveryCount++;
+  lastRecovery=matchNow();
   const cachedURL=mediaCache.getURL(v.dataset.clipKey);
   if(cachedURL&&v.getAttribute('src')!==cachedURL){if(shot.controller)shot.resumeAt=v.currentTime;const replacement=spareDeck();assignClip(replacement,v.dataset.clipKey,cachedURL);replacement.style.opacity='0';shotVideo=replacement;playShot();return;}
+  // A slow but active download is not a failed decoder. Reloading after two
+  // short retries discards its progress and creates a permanent buffering loop.
+  if(v.networkState===2&&v.readyState<3&&!v.error&&performance.now()-lastFrameAt<12000){
+   if(v.paused)v.play().catch(()=>{});
+   return;
+  }
+  recoveryCount++;
   mediaCache.warm(v.dataset.clipKey,{priority:200,recovery:true}).catch(()=>{});
   if(recoveryCount===2){if(shot.controller)shot.resumeAt=v.currentTime;reloading=true;v.pause();v.load();return;}
-  try{if(v.readyState>=1)v.currentTime=Math.min(expected,Math.max(0,duration-.05));}catch{}
+  const recoveryTime=Math.min(expected,Math.max(0,duration-.05));
+  try{if(v.readyState>=1&&bufferedAt(v,recoveryTime))v.currentTime=recoveryTime;}catch{}
  }
  // Do not repeatedly seek a mobile decoder while it is buffering.
  const drift=expected-v.currentTime;
- if(!shot.controller&&v.readyState>=3&&!v.seeking){v.playbackRate=Math.abs(drift)>.15?(drift>0?1.03:.97):1;if(Math.abs(drift)>2.5&&(v.paused||matchNow()-lastRepair>4000)){lastRepair=matchNow();try{v.currentTime=Math.min(expected,Math.max(0,duration-.05));}catch{}}}
+ if(!shot.controller&&v.readyState>=3&&!v.seeking){const rate=Math.abs(drift)>.15&&bufferedAt(v,v.currentTime,.5)?(drift>0?1.03:.97):1;if(v.playbackRate!==rate)v.playbackRate=rate;const syncTime=Math.min(expected,Math.max(0,duration-.05));if(Math.abs(drift)>2.5&&(v.paused||matchNow()-lastRepair>4000)&&bufferedAt(v,syncTime)){lastRepair=matchNow();try{v.currentTime=syncTime;}catch{}}}
  if(v.paused){
    repairing=true;v.play().catch(()=>{v.dataset.autoplayMuted='true';v.muted=true;return v.play();}).catch(()=>{}).finally(()=>repairing=false);
  }
