@@ -167,7 +167,7 @@ function bufferedAt(v,time,headroom=.2){
 }
 function prepareUpcomingShot(cue){
  if(!cue||cue.finishedAt||!clips[cue.team])return;
- // Finish downloading the current small mobile clip before another full MP4
+ // Finish buffering the current original mobile clip before another full MP4
  // competes for bandwidth. The remaining playback time prebuffers the next.
  if(mediaCache.mobile&&shot&&shotVideo&&(shotVideo.style.opacity!=='1'||!Number.isFinite(shotVideo.duration)||!bufferedAt(shotVideo,shotVideo.currentTime,Math.max(0,shotVideo.duration-shotVideo.currentTime-.1)))){queuedPreparation=cue;return;}
  const key=keyFor(cue.team,cue.result),identity=cue.id+':'+key;

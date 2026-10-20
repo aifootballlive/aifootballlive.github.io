@@ -283,12 +283,12 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  const videoAckInFlight=new Set();
  let lastGiftNoticeCount=null;const seenTeamNotices=new Map();const giftNoticeTimers=new Map(),giftNoticeKeys=new Map();
  function showQueuedGiftNotice(id,team){
-  if(!TEAMS.includes(team)||matchRunning(match))return;
+  if(!TEAMS.includes(team))return;
   if(id&&giftNoticeKeys.get(team)===id)return;
   giftNoticeKeys.set(team,id);
   let node=document.getElementById('pendingGiftNotice'+team);
   if(!node){const card=document.querySelector('.broadcastControls>.team'+team);if(!card)return;node=document.createElement('div');node.id='pendingGiftNotice'+team;node.className='teamGiftNotice';node.setAttribute('role','status');node.setAttribute('aria-live','polite');card.append(node);}
-  node.textContent='Şutlar maç başlayınca otomatik başlayacaktır.';
+  node.textContent=matchRunning(match)?'Şut eklendi! Sırayla oynanacak.':'Şutlar maç başlayınca otomatik başlayacaktır.';
   node.hidden=false;
   clearTimeout(giftNoticeTimers.get(team));
   giftNoticeTimers.set(team,setTimeout(()=>{node.hidden=true;window.dispatchEvent(new Event('resize'));},3000));
@@ -298,7 +298,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   if(!match)return;
   for(const [team,notice]of Object.entries(match.giftNotices||{}))if(notice?.id&&seenTeamNotices.get(team)!==notice.id){seenTeamNotices.set(team,notice.id);if(matchNow()-notice.at<3000)showQueuedGiftNotice(notice.id,team);}
   const n=Math.max(0,Number(match.accepted)||0);
-  if(lastGiftNoticeCount!==null&&n>lastGiftNoticeCount&&!matchRunning(match))
+  if(lastGiftNoticeCount!==null&&n>lastGiftNoticeCount)
    showQueuedGiftNotice(match.lastGift?.id||String(n),match.lastGift?.team);
   lastGiftNoticeCount=n;
  }
@@ -333,6 +333,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    // authoritative proof of spending a shot, not a guessed timeout.
    target.videoStartedAt||=Math.max(target.startsAt,matchNow()-Math.min(payload.duration*1000,60000));
    target.videoFinishedAt=matchNow();target.videoPlayedSeconds=payload.playedSeconds;target.videoElapsedMs=payload.elapsedMs;target.videoPlaybackOwner=owner;
+   settleCompletedCue(m);
   },false).catch(e=>console.warn('Video bitiş onayı yazılamadı',e))
    .finally(()=>videoAckInFlight.delete('finish:'+payload.cueId));
  }
@@ -913,6 +914,29 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   m.cue=null;m.nextCue=null;m.cooldownUntil=0;m.idleEpoch=now;
   // All queued gifts remain pending for the newly started round.
  }
+ function settleCompletedCue(m){
+  if(!m.cue||m.cue.finishedAt||!hasVideoCompletionProof(m,m.cue))return false;
+  if(!m.cue.committed){
+   m.scores=clone(m.cue.after.scores);
+   m.keeper=clone(m.cue.after.keeper);
+   m.cue.committed=true;
+  }
+  // Existing old-version reservations are returned to jobs, then processed
+  // after the current completed shot (never silently swallowed).
+  if(m.nextCue){
+   if(!hasVideoCompletionProof(m,m.nextCue))
+    m.jobs.unshift({id:'return-next:'+m.nextCue.id,team:m.nextCue.team,count:1,nextIndex:0});
+   m.nextCue=null;
+  }
+  m.cue.finishedAt=matchNow();m.cooldownUntil=0;
+  // Completion proof, settlement and the next cue share one CAS write.
+  // No extra read/write or polling tick between naturally completed clips.
+  if(!m.processingPaused&&hasPlayableJobs(m)&&window.AIFootball3D?.getShotTiming&&matchRunning(m)&&matchNow()<m.clock.startedAt+normalMs(m)+overtimeMs(m)){
+   const job=takeJob(m,m.cue.team);
+   if(job)m.cue=makeCue(m,job,matchNow()+40);
+  }
+  return true;
+ }
  async function advance(){
   if(!owns())return;
   const now=matchNow();
@@ -980,25 +1004,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    }
    await change(m=>{
     if(m.cue?.id!==cue.id||!hasVideoCompletionProof(m,m.cue)||m.cue.finishedAt)return false;
-    if(!m.cue.committed){
-     m.scores=clone(m.cue.after.scores);
-     m.keeper=clone(m.cue.after.keeper);
-     m.cue.committed=true;
-    }
-    // Existing old-version reservations are returned to jobs, then processed
-    // after the current completed shot (never silently swallowed).
-    if(m.nextCue){
-     if(!hasVideoCompletionProof(m,m.nextCue))
-      m.jobs.unshift({id:'return-next:'+m.nextCue.id,team:m.nextCue.team,count:1,nextIndex:0});
-     m.nextCue=null;
-    }
-    m.cue.finishedAt=matchNow();m.cooldownUntil=0;
-    // Once the previous video is proven complete, commit it and launch the
-    // next queued shot in this same CAS instead of waiting for another tick.
-    if(!m.processingPaused&&hasPlayableJobs(m)&&window.AIFootball3D?.getShotTiming&&matchRunning(m)&&matchNow()<m.clock.startedAt+normalMs(m)+overtimeMs(m)){
-     const job=takeJob(m,m.cue.team);
-     if(job)m.cue=makeCue(m,job,matchNow()+40);
-    }
+    settleCompletedCue(m);
    });
    return;
   }
