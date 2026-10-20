@@ -304,7 +304,15 @@ function loadLeagueClip(key){
  return leagueAudioCache.get(key);
 }
 let speechWarmed=false;
-async function warmSpeech(){if(speechWarmed||!enabled||!ctx||settings.aiSpeechEnabled===false)return;speechWarmed=true;const keys=[...speechKeys,...extraSpeechKeys,'A','B','C','D','draw','countdown'];for(let n=0;n<keys.length;n+=2)await Promise.allSettled(keys.slice(n,n+2).map(loadLeagueClip));}
+async function warmSpeech(){
+ if(speechWarmed||!enabled||!ctx||settings.aiSpeechEnabled===false)return;speechWarmed=true;
+ const connection=typeof navigator==='undefined'?null:navigator.connection;
+ // Mobile speech still loads on demand in leagueClip. Avoid downloading and
+ // decoding the whole commentary library alongside a live video stream.
+ if(window.AIFootballClipCache?.mobile||window.matchMedia?.('(pointer:coarse)').matches||connection?.saveData||['slow-2g','2g','3g'].includes(connection?.effectiveType))return;
+ const keys=[...speechKeys,...extraSpeechKeys,'A','B','C','D','draw','countdown'];
+ for(let n=0;n<keys.length;n+=2)await Promise.allSettled(keys.slice(n,n+2).map(loadLeagueClip));
+}
 async function leagueClip(key,group='goal',volume=1,speech=false){
  if(!enabled||userMuted||!settings.soundEnabled||!ctx||ctx.state!=='running')return false;
  const generation=leagueAudioGeneration,ticket=speechGeneration;

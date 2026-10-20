@@ -9,11 +9,11 @@ async function fixture({mobile=false,saveData=false,effectiveType='4g'}={}){
 const settle=()=>new Promise(r=>setTimeout(r,30));
 (async()=>{
  for(const options of [{mobile:true},{saveData:true},{effectiveType:'3g'}]){
-  const {cache,requests}=await fixture(options);cache.warmAll();await settle();assert.equal(requests.length,0,'No bulk downloads on constrained devices');
+  const {cache,requests}=await fixture(options);if(options.mobile){assert(cache.mobile);assert(cache.waitingSrc.includes('mobile-v274'));assert(cache.manifest.A_save.src.includes('mobile-v274'));assert(cache.manifest.A_save.bytes<3000000);}cache.warmAll();await settle();assert.equal(requests.length,0,'No bulk downloads on constrained devices');
   assert.equal(await cache.warm('A_save',{priority:100}),null);assert.equal(requests.length,0,'Cold video deck must not compete with a duplicate full fetch');
   const blob=await cache.warm('A_save',{priority:200,recovery:true});assert(blob.startsWith('blob:'));assert.equal(requests.length,1,'Stall recovery can still fetch original');
   assert.equal(await cache.warm('A_save'),blob);assert.equal(requests.length,1,'Reuse cached original');
  }
- const {cache,requests}=await fixture();cache.warmAll();await settle();assert.equal(requests.length,8,'Desktop retains bounded original cache');assert(requests.every(r=>r.priority==='low'));
+ const {cache,requests}=await fixture();assert.equal(cache.mobile,false);assert(cache.manifest.A_save.src.includes('scene-v112'));assert(cache.waitingSrc.includes('scene-v111'));cache.warmAll();await settle();assert.equal(requests.length,8,'Desktop retains bounded original cache');assert(requests.every(r=>r.priority==='low'));
  console.log('PASS: mobile/data saver/3G skip all 8 speculative downloads and cold duplicate fetches; cached playback and stall recovery preserved; desktop cache unchanged.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

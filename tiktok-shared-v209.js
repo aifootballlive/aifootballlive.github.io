@@ -714,6 +714,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    match=m;enforceRefreshOnOldBuild();acknowledgeRequests();restore();
    const running=matchRunning(m);
    if(!running&&window.AIFootball3D?.isAnimating)window.AIFootball3D.reset();
+   prepareInitialPreview(m);
    if(running){
     if(!m.cue&&window.AIFootball3D?.isAnimating)window.AIFootball3D.reset?.();
     window.AIFootball3D?.prepareUpcomingShot?.(m.nextCue);
@@ -856,6 +857,13 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   const preview=clone(m),job=takeJob(preview,m.cue.team);if(!job)return;
   const keeper=!m.cue.committed?m.cue.after.keeper:m.keeper;
   window.AIFootball3D?.prepareUpcomingShot?.({id:'preview:'+job.id,team:job.team,result:Number(keeper[job.team])<=0?'goal':'save'});
+ }
+ function prepareInitialPreview(m){
+  if(!m||m.cue||m.nextCue||m.clock?.finishedAt||m.processingPaused||!hasPlayableJobs(m))return;
+  const preview=clone(m),job=takeJob(preview,null);if(!job)return;
+  // Preload/decode invisibly while waiting/counting down. Never reserve a gift,
+  // start a shot or change its official start boundary before kickoff.
+  window.AIFootball3D?.prepareUpcomingShot?.({id:'first-preview:'+job.id,team:job.team,result:Number(m.keeper[job.team])<=0?'goal':'save'});
  }
  // Queue acceptance and cue scheduling share one authenticated CAS write.
  function primeQueuedShots(m,now){
