@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261020-v266-shared-clock-bold-values">
+<meta name="aifootball-release" content="20261020-v267-installed-app-login">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script>if(new URLSearchParams(location.search).get('studio')==='tiktok1080')document.documentElement.classList.add('aflTikTokPortraitSource');</script>
 <title>AI Football Live</title>
@@ -2064,7 +2064,7 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 #broadcastViewport .broadcastControls>.panel .adminTeamQueue{height:6.4cqw!important;flex-basis:6.4cqw!important}
 
 
-/* Login shortcut is shown only in a previously approved browser profile.
+/* Login shortcut is available in the installed phone app and recognized profiles.
    This presentation marker never grants Auth/MFA/device authorization. */
 #guestAdminLogin{display:none!important}
 #broadcastViewport:not(.adminView)>#guestAdminLogin:not([hidden]){
@@ -2077,6 +2077,11 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
  border-radius:8px!important;touch-action:manipulation!important;pointer-events:auto!important;
 }
 #guestAdminLogin .loginStatusLight{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#ff4757;box-shadow:0 0 6px #ff4757}
+#broadcastViewport:not(.adminView)>#guestAdminLogin[data-app-entry="true"]:not([hidden]){
+ position:fixed!important;top:auto!important;bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;
+ left:12px!important;right:12px!important;min-height:44px!important;padding:10px 14px!important;
+ font-size:14px!important;border-color:#e7c967!important;background:#10243f!important;
+}
 
 
 /* Spectators need one intentional tap to unlock browser sound.
@@ -2450,12 +2455,17 @@ function syncMainMatchStart(){
 window.AIFootballUpdateMainMatchLaunch=syncMainMatchStart;
 function render(){
   document.querySelector('.wrap').classList.toggle('adminView',adminAuthed);
-  // Separate incognito/fresh profiles have no approved-browser presentation marker.
+  // Installed iOS apps can have storage separate from Safari. Provide a login
+  // entry without requiring a previous session marker; this grants no privileges.
   const publicAdminLink=$('guestAdminLogin');
   if(publicAdminLink){
    let recognized=false;
    try{recognized=localStorage.getItem('afl.approvedAdminBrowser.v1')==='approved';}catch{}
-   publicAdminLink.hidden=adminAuthed||!recognized;
+   const installedPhoneApp=matchMedia('(max-width:600px) and (pointer:coarse)').matches&&
+    (navigator.standalone===true||matchMedia('(display-mode:standalone)').matches)&&
+    !document.documentElement.classList.contains('aflTikTokPortraitSource');
+   publicAdminLink.dataset.appEntry=String(installedPhoneApp);
+   publicAdminLink.hidden=adminAuthed||!(recognized||installedPhoneApp);
   }
   // Guests (including incognito browsers) may send TEST shots. Admin-only
   // actions remain inaccessible without authenticated administrator login.

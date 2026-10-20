@@ -9,8 +9,8 @@ await c.addInitScript(({scenario})=>{if(scenario==='fresh-standalone')Object.def
 await c.route('**/npm/@supabase/supabase-js@2',r=>r.fulfill({contentType:'text/javascript',body:mock}));await c.route('**/*.supabase.co/**',r=>r.abort());await c.route('**/*.mp4*',r=>r.abort());
 const p=await c.newPage();await p.goto('http://127.0.0.1:8952/live.html');await p.locator('.broadcastControls').waitFor({state:'visible'});await p.waitForTimeout(500);
 assert(p.url().endsWith('/live.html'),scenario+' must stay on game');assert.equal(await p.locator('#adminOpen').isVisible(),false);
-const link=p.locator('#guestAdminLogin');assert.equal(await link.isVisible(),scenario==='known-signed-out',scenario);
-if(scenario==='known-signed-out'){
+const link=p.locator('#guestAdminLogin');assert.equal(await link.isVisible(),['known-signed-out','fresh-standalone'].includes(scenario),scenario);
+if(['known-signed-out','fresh-standalone'].includes(scenario)){
 const geo=await p.evaluate(()=>{const box=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {link:box('#guestAdminLogin'),cards:box('.broadcastControls'),arena:box('.arenaTitle'),width:innerWidth,height:innerHeight};});const overlaps=(a,z)=>a.x<z.right&&a.right>z.x&&a.y<z.bottom&&a.bottom>z.y;
 assert(geo.link.x>=0&&geo.link.right<=geo.width&&geo.link.y>=0&&geo.link.bottom<=geo.height);assert(!overlaps(geo.link,geo.cards));assert(!overlaps(geo.link,geo.arena));
 await link.click();await p.waitForURL('**/admin-security.html');await p.getByRole('link',{name:'Yönetici oturumunu aç',exact:true}).click();await p.waitForURL('**/admin-edm2026.html?next=security');await p.locator('#loginForm').waitFor({state:'visible'});
@@ -18,5 +18,5 @@ await link.click();await p.waitForURL('**/admin-security.html');await p.getByRol
 if(scenario==='unapproved-mfa')assert.equal(await p.evaluate(()=>localStorage.getItem('afl.approvedAdminBrowser.v1')),null,'revoked/unapproved marker cleared');
 await c.close();
 }
-console.log('PASS: 18 mobile cases: fresh/incognito-like/standalone/legacy/AAL1/unapproved stay on game with login hidden; known signed-out profile sees explicit login; no marker grants admin; no overlap; MFA/login path reachable.');
+console.log('PASS: 18 mobile cases: fresh/incognito-like/legacy/AAL1/unapproved stay on game with login hidden; installed app and known signed-out profiles can reach explicit login; no marker grants admin; no overlap; MFA/login path reachable.');
 }finally{await b.close();server.close();}})().catch(e=>{console.error(e);process.exitCode=1;server.close();});
