@@ -543,6 +543,7 @@
    played.add(cue.id);
    window.AIFootball3D.finishShot(cue.team,cue.result);
    window.AIFootball3D.prepareUpcomingShot?.(match?.nextCue?.id===cue.id?null:match?.nextCue);
+   prepareQueuedPreview(match);
    log(nameOf(cue.team)+' şut çekiyor!');
    setTimeout(()=>{if(![match?.cue,match?.nextCue].some(c=>c?.id===cue.id))return;log(cue.result==='goal'?'GOL! '+nameOf(cue.team):(['C','D'].includes(cue.team)?'Kaleci':nameOf(cue.team==='A'?'B':'A')+' kalecisi')+' kurtardı!');},Math.max(0,cue.outcomeAt-Date.now()));
   };
@@ -674,6 +675,7 @@
    if(running){
     if(!m.cue&&window.AIFootball3D?.isAnimating)window.AIFootball3D.reset?.();
     window.AIFootball3D?.prepareUpcomingShot?.(m.nextCue);
+    prepareQueuedPreview(m);
     consider(m.cue);consider(m.nextCue);window.AIFootball3D?.syncCue?.(m.cue);
     if(m.cue?.finishedAt&&!m.nextCue&&!m.jobs.length)
      window.AIFootball3D?.finishSyncedShot?.(m.cue.startsAt);
@@ -806,6 +808,13 @@
   return {playbackProtocol:204,playbackOwner:m.lease?.owner||owner,durationMs:timing.durationMs||14000,id:j.id,team:j.team,result:goal?'goal':'save',variation:m.shotSequence++,startsAt,outcomeAt:startsAt+(timing.outcomeMs||1850),endsAt:startsAt+(timing.durationMs||14000),after,committed:false,finishedAt:null};
  }
  function reserveNext(m,job,startsAt){const projected=m.cue&&!m.cue.committed?{...m,scores:m.cue.after.scores,keeper:m.cue.after.keeper}:m;const cue=makeCue(projected,job,startsAt);m.shotSequence=projected.shotSequence;return cue;}
+ function prepareQueuedPreview(m){
+  if(!m?.cue||m.cue.finishedAt||m.processingPaused||m.nextCue||!m.jobs?.length||window.AIFootball3D?.shotStatus?.cueId!==m.cue.id)return;
+  // Read-only prediction: predecode the next clip without reserving or spending a gift.
+  const preview=clone(m),job=takeJob(preview,m.cue.team);if(!job)return;
+  const keeper=!m.cue.committed?m.cue.after.keeper:m.keeper;
+  window.AIFootball3D?.prepareUpcomingShot?.({id:'preview:'+job.id,team:job.team,result:Number(keeper[job.team])<=0?'goal':'save'});
+ }
  // Queue acceptance and cue scheduling share one authenticated CAS write.
  function primeQueuedShots(m,now){
   if(!window.AIFootball3D?.getShotTiming)return;
@@ -933,6 +942,12 @@
      m.nextCue=null;
     }
     m.cue.finishedAt=Date.now();m.cooldownUntil=0;
+    // Once the previous video is proven complete, commit it and launch the
+    // next queued shot in this same CAS instead of waiting for another tick.
+    if(!m.processingPaused&&hasPlayableJobs(m)&&window.AIFootball3D?.getShotTiming&&matchRunning(m)&&Date.now()<m.clock.startedAt+normalMs(m)+overtimeMs(m)){
+     const job=takeJob(m,m.cue.team);
+     if(job)m.cue=makeCue(m,job,Date.now()+40);
+    }
    });
    return;
   }

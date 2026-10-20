@@ -205,12 +205,14 @@ function endShot(force=false,naturalEnd=false){
     mediaTime,duration,clockStartedAt:window.AIFootballTikTok?.getMatchClock?.()?.startedAt
    });
  }
- if(!force&&previous)window.AIFootballTikTok?.onVideoEnded?.(previous.cueStartsAt??previous.syncStartedAt);
+ const queued=!force&&previous&&window.AIFootballTikTok?.onVideoEnded?.(previous.cueStartsAt??previous.syncStartedAt)===true;
  if(shot!==previous)return;
  if(shotVideo)shotVideo.pause();
- shot=null;shotVideo=null;holdingForQueue=false;
- // A delayed next cue must never leave the last shot's frozen frame visible.
- // Resume stadium footage until the following team is genuinely ready.
+ shot=null;holdingForQueue=queued; // Accounting still waits for the completed-video proof.
+ if(holdingForQueue&&shotVideo){
+  shotVideo.muted=true;video.pause();return; // Keep the outgoing frame until the next deck renders.
+ }
+ shotVideo=null;
  for(const deck of decks){deck.pause();deck.style.opacity='0';}
  try{video.currentTime=0;}catch{}
  video.play().catch(()=>{});
@@ -250,6 +252,10 @@ function finishShot(team,result){
  }
 }
 function maintainShot(){
+ if(!shot&&holdingForQueue){
+  if(!window.AIFootballTikTok?.hasPendingShot?.()||window.AIFootballTikTok?.getMatchState?.().running===false||window.AIFootballTikTok?.getGiftProcessingPaused?.())endShot(true);
+  return;
+ }
  if(shot&&window.AIFootballTikTok?.getMatchState?.().running===false){endShot(true);return;}
  if(!shot||!shotVideo||document.hidden||repairing)return;
  const v=shotVideo;
@@ -285,7 +291,7 @@ setInterval(syncShotAudio,500);
 // after tab suspension, media pressure or an interrupted download.
 let waitingLastTime=-1,waitingLastProgress=performance.now(),waitingRetries=0;
 setInterval(()=>{
- if(document.hidden||shot||!video||!video.isConnected)return;
+ if(document.hidden||shot||holdingForQueue||!video||!video.isConnected)return;
  if(Math.abs(video.currentTime-waitingLastTime)>.04){
   waitingLastTime=video.currentTime;waitingLastProgress=performance.now();waitingRetries=0;return;
  }
@@ -303,7 +309,9 @@ function sync(){
 }
 function startWaitingIfEmpty(){
  if(shot){playShot();return;}
- // The idle football video stays visible between pending shots.
+ if(holdingForQueue&&window.AIFootballTikTok?.hasPendingShot?.()&&window.AIFootballTikTok?.getMatchState?.().running!==false)return;
+ holdingForQueue=false;shotVideo=null;
+ // Idle footage returns only after the shot queue is empty or play has stopped.
  for(const deck of decks)if(deck.style.opacity!=='0')deck.style.opacity='0';
  sync();video.muted=true;video.play().catch(()=>{});
 }

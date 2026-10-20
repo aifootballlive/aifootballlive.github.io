@@ -1,0 +1,22 @@
+const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),http=require('http'),vm=require('vm'),assert=require('assert/strict');const root=path.join(__dirname,'..');
+const fixture=fs.readFileSync(path.join(__dirname,'mfa-ui-v204.cjs'),'utf8').match(/const mock=(`[^`]*`);/);const mock=vm.runInNewContext(fixture[1])+`;const original=window.supabase.createClient;window.supabase.createClient=(...args)=>{const c=original(...args);c.auth.mfa={getAuthenticatorAssuranceLevel:async()=>({data:{currentLevel:'aal2'}})};c.rpc=async()=>({data:{enabled:true,approved:true}});return c;};`;
+const server=http.createServer((req,res)=>{try{const file=path.join(root,req.url.split('?')[0]),data=fs.readFileSync(file);res.setHeader('Content-Type',file.endsWith('.css')?'text/css':file.endsWith('.js')?'text/javascript':file.endsWith('.svg')?'image/svg+xml':file.endsWith('.mp4')?'video/mp4':file.endsWith('.mp3')?'audio/mpeg':'text/html');if(req.headers.range){const m=/bytes=(\d+)-(\d*)/.exec(req.headers.range),a=+m[1],z=m[2]?+m[2]:data.length-1;res.writeHead(206,{'Content-Range':`bytes ${a}-${z}/${data.length}`,'Accept-Ranges':'bytes','Content-Length':z-a+1});res.end(data.subarray(a,z+1));}else res.end(data);}catch{res.writeHead(404).end();}}).listen(8997,'127.0.0.1');
+(async()=>{const b=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--autoplay-policy=no-user-gesture-required']});try{
+ const c=await b.newContext({viewport:{width:390,height:844}});await c.addInitScript(()=>localStorage.setItem('test-admin','1'));await c.route('**/npm/@supabase/supabase-js@2',r=>r.fulfill({contentType:'text/javascript',body:mock}));await c.route('**/*.supabase.co/**',r=>r.abort());const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await p.goto('http://127.0.0.1:8997/live.html');await p.waitForFunction(()=>document.querySelector('.adminView')&&AIFootball3D.videoStatus.motionReady);
+ await p.evaluate(()=>{const m=structuredClone(__row.rules.tiktok_match_v2);m.clock={startedAt:Date.now()-10000,manualStarted:true,round:1,finishedAt:null};m.lease.until=0;__emit(m);});await p.waitForFunction(()=>AIFootballTikTok.getStatus().leader);
+ await p.evaluate(()=>{
+  window.ends=[];window.whistles=[];window.idleGaps=0;window.followingFrames=0;
+  const finish=AIFootballTikTok.onShotVideoFinished;AIFootballTikTok.onShotVideoFinished=payload=>{ends.push(payload);return finish(payload);};
+  const whistle=AIFootballAudio.whistle;AIFootballAudio.whistle=key=>{whistles.push(key);return whistle(key);};
+  let started=false;const sample=()=>{const visible=[...document.querySelectorAll('#sceneShotVideo,#sceneNextShotVideo')].some(v=>v.style.opacity==='1');if(visible)started=true;if(started&&AIFootballTikTok.hasPendingShot()){followingFrames++;if(!visible)idleGaps++;}requestAnimationFrame(sample);};requestAnimationFrame(sample);
+  AIFootballTikTok.manualShot('A',2);AIFootballTikTok.manualShot('B',1);AIFootballTikTok.manualShot('C',1);
+ });
+ await p.waitForFunction(()=>ends.length===4&&Object.values(AIFootballTikTok.getPendingQueue()).every(n=>n===0),{},{timeout:90000});
+ await p.waitForFunction(()=>__row.rules.tiktok_match_v2.cue?.finishedAt!=null,{},{timeout:10000});
+ const result=await p.evaluate(()=>({ends,whistles,idleGaps,followingFrames,score:__row.rules.tiktok_match_v2.scores,keeper:__row.rules.tiktok_match_v2.keeper}));console.log(result);
+ assert.equal(result.ends.length,4);assert.equal(new Set(result.ends.map(e=>e.cueId)).size,4);assert.equal(result.whistles.length,4);assert.equal(new Set(result.whistles).size,4);assert.equal(result.idleGaps,0);assert(result.followingFrames>50);
+ for(const end of result.ends){assert(end.playedSeconds>=end.duration-.35);assert(end.elapsedMs>=end.duration*1000-500);}
+ assert.equal(result.score.A,1);assert.equal(result.keeper.B,0);assert.equal(result.keeper.C,0);assert.deepEqual(errors,[]);
+ await p.waitForFunction(()=>document.querySelector('#sceneWaitingVideo').paused===false);console.log('PASS: 4 complete consecutive originals; zero waiting-video frames between queued shots; one whistle each; exact accounting; idle resumes only when empty');await c.close();
+}finally{await b.close();server.close();}})().catch(e=>{console.error(e);process.exitCode=1;server.close();});

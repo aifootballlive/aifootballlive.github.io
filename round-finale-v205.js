@@ -119,7 +119,7 @@ function speakLiveLine(line,key=null,important=false){
 }
 /* Explanations before kickoff: viewers hear why gifts are queued instead
    of silently expecting an instant shot. No voice flood while waiting. */
-let preWaitingKey=null,preWaitingSince=0,lastPreWaitingSpeech=0,preWaitingVariant=0;
+let preWaitingKey=null,preWaitingSince=0,lastPreWaitingSpeech=0,preWaitingVariant=1;
 let preparationKey=null;
 const prepMilestones=new Set();
 function preMatchSpeechTick(){
@@ -132,7 +132,7 @@ function preMatchSpeechTick(){
   if(preWaitingKey!==key){
    preWaitingKey=key;preWaitingSince=now;lastPreWaitingSpeech=0;
   }
-  if(now-preWaitingSince<8000||lastPreWaitingSpeech&&now-lastPreWaitingSpeech<75000)return;
+  if(now-preWaitingSince<8000||lastPreWaitingSpeech&&now-lastPreWaitingSpeech<30000)return;
   const queues=game.getPendingQueue?.()||{},total=Object.values(queues).reduce((n,v)=>n+Math.max(0,Number(v)||0),0);
   const english=currentLanguage()==='en';
   const withShots=english?[
@@ -244,7 +244,7 @@ function liveCommentaryTick(){
  // A quiet pitch should still invite the audience to participate.
  // Only when the match is actually running, no shot is in progress and
  // there are no pending shots. Space prompts out to avoid repetitive speech.
- if(total===0&&!game?.getCurrentCue?.()?.id&&now-lastAtmosphereAt>=55000&&now-lastSupportAt>=22000){
+ if(remaining>30&&total===0&&!game?.getCurrentCue?.()?.id&&now-lastAtmosphereAt>=28000&&now-lastSupportAt>=18000){
   const variants=[
    'Şu anda şut sırası boş! Hangi takım önce atağa geçecek? Taraftarların desteğini bekliyoruz.',
    'Sahada şut bekleniyor! Desteklediğiniz takım için şut hediyesi göndererek oyuna katılabilirsiniz.',
@@ -256,7 +256,7 @@ function liveCommentaryTick(){
   if(speakLiveLine(variants[pick%variants.length],'empty'+(pick%3+1),false))lastAtmosphereAt=now;
   return;
  }
- if(remaining>30&&total>0&&now-lastAtmosphereAt>=48000){
+ if(remaining>30&&total>0&&now-lastAtmosphereAt>=32000){
   const variants=[
    'Şut sırası doluyor, şu anda toplam '+total+' bekleyen şut var.',
    'Takımların taraftarları mücadeleyi canlı tutuyor. '+total+' şut sırasını bekliyor.',
