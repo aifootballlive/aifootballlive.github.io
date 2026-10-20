@@ -476,3 +476,17 @@ html body #broadcastViewport#broadcastViewport .keeperGroupTitle{
  display:flex!important;align-items:center!important;justify-content:center!important;
  width:100%!important;height:100%!important;line-height:1.1!important;padding:.2cqw .8cqw!important;
 }
+/* v252 — a larger refresh target at the left edge of the private top row. */
+html body #broadcastViewport#broadcastViewport.adminView>.head>.headRight{
+ left:0!important;width:96cqw!important;height:7.6cqw!important;
+ grid-template-columns:minmax(0,1fr) 39%!important;align-items:start!important;
+ pointer-events:none!important;
+}
+html body #broadcastViewport#broadcastViewport.adminView>.head>.headRight>#adminRefresh:not([hidden]){
+ position:absolute!important;left:0!important;top:0!important;right:auto!important;bottom:auto!important;
+ width:7.6cqw!important;height:7.6cqw!important;padding:1cqw!important;
+ pointer-events:auto!important;
+}
+html body #broadcastViewport#broadcastViewport.adminView>.head>.headRight>#adminOpen{
+ grid-column:2!important;height:4.1cqw!important;pointer-events:auto!important;
+}
