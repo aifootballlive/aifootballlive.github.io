@@ -434,6 +434,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  function paint(){document.documentElement.dataset.tiktokConnection=connected?'connected':'waiting';showMatchClock();if(!ready())return;const el=document.getElementById('connectionStatus');if(el&&admin())el.textContent=errorText||(!match?'Ortak maç bekleniyor':owns()?(connected?'TikFinity bağlı • Yönetici':'Yönetici açık • TikFinity bekleniyor'):'Yönetici açık • Ortak maç');}
  let lastPaintedMatch='';
  const displayedQueues={A:null,B:null,C:null,D:null};
+ const queueSparkTimers=new Map();
  function queueShimmer(team){
   const number=document.getElementById('frontQueue'+team);
   if(!number)return;
@@ -441,6 +442,10 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   number.classList.remove('queueSpark');
   void number.offsetWidth;
   number.classList.add('queueSpark');
+  clearTimeout(queueSparkTimers.get(team));
+  queueSparkTimers.set(team,setTimeout(()=>{
+   number.classList.remove('queueSpark');queueSparkTimers.delete(team);
+  },1100));
  }
 
  const localKickedCues=new Set();
