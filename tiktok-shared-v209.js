@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=272,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=273,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // A hidden overlay must never become a phantom dark sheet through stale CSS.
@@ -43,9 +43,45 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   return cue.videoPlaybackOwner===cue.playbackOwner&&Number.isFinite(cue.videoPlayedSeconds)&&cue.videoPlayedSeconds>=cue.durationMs/1000-.35&&cue.videoElapsedMs>=cue.durationMs-500;
  }
  function returnUnplayedCues(m){
-  for(const cue of [m.cue,m.nextCue])if(cue&&!hasVideoCompletionProof(m,cue))
+  for(const cue of [m.cue,m.nextCue])if(cue&&!hasVideoCompletionProof(m,cue)&&!hasGoalProof(m,cue))
    m.jobs.unshift({id:'unplayed:'+cue.id,team:cue.team,count:1,nextIndex:0});
   m.cue=null;m.nextCue=null;
+ }
+ const goalMediaSeconds={A:3.4,B:3.8,C:4,D:3.35};
+ const localGoals=new Set(),goalAckInFlight=new Set();
+ const goalKey=cue=>cue.id+':'+cue.startsAt;
+ function hasGoalProof(m,cue){
+  return cue?.result==='goal'&&cue.committed===true&&hasVideoProof(m,cue)&&
+   cue.goalPlaybackOwner===cue.playbackOwner&&Number.isFinite(cue.goalAt)&&cue.goalAt>=cue.videoStartedAt&&
+   Number.isFinite(cue.goalMediaTime)&&cue.goalMediaTime>=goalMediaSeconds[cue.team]&&
+   Number.isFinite(cue.goalPlayedSeconds)&&cue.goalPlayedSeconds>=goalMediaSeconds[cue.team]-.35&&cue.goalElapsedMs>=goalMediaSeconds[cue.team]*1000-500;
+ }
+ function visibleScores(m){
+  const scores={...m.scores},cue=m.cue;
+  if(cue?.result!=='goal'||cue.finishedAt)return scores;
+  if(localGoals.has(goalKey(cue)))scores[cue.team]=Math.max(Number(scores[cue.team])||0,Number(cue.after?.scores?.[cue.team])||0);
+  else if(hasGoalProof(m,cue))scores[cue.team]=Math.max(0,(Number(scores[cue.team])||0)-1);
+  return scores;
+ }
+ function reportGoal(payload){
+  const cue=match?.cue;
+  if(!payload||!matchRunning(match)||!cue||cue.result!=='goal'||cue.finishedAt||cue.id!==payload.cueId||
+     cue.team!==payload.team||cue.startsAt!==payload.startsAt||payload.clockStartedAt!==match.clock.startedAt||
+     !Number.isFinite(payload.mediaTime)||payload.mediaTime<goalMediaSeconds[cue.team])return false;
+  const key=goalKey(cue);
+  if(!localGoals.has(key)){localGoals.add(key);if(localGoals.size>300)localGoals.delete(localGoals.values().next().value);lastPaintedMatch='';restore();}
+  // Local spectators only align their visual score to their decoded frame.
+  // Persistence requires the current authenticated playback owner and proof.
+  if(!owns()||payload.playbackOwner!==owner||cue.playbackOwner!==owner||!hasVideoProof(match,cue)||hasGoalProof(match,cue)||goalAckInFlight.has(key)||
+     !Number.isFinite(payload.playedSeconds)||payload.playedSeconds<goalMediaSeconds[cue.team]-.35||!Number.isFinite(payload.elapsedMs)||payload.elapsedMs<goalMediaSeconds[cue.team]*1000-500)return true;
+  goalAckInFlight.add(key);
+  change(m=>{
+   const target=m.cue;
+   if(!owns(m)||!matchRunning(m)||!target||goalKey(target)!==key||target.result!=='goal'||target.playbackOwner!==owner||!hasVideoProof(m,target)||hasGoalProof(m,target))return false;
+   m.scores=clone(target.after.scores);m.keeper=clone(target.after.keeper);target.committed=true;
+   target.goalAt=matchNow();target.goalMediaTime=payload.mediaTime;target.goalPlaybackOwner=owner;target.goalPlayedSeconds=payload.playedSeconds;target.goalElapsedMs=payload.elapsedMs;
+  },false).catch(e=>console.warn('Gol karesi onayı bekleniyor',e)).finally(()=>goalAckInFlight.delete(key));
+  return true;
  }
  function matchStarting(m,now=matchNow()){
   const c=m?.clock;return !!c&&!Number.isFinite(c.finishedAt)&&(c.manualStarted===true||c.autoStarted===true)&&Number.isFinite(c.startedAt)&&c.startedAt>now;
@@ -454,7 +490,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   for(const job of m.jobs||[])if(job&&counts[job.team]!==undefined)counts[job.team]+=Math.max(1,Math.floor(Number(job.count)||1));
   if(m.nextCue?.team&&!hasVideoCompletionProof(m,m.nextCue)&&counts[m.nextCue.team]!==undefined)counts[m.nextCue.team]++;
   // The active shot remains counted only until the footballer's boot hits
-  // the ball. Completion/goal accounting still needs real video-end proof.
+  // the ball. Saves need video-end proof; goals use their proven native frame.
   if(m.cue?.team&&!hasVideoCompletionProof(m,m.cue)&&!Number.isFinite(m.cue.kickedAt)&&!localKickedCues.has(m.cue.id)&&counts[m.cue.team]!==undefined)counts[m.cue.team]++;
   return counts;
  }
@@ -504,11 +540,12 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    displayedQueues[team]=counts[team];
   }
   detectStoredGiftNotice();
-  const snapshot=JSON.stringify([match.scores,match.keeper,counts]);
+  const scores=visibleScores(match);
+  const snapshot=JSON.stringify([scores,match.keeper,counts]);
   if(snapshot===lastPaintedMatch){paint();return;}
   lastPaintedMatch=snapshot;
   for(const team of ['A','B','C','D']){
-   state[team].score=Number(match.scores[team])||0;
+   state[team].score=Number(scores[team])||0;
    state.keeper[team]=Number(match.keeper[team]??state.startKeeper)||0;
    state[team].queue=counts[team];
   }
@@ -834,7 +871,8 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  function closeRound(m,now){
   if(m.clock?.finishedAt)return false;
   // Settle contacts already reached at the deadline, then preserve unplayed shots.
-  // Only a fully rendered and ended clip may settle a shot/goal.
+  // Goals already proven at their native frame remain scored; other outcomes
+  // still require the naturally ended full clip.
   for(const cue of [m.cue,m.nextCue]){
    if(cue&&!cue.committed&&hasVideoCompletionProof(m,cue)){
     m.scores=clone(cue.after.scores);m.keeper=clone(cue.after.keeper);cue.committed=true;
@@ -1177,6 +1215,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   hasPendingShot(){return matchRunning(match)&&!!(match?.nextCue||hasPlayableJobs(match));},
   onShotVideoStarted(payload){reportVideoStart(payload);},
   onShotVideoFinished(payload){reportVideoFinish(payload);},
+  onShotGoal(payload){return reportGoal(payload);},
   onShotBallKick(payload){
    if(!registerLocalBallKick(payload))return false;
    // Viewers only update their visual counter. The signed-in current leader

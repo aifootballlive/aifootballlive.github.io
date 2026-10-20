@@ -34,7 +34,7 @@ function makeDeck(id){
  stage.append(v);
  v.addEventListener('loadedmetadata',()=>{const key=v.dataset.clipKey;if(key&&Number.isFinite(v.duration)&&v.duration>0)durationByKey.set(key,v.duration);if(v===shotVideo&&shot&&reloading){reloading=false;playShot();}});
  v.addEventListener('ended',()=>{if(shot&&shotVideo===v)endShot(false,true);});
- v.addEventListener('timeupdate',()=>{if(shotVideo===v){checkGoalMoment(v,v.currentTime);checkSceneEffects(v,v.currentTime);revealCurrent(v);reportRealVideoFrame(v,false);}});
+ v.addEventListener('timeupdate',()=>{if(shotVideo===v){revealCurrent(v);reportRealVideoFrame(v,false);if(typeof v.requestVideoFrameCallback!=='function'||performance.now()-(shot?.lastConfirmedFrameAt??0)>750)checkGoalMoment(v,v.currentTime);checkSceneEffects(v,v.currentTime);}});
  v.addEventListener('seeked',()=>revealCurrent(v));
  for(const event of ['seeking','seeked'])v.addEventListener(event,()=>{
   if(v===shotVideo&&shot)recordPlaybackProgress(shot,v.currentTime,performance.now(),v.playbackRate,true);
@@ -45,7 +45,7 @@ function makeDeck(id){
  // event also confirms a decoded first frame, including slow cold loads that
  // outlast the one-shot 180ms fallback.
  v.addEventListener('playing',()=>{if(v===shotVideo&&v.readyState>=2&&!v.seeking)revealCurrent(v,true);});
- if(typeof v.requestVideoFrameCallback==='function'){const frame=(_,meta)=>{if(shot&&shotVideo===v){noteProgress(v);checkGoalMoment(v,meta.mediaTime);checkSceneEffects(v,meta.mediaTime,meta.expectedDisplayTime);revealCurrent(v,true);reportRealVideoFrame(v,true,meta.mediaTime);}v.requestVideoFrameCallback(frame);};v.requestVideoFrameCallback(frame);}
+ if(typeof v.requestVideoFrameCallback==='function'){const frame=(_,meta)=>{if(shot&&shotVideo===v){noteProgress(v);revealCurrent(v,true);reportRealVideoFrame(v,true,meta.mediaTime);checkGoalMoment(v,meta.mediaTime);checkSceneEffects(v,meta.mediaTime,meta.expectedDisplayTime);}v.requestVideoFrameCallback(frame);};v.requestVideoFrameCallback(frame);}
  return v;
 }
 const decks=[makeDeck('sceneShotVideo'),makeDeck('sceneNextShotVideo')];
@@ -101,8 +101,9 @@ function reportRealVideoFrame(deck,frameConfirmed,mediaTime=deck.currentTime){
 const goalMoments={A:3.4,B:3.8,C:4,D:3.35};
 const celebratedShots=new Set();
 function checkGoalMoment(v,time){
- if(!shot||v!==shotVideo||shot.result!=='goal')return;
+ if(!shot||v!==shotVideo||shot.result!=='goal'||document.hidden||v.style.opacity!=='1'||v.paused||v.seeking||v.readyState<2)return;
  const moment=goalMoments[shot.team];if(!Number.isFinite(moment)||time<moment)return;
+ window.AIFootballTikTok?.onShotGoal?.({playbackOwner:shot.playbackOwner,team:shot.team,cueId:shot.cueId,startsAt:shot.cueStartsAt,mediaTime:time,playedSeconds:shot.verifiedProgressSeconds||0,elapsedMs:performance.now()-(shot.visibleSince??performance.now()),clockStartedAt:window.AIFootballTikTok?.getMatchClock?.()?.startedAt});
  const key=shot.cueStartsAt??shot.syncStartedAt;
  if(celebratedShots.has(key))return;
  celebratedShots.add(key);if(celebratedShots.size>256)celebratedShots.delete(celebratedShots.values().next().value);
@@ -269,6 +270,13 @@ function beginShot(team,options={}){
  shot={controller:window.AIFootballTikTok?.getStatus?.().leader===true,playbackOwner:options.playbackOwner,team,result:options.result,cueId:options.cueId||null,cueStartsAt:options.cueStartsAt??options.startsAt??matchNow(),syncStartedAt:options.startsAt??matchNow()};
  warmedCueKey=null;
  playShot();
+ if(shot.result==='goal'){
+  const current=shot;
+  const watch=()=>{if(shot!==current||document.hidden)return;const key=shot.cueStartsAt??shot.syncStartedAt;if(celebratedShots.has(key))return;
+   if(typeof target.requestVideoFrameCallback!=='function'||performance.now()-(shot.lastConfirmedFrameAt??0)>100)checkGoalMoment(target,target.currentTime);
+   requestAnimationFrame(watch);
+  };requestAnimationFrame(watch);
+ }
  return true;
 }
 function finishShot(team,result){
