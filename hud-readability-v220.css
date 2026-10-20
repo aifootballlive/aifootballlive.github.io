@@ -570,3 +570,13 @@ html body #broadcastViewport#broadcastViewport>.liveArenaName .arenaTitle{
  text-shadow:0 .065em 0 #95621e,0 .11em 0 #071525!important;
  background:transparent!important;filter:none!important;
 }
+
+/* Active shot: a composited breathing gold outline; text and card size stay fixed. */
+html body #broadcastViewport#broadcastViewport .adminTeamQueue.shotBeacon::after{
+ content:"";position:absolute;inset:-.32cqw;border:.32cqw solid #ffdc4f;
+ border-radius:inherit;pointer-events:none;z-index:2;
+ box-shadow:0 0 .9cqw .12cqw #ffd12abf,inset 0 0 .55cqw #ffd12a80;
+ opacity:.22;animation:aflShotBeacon 1.8s ease-in-out infinite;
+}
+@keyframes aflShotBeacon{0%,100%{opacity:.22}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){html body #broadcastViewport#broadcastViewport .adminTeamQueue.shotBeacon::after{animation:none;opacity:.85}}

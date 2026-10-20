@@ -200,6 +200,9 @@ function prepareUpcomingShot(cue){
  prime();
  warmedCueKey=identity;
 }
+function showShotBeacon(team=null){
+ for(const t of ['A','B','C','D'])document.getElementById('frontQueue'+t)?.closest('.adminTeamQueue')?.classList.toggle('shotBeacon',t===team);
+}
 function revealCurrent(target,confirmedFrame=false){
  if(!shot||!canRunShot()||target!==shotVideo||target.readyState<2||target.seeking||target.paused)return;
  if(shot.resumePending)return;
@@ -217,6 +220,7 @@ function revealCurrent(target,confirmedFrame=false){
   // Release that request/decoder while the shot covers the background.
   releaseWaitingDownload();idlePoster.style.display='none';
   target.style.zIndex='4';target.style.opacity='1';
+  showShotBeacon(shot.team);
   lastFrameAt=performance.now();lastMediaTime=target.currentTime;
   if(!shot.whistled){shot.whistled=true;window.AIFootballAudio?.whistle?.(shot.cueStartsAt);}
   for(const v of decks)if(v!==target){v.pause();v.style.opacity='0';v.muted=true;}
@@ -273,6 +277,7 @@ function endShot(force=false,naturalEnd=false){
  }
  const queued=!force&&previous&&window.AIFootballTikTok?.onVideoEnded?.(previous.cueStartsAt??previous.syncStartedAt)===true;
  if(shot!==previous)return;
+ showShotBeacon();
  if(shotVideo)shotVideo.pause();
  shot=null;holdingForQueue=queued; // Accounting still waits for the completed-video proof.
  if(holdingForQueue&&shotVideo){
