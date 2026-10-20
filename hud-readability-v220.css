@@ -546,3 +546,7 @@ html body #broadcastViewport#broadcastViewport .broadcastControls>.panel .panelH
  padding:.2cqw .6cqw!important;line-height:1.15!important;
  overflow:hidden!important;text-overflow:clip!important;
 }
+/* v263 — reserve a top gap only in the installed phone app's admin view. */
+html.aflMobileApp body #broadcastViewport#broadcastViewport.adminView{--afl-app-control-gap:14px}
+html.aflMobileApp body #broadcastViewport#broadcastViewport.adminView>.liveArenaName{top:calc(4.8cqw + var(--afl-app-control-gap))!important}
+html.aflMobileApp body #broadcastViewport#broadcastViewport.adminView>.broadcastControls{top:calc(var(--afl-hud-top) + var(--afl-app-control-gap))!important}
