@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261020-v250-scored-season-extra-matches">
+<meta name="aifootball-release" content="20261020-v251-read-only-league">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script>if(new URLSearchParams(location.search).get('studio')==='tiktok1080')document.documentElement.classList.add('aflTikTokPortraitSource');</script>
 <title>AI Football Live</title>
@@ -2294,7 +2294,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
 <p class="giftToggleHelp">Şutlar durdurulduğunda gelen hediyeler kuyruğa eklenir. TikTok'ta hediye gönderimini tamamen kapatmak için LIVE ayarlarından hediye seçeneğini kapatmalısın.</p></div></section></div>
 <aside id="leagueDrawer" class="leagueDrawer" aria-label="Lig puan durumu" aria-hidden="true">
  <div class="leagueDrawerHead"><strong>LİG TABLOSU</strong><div class="drawerHeaderActions"><div class="drawerTabs" aria-label="Yönetim sekmeleri"><button id="leagueSettingsTab" type="button" class="drawerTab" aria-pressed="false" onclick="openAdmin()">AYARLAR</button><button id="leagueTableTab" type="button" class="drawerTab" aria-pressed="true" onclick="openLeagueDrawer()">LİG TABLOSU</button></div><button type="button" class="closeBtn" onclick="closeAdmin()">KAPAT</button></div></div>
- <a class="aflLeagueExternal" href="./league.html" target="_blank" rel="noopener">Lig tablosunu ayrı sekmede aç</a><iframe id="leagueDrawerFrame" data-src="./league.html?v=240" title="Lig tablosu" loading="eager"></iframe>
+ <a class="aflLeagueExternal" href="./league.html" target="_blank" rel="noopener">Lig tablosunu ayrı sekmede aç</a><iframe id="leagueDrawerFrame" data-src="./league.html?v=251" title="Lig tablosu" loading="eager"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
 <script src="./broadcast-layout-v229.js?v=244"></script>
@@ -2580,12 +2580,13 @@ function sendLeagueSnapshot(){
  catch(error){console.warn('Lig verileri iletilemedi',error);}
 }
 function openLeagueDrawer(){
- if(!adminAuthed)return;
+ // Standings are public: token refresh must not block this read-only tab.
  const drawer=$('leagueDrawer'),iframe=$('leagueDrawerFrame');
  if(!drawer||!iframe)return;
  document.body.classList.add('drawerMode');
  $('adminOverlay').classList.remove('show');
  drawer.classList.add('show');drawer.setAttribute('aria-hidden','false');
+ $('leagueSettingsTab').hidden=!adminAuthed;
  for(const tab of ['adminSettingsTab','leagueSettingsTab'])$(tab)?.setAttribute('aria-pressed','false');
  for(const tab of ['adminLeagueTab','leagueTableTab'])$(tab)?.setAttribute('aria-pressed','true');
  // Opening the tab must display the league immediately even before network sync.
@@ -2597,7 +2598,7 @@ function openLeagueDrawer(){
   });
   iframe.dataset.leagueBound='1';
  }
- if(!iframe.getAttribute('src'))iframe.src='./league.html?v=220';
+ if(!iframe.getAttribute('src'))iframe.src='./league.html?v=251';
  else sendLeagueSnapshot();
  requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
 }
@@ -2639,7 +2640,12 @@ function applyAuthRole(user){
   if(adminAuthed&&!$('leagueDrawer').classList.contains('show'))openAdmin();
   else if(!adminAuthed)$('adminOverlay').classList.remove('show');
  }
- if(!adminAuthed&&document.body.classList.contains('drawerMode'))closeAdmin();
+ $('leagueSettingsTab').hidden=!adminAuthed;
+ // Lock management immediately, but keep public standings open during auth checks.
+ if(!adminAuthed){
+  $('adminOverlay').classList.remove('show');
+  if(document.body.classList.contains('drawerMode')&&!$('leagueDrawer').classList.contains('show'))closeAdmin();
+ }
 }
 async function getAuth(){
  if(authCheck)return authCheck;
