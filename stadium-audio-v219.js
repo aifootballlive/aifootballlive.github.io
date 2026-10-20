@@ -264,7 +264,7 @@ const extraSpeechKeys=new Set(['support1','support2','support3','final30a','fina
 const speechKeys=new Set(['prepare','kickoff','shot1','shot2','goal1','goal2','save','league']);
 function stopAnnouncements(){speechGeneration++;speechPending=false;for(const source of speechSources){try{source.stop();}catch{}}speechSources.clear();try{window.speechSynthesis?.cancel();}catch{}}
 function loadLeagueClip(key){
- if(!leagueAudioCache.has(key)){const folder=key==='applause'?'league-v193':'commentary-v219';const pending=fetch('./assets/audio/'+folder+'/'+key+'.mp3').then(r=>{if(!r.ok)throw Error('Announcement unavailable');return r.arrayBuffer();}).then(b=>ctx.decodeAudioData(b));leagueAudioCache.set(key,pending);pending.catch(()=>leagueAudioCache.delete(key));}
+ if(!leagueAudioCache.has(key)){const folder=key==='applause'?'league-v193':'commentary-v253';const pending=fetch('./assets/audio/'+folder+'/'+key+'.mp3').then(r=>{if(!r.ok)throw Error('Announcement unavailable');return r.arrayBuffer();}).then(b=>ctx.decodeAudioData(b));leagueAudioCache.set(key,pending);pending.catch(()=>leagueAudioCache.delete(key));}
  return leagueAudioCache.get(key);
 }
 let speechWarmed=false;
