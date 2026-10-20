@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=273,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=278,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // A hidden overlay must never become a phantom dark sheet through stale CSS.
@@ -334,7 +334,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    target.videoStartedAt||=Math.max(target.startsAt,matchNow()-Math.min(payload.duration*1000,60000));
    target.videoFinishedAt=matchNow();target.videoPlayedSeconds=payload.playedSeconds;target.videoElapsedMs=payload.elapsedMs;target.videoPlaybackOwner=owner;
    settleCompletedCue(m);
-  },false).catch(e=>console.warn('Video bitiş onayı yazılamadı',e))
+  },false,null,true).catch(e=>console.warn('Video bitiş onayı yazılamadı',e))
    .finally(()=>videoAckInFlight.delete('finish:'+payload.cueId));
  }
  function reportVideoFinish(payload){
@@ -727,10 +727,12 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   }else paint();
  }
  async function read(){if(reading)return reading;reading=(async()=>{const {data,error}=await db.from('games').select('id,rules').eq('name','AI Football Live').limit(1).abortSignal(requestSignal()).single();if(error)throw error;apply(data);lastRead=matchNow();return data;})().finally(()=>reading=null);return reading;}
- function change(edit,leaseRequired=true,patch=null){const run=async()=>{
+ function change(edit,leaseRequired=true,patch=null,preferCached=false){const run=async()=>{
   if(!admin())return false;
   for(let attempt=0;attempt<6;attempt++){
-   const base=await read(),existing=base.rules?.[KEY];if(!existing)return false;
+   // A completion already has the latest received revision. Try that CAS
+   // directly; a conflict always rereads before retrying, preserving gifts.
+   const base=attempt===0&&preferCached&&row?.id&&row.rules?.[KEY]?.revision===match?.revision?row:await read(),existing=base.rules?.[KEY];if(!existing)return false;
    if(leaseRequired&&!owns(existing))return false;
    const next=clone(existing);if(edit(next)===false)return false;
    next.revision=existing.revision+1;next.updatedAt=matchNow();next.clientBuild=CLIENT_BUILD;next.clientRevision=next.revision;
@@ -992,6 +994,10 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    if(!hasVideoCompletionProof(match,cue)){
     // A started or preloaded clip is NOT yet a spent shot. If it never fully
     // plays, requeue it intact; a video timer is never enough to spend a gift.
+    // A slow/paused decoder is still working on this same gift. Never return
+    // it repeatedly to the front while its current owner is playing it.
+    const localShot=window.AIFootball3D?.shotStatus;
+    if(localShot?.cueId===cue.id&&window.AIFootball3D?.isAnimating)return;
     const clipDuration=Math.max(1500,cue.endsAt-cue.startsAt);
     const expires=Math.max(cue.endsAt+8000,(cue.videoStartedAt||0)+clipDuration+9000);
     if(now>=expires){

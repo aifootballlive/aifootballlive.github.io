@@ -73,6 +73,9 @@ let warmedCueKey=null,queuedPreparation=null;
 // Count advancing media against elapsed monotonic time, not callback frequency.
 // Safari may present callbacks hundreds of milliseconds apart while playing
 // normally. Seeks explicitly re-anchor without counting the skipped segment.
+// The authenticated broadcast owner keeps actual video playback running behind
+// another window. Hidden spectators/preloads still cannot spend a shot.
+function canRunShot(){return !document.hidden||!!(shot?.controller&&window.AIFootballTikTok?.getStatus?.().leader===true);}
 function recordPlaybackProgress(state,mediaTime,mono,rate=1,reset=false){
  const last=state.progressLastMediaTime,at=state.progressLastMono;
  if(!reset&&Number.isFinite(last)&&Number.isFinite(at)){
@@ -93,8 +96,9 @@ function reportRealVideoFrame(deck,frameConfirmed,mediaTime=deck.currentTime){
  // Some iOS versions expose rVFC but stop delivering it reliably. Native
  // timeupdate remains usable when confirmed callbacks have been absent.
  if(typeof deck.requestVideoFrameCallback==='function'&&!frameConfirmed&&mono-(shot.lastConfirmedFrameAt??shot.visibleSince??mono)<750)return;
- // A buffered/loaded video or an invisible background tab does not spend a shot.
- if(!shot?.cueId||shotVideo!==deck||document.hidden||deck.paused||deck.readyState<2||deck.seeking||deck.style.opacity!=='1')return;
+ // Buffered preloads and hidden spectators never spend a shot; the active
+ // broadcast owner still needs real advancing native playback and natural end.
+ if(!shot?.cueId||shotVideo!==deck||!canRunShot()||deck.paused||deck.readyState<2||deck.seeking||deck.style.opacity!=='1')return;
  if(deck.currentTime<0.08||window.AIFootballTikTok?.getMatchState?.().running!==true)return;
  // Progress requires video time to advance through decoded frames. A jump
  // caused by seeking or an invisible preload is not a completed shot.
@@ -109,17 +113,17 @@ function reportRealVideoFrame(deck,frameConfirmed,mediaTime=deck.currentTime){
 const goalMoments={A:3.4,B:3.8,C:4,D:3.35};
 const celebratedShots=new Set();
 function checkGoalMoment(v,time){
- if(!shot||v!==shotVideo||shot.result!=='goal'||document.hidden||v.style.opacity!=='1'||v.paused||v.seeking||v.readyState<2)return;
+ if(!shot||v!==shotVideo||shot.result!=='goal'||!canRunShot()||v.style.opacity!=='1'||v.paused||v.seeking||v.readyState<2)return;
  const moment=goalMoments[shot.team];if(!Number.isFinite(moment)||time<moment)return;
  window.AIFootballTikTok?.onShotGoal?.({playbackOwner:shot.playbackOwner,team:shot.team,cueId:shot.cueId,startsAt:shot.cueStartsAt,mediaTime:time,playedSeconds:shot.verifiedProgressSeconds||0,elapsedMs:performance.now()-(shot.visibleSince??performance.now()),clockStartedAt:window.AIFootballTikTok?.getMatchClock?.()?.startedAt});
  const key=shot.cueStartsAt??shot.syncStartedAt;
  if(celebratedShots.has(key))return;
  celebratedShots.add(key);if(celebratedShots.size>256)celebratedShots.delete(celebratedShots.values().next().value);
  window.celebrateGoal?.(shot.team);
- if(!document.hidden&&v.style.opacity==='1'&&!v.paused&&time-moment<.5)window.AIFootballRoundCelebration?.announceShot?.(shot.team,'goal',key);
+ if(canRunShot()&&v.style.opacity==='1'&&!v.paused&&time-moment<.5)window.AIFootballRoundCelebration?.announceShot?.(shot.team,'goal',key);
 }
 function checkSceneEffects(v,time,displayAt){
- if(!shot||v!==shotVideo||v.style.opacity!=='1'||document.hidden||v.paused||v.seeking||v.readyState<2)return;
+ if(!shot||v!==shotVideo||v.style.opacity!=='1'||!canRunShot()||v.paused||v.seeking||v.readyState<2)return;
  const events=window.AIFootballSceneAudioCues?.[v.dataset.clipKey];if(!events)return;
  shot.effectIndex||=0;
  while(shot.effectIndex<events.length&&events[shot.effectIndex][0]<=time+.012){
@@ -197,7 +201,7 @@ function prepareUpcomingShot(cue){
  warmedCueKey=identity;
 }
 function revealCurrent(target,confirmedFrame=false){
- if(!shot||target!==shotVideo||target.readyState<2||target.seeking||target.paused)return;
+ if(!shot||!canRunShot()||target!==shotVideo||target.readyState<2||target.seeking||target.paused)return;
  if(shot.resumePending)return;
  if(shot.bufferPending&&shot.visibleSince==null)return;
  // On mobile keep showing the previous final frame until the new video actually renders.
@@ -221,7 +225,7 @@ function revealCurrent(target,confirmedFrame=false){
  if(queuedPreparation){const cue=queuedPreparation;queuedPreparation=null;prepareUpcomingShot(cue);}
 }
 function playShot(){
- if(!shot||!shotVideo)return;
+ if(!shot||!shotVideo||!canRunShot())return;
  const target=shotVideo,preserving=Number.isFinite(shot.resumeAt),elapsed=preserving?shot.resumeAt:shot.visibleSince!=null?target.currentTime:shot.controller?0:Math.max(0,(matchNow()-shot.syncStartedAt)/1000);
  if(preserving&&target.readyState<1){
   if(!shot.resumePending){const current=shot;shot.resumePending=true;target.addEventListener('loadedmetadata',()=>{if(shot!==current||shotVideo!==target)return;shot.resumePending=false;playShot();},{once:true});}
@@ -234,7 +238,7 @@ function playShot(){
  // This is a readiness condition, never a delay/offset on the shared clock.
  const firstTime=Math.min(elapsed,Math.max(0,duration-.04)||elapsed);
  if(mediaCache.mobile&&shot.visibleSince==null&&!preserving&&!bufferedAt(target,firstTime,Math.min(2,Math.max(0,duration-firstTime-.1)))){
-  if(!shot.bufferPending){const current=shot;shot.bufferPending=true;setTimeout(()=>{if(shot!==current)return;shot.bufferPending=false;if(!document.hidden)playShot();},100);}
+  if(!shot.bufferPending){const current=shot;shot.bufferPending=true;setTimeout(()=>{if(shot!==current)return;shot.bufferPending=false;if(canRunShot())playShot();},100);}
   return;
  }
  // Keep the current visible stream moving until a decoded replacement frame is ready.
@@ -255,7 +259,7 @@ function playShot(){
 }
 function endShot(force=false,naturalEnd=false){
  const previous=shot;
- if(!force&&naturalEnd&&previous?.controller&&previous?.cueId&&shotVideo&&!document.hidden){
+ if(!force&&naturalEnd&&previous?.controller&&previous?.cueId&&shotVideo&&canRunShot()){
   const mediaTime=Number(shotVideo.currentTime),duration=Number(shotVideo.duration);
   // The ended event can follow the last displayed callback by >300ms. Count
   // that natural tail with the same time/seek guard, never a guessed timeout.
@@ -303,7 +307,7 @@ function beginShot(team,options={}){
  playShot();
  if(shot.result==='goal'){
   const current=shot;
-  const watch=()=>{if(shot!==current||document.hidden)return;const key=shot.cueStartsAt??shot.syncStartedAt;if(celebratedShots.has(key))return;
+  const watch=()=>{if(shot!==current||!canRunShot())return;const key=shot.cueStartsAt??shot.syncStartedAt;if(celebratedShots.has(key))return;
    if(typeof target.requestVideoFrameCallback!=='function'||performance.now()-(shot.lastConfirmedFrameAt??0)>100)checkGoalMoment(target,target.currentTime);
    requestAnimationFrame(watch);
   };requestAnimationFrame(watch);
@@ -329,7 +333,7 @@ function maintainShot(){
   return;
  }
  if(shot&&window.AIFootballTikTok?.getMatchState?.().running===false){endShot(true);return;}
- if(!shot||!shotVideo||document.hidden||repairing)return;
+ if(!shot||!shotVideo||!canRunShot()||repairing)return;
  const v=shotVideo;
  const expected=shot.controller?v.currentTime:Math.max(0,(matchNow()-shot.syncStartedAt)/1000),duration=v.duration;
  const liveCue=window.AIFootballTikTok?.getCurrentCue?.();
@@ -381,7 +385,7 @@ setInterval(()=>{
  if(waitingRetries%4===0){try{video.load()}catch{}}
  video.play().catch(()=>{});
 },1300);
-document.addEventListener('pointerdown',()=>{for(const v of decks)delete v.dataset.autoplayMuted;syncShotAudio();if(shot&&shotVideo&&!document.hidden){const target=shotVideo;target.play().catch(()=>{target.dataset.autoplayMuted='true';target.muted=true;target.play().catch(()=>{});});}});
+document.addEventListener('pointerdown',()=>{for(const v of decks)delete v.dataset.autoplayMuted;syncShotAudio();if(shot&&shotVideo&&canRunShot()){const target=shotVideo;target.play().catch(()=>{target.dataset.autoplayMuted='true';target.muted=true;target.play().catch(()=>{});});}});
 function sync(){
  const epoch=window.AIFootballTikTok?.getClock?.()?.epoch;
  if(!Number.isFinite(epoch)||!video.duration||document.hidden)return;
@@ -406,8 +410,8 @@ function startWaitingIfEmpty(){
 video.addEventListener('loadedmetadata',startWaitingIfEmpty);
 video.addEventListener('loadeddata',()=>setTimeout(()=>mediaCache.warmAll(),700),{once:true});
 document.addEventListener('visibilitychange',()=>{
- if(shot&&shotVideo)recordPlaybackProgress(shot,shotVideo.currentTime,performance.now(),shotVideo.playbackRate,true);
- if(document.hidden){video.pause();if(shotVideo)shotVideo.pause();}
+ if(shot&&shotVideo&&!(shot.controller&&window.AIFootballTikTok?.getStatus?.().leader===true))recordPlaybackProgress(shot,shotVideo.currentTime,performance.now(),shotVideo.playbackRate,true);
+ if(document.hidden){video.pause();if(shotVideo){if(canRunShot()){if(shotVideo.paused)playShot();}else shotVideo.pause();}}
  else startWaitingIfEmpty();
 });
 window.addEventListener('pageshow',startWaitingIfEmpty);
