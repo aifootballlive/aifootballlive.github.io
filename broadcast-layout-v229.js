@@ -9,7 +9,10 @@ function place(){scheduled=false;const wrap=document.querySelector('.wrap'),card
  const noticeBottom=card.bottom;
  set(hint,'top',Math.round(noticeBottom-frame.top+frame.width*3/390)+'px');
  set(clock,'top',Math.round(hint.getBoundingClientRect().bottom-frame.top+frame.width*4/390)+'px');
- const results=document.getElementById('roundSummary');if(results&&clock.dataset.phase==='result')set(results,'top',Math.round(clock.getBoundingClientRect().bottom-frame.top+8)+'px');
+ const results=document.getElementById('roundSummary');if(results&&clock.dataset.phase==='result'){
+  set(results,'top',Math.round(card.bottom-frame.top+frame.width*.008)+'px');
+  set(clock,'top',Math.round(results.getBoundingClientRect().bottom-frame.top+frame.width*.008)+'px');
+ }
 }
 function request(){if(!scheduled){scheduled=true;requestAnimationFrame(place);}}
 function bind(){const wrap=document.querySelector('.wrap');if(!wrap)return;const observer=new ResizeObserver(request);for(const e of [wrap,wrap.querySelector('.broadcastControls'),wrap.querySelector('.headRight'),document.getElementById('goalsHeading'),document.getElementById('leagueProfileHint'),document.getElementById('matchClockHud')])if(e)observer.observe(e);new MutationObserver(request).observe(wrap,{attributes:true,attributeFilter:['class'],childList:true});window.addEventListener('resize',request);document.fonts?.ready.then(request);request();}

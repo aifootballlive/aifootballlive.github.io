@@ -28,11 +28,12 @@ const server=http.createServer((req,res)=>{
   const starts=[],original=AudioContext.prototype.createBufferSource;
   AudioContext.prototype.createBufferSource=function(){const source=original.call(this),start=source.start.bind(source);source.start=(...args)=>{starts.push(args);return start(...args);};return source;};
   await AIFootballAudio.refereeWhistle('ready','test');await AIFootballAudio.refereeWhistle('start','test');await AIFootballAudio.refereeWhistle('end','test');
+  AIFootballAudio.whistle('shot-test');AIFootballAudio.whistle('shot-test');await new Promise(resolve=>setTimeout(resolve,50));
   const duplicate=await AIFootballAudio.refereeWhistle('end','test');AIFootballAudio.disableSound();const muted=await AIFootballAudio.refereeWhistle('start','muted');
   return {starts,duplicate,muted};
  });
- assert.equal(result.starts.length,5);assert.equal(result.duplicate,false);assert.equal(result.muted,false);
- const durations=result.starts.map(x=>x[2]);assert.deepEqual(durations,[.16,.65,.22,.22,.78]);
+ assert.equal(result.starts.length,6);assert.equal(result.duplicate,false);assert.equal(result.muted,false);
+ const durations=result.starts.map(x=>x[2]);assert.deepEqual(durations,[.16,.65,.22,.22,.78,.16]);
  assert(Math.abs(result.starts[3][0]-result.starts[2][0]-.36)<.02);assert(Math.abs(result.starts[4][0]-result.starts[2][0]-.72)<.02);
  console.log('Audio: short press, single kickoff, three final blasts; deduplication and mute PASS');
 }finally{await browser.close();server.close();}})().catch(e=>{console.error(e);process.exitCode=1;server.close();});

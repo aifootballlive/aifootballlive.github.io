@@ -121,14 +121,14 @@ function loadRefereeWhistle(){
 }
 function stopRefereeWhistles(){for(const source of refereeSources){try{source.stop();}catch{}}refereeSources.clear();}
 async function refereeWhistle(kind,eventId){
- if(!['ready','start','end'].includes(kind)||userMuted||settings.soundEnabled===false)return false;
+ if(!['ready','shot','start','end'].includes(kind)||userMuted||settings.soundEnabled===false)return false;
  if(!enabled)await enableSound();
  if(!enabled||!ctx||ctx.state!=='running')return false;
  const key=eventId==null?null:kind+':'+eventId;
  if(key&&refereeEvents.has(key))return false;
  if(key){refereeEvents.add(key);if(refereeEvents.size>128)refereeEvents.delete(refereeEvents.values().next().value);}
  const generation=leagueAudioGeneration;
- if(kind!=='ready')stopAnnouncements();
+ if(kind==='start'||kind==='end')stopAnnouncements();
  const pattern=kind==='end'?[[0,.22],[.36,.22],[.72,.78]]:kind==='start'?[[0,.65]]:[[0,.16]];
  try{
   const buffer=await loadRefereeWhistle();
@@ -152,7 +152,7 @@ async function refereeWhistle(kind,eventId){
 function whistle(cueKey){
  if(!enabled||!ctx||ctx.state!=='running'||settings.soundEnabled===false)return false;
  if(cueKey!=null){if(whistledCues.has(cueKey))return false;whistledCues.add(cueKey);if(whistledCues.size>256)whistledCues.delete(whistledCues.values().next().value);}
- tone(2850,0,.21,.065,'sine');tone(3420,.005,.185,.025,'sine');noiseBurst(0,.045,.009,3100,'highpass');return true;
+ refereeWhistle('shot',cueKey).catch(()=>{});return true;
 }
 function kick(at=0){
   const nowMs=Date.now();if(nowMs-lastKickAt<120)return;lastKickAt=nowMs;
