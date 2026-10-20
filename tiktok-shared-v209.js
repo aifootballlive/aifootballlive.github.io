@@ -193,8 +193,7 @@
    const winner=match.clock.interrupted?'MAÇ TEKNİK NEDENLE DURDU':
     match.clock.winner?teamShort[match.clock.winner]+' KAZANDI':'BERABERE';
    const score=TEAMS.map(t=>teamShort[t]+' '+(Number(match.lastResult?.scores?.[t])||0)).join(' • ');
-   const nextText=automatic?'SONUÇLARDAN SONRA YENİ MAÇ OTOMATİK BAŞLAYACAK':
-    'OTOMATİK MAÇ KAPALI';
+   const nextText='Lig tablosu için profilimizdeki linke tıklayın';
    for(const [selector,value] of [['.resultWinner',winner],['.resultScores',score],['.resultNext',nextText]]){
     const element=result?.querySelector(selector);
     if(element&&element.textContent!==value)element.textContent=value;

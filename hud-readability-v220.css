@@ -514,26 +514,26 @@ html body #broadcastViewport#broadcastViewport>#roundSummary>.matchResultBanner{
  border:.26cqw solid #e4c36f!important;border-radius:1.3cqw!important;
  background:#17263a!important;
 }
-html body #broadcastViewport#broadcastViewport>#roundSummary .resultWinner{font-size:3.8cqw!important;line-height:1.1!important}
-html body #broadcastViewport#broadcastViewport>#roundSummary .resultNext{font-size:2cqw!important;line-height:1.1!important;margin:.2cqw 0 0!important}
+html body #broadcastViewport#broadcastViewport>#roundSummary .resultWinner{font-size:4.1cqw!important;line-height:1.1!important}
+html body #broadcastViewport#broadcastViewport>#roundSummary .resultNext{font-size:2.65cqw!important;line-height:1.15!important;margin:.35cqw 0 0!important;color:#f3f7ff!important;letter-spacing:.01em!important}
 html body #broadcastViewport#broadcastViewport>#roundSummary>.leagueBreakPanel{
  flex:0 0 auto!important;justify-content:flex-start!important;gap:.5cqw!important;
  padding:.8cqw!important;border:.26cqw solid #8ea9c9!important;border-radius:1.3cqw!important;
  background:#0b192c!important;
 }
-html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakHeader{font-size:3cqw!important;line-height:1.1!important;margin:0!important}
-html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakSeason{font-size:2.1cqw!important;line-height:1.1!important;margin:0!important;color:#cad9eb!important}
+html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakHeader{font-size:3.3cqw!important;line-height:1.1!important;margin:0!important}
+html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakSeason{font-size:2.35cqw!important;line-height:1.1!important;margin:0!important;color:#cad9eb!important}
 html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakPanel table{
  border:.28cqw solid #91accb!important;border-collapse:collapse!important;table-layout:fixed!important;
 }
 html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakPanel th,
 html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakPanel td{
  border:.23cqw solid #647f9f!important;padding:.6cqw .3cqw!important;
- font-size:2.4cqw!important;line-height:1.15!important;
+ font-size:2.7cqw!important;line-height:1.15!important;
 }
-html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakPanel th{font-size:1.9cqw!important;background:#233b57!important;color:#dfeaff!important}
-html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakPanel td:first-child{font-size:2.4cqw!important;width:36%!important}
+html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakPanel th{font-size:2.1cqw!important;background:#233b57!important;color:#dfeaff!important}
+html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakPanel td:first-child{font-size:2.7cqw!important;width:36%!important}
 html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakPanel th:first-child{width:36%!important}
 html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakPanel tbody tr:nth-child(odd){background:#152a43!important}
 html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakPanel tbody tr:first-child{background:#294463!important;color:#ffe29b!important}
-html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakPanel .breakLogo{width:3cqw!important;height:3.5cqw!important;margin-right:.6cqw!important}
+html body #broadcastViewport#broadcastViewport>#roundSummary .leagueBreakPanel .breakLogo{width:3.3cqw!important;height:3.8cqw!important;margin-right:.6cqw!important}
