@@ -1,0 +1,10 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const source=fs.readFileSync(require.resolve('../scene-video-v219.js'),'utf8'),start=source.indexOf('function recordPlaybackProgress('),end=source.indexOf('function reportRealVideoFrame(',start);
+const context={};vm.createContext(context);vm.runInContext(source.slice(start,end),context);const record=context.recordPlaybackProgress;
+const sparse={};record(sparse,0,0,1,true);for(let ms=450;ms<10000;ms+=450)record(sparse,ms/1000,ms);record(sparse,10,10000);assert(Math.abs(sparse.verifiedProgressSeconds-10)<.001,'Sparse callbacks must cover the entire naturally playing clip');
+const seek={};record(seek,0,0,1,true);record(seek,1,1000);record(seek,8,1020);record(seek,9,2020);assert.equal(seek.verifiedProgressSeconds,2,'Instant forward seek must not spend skipped footage');
+record(seek,0,2030,1,true);record(seek,1,3030);assert.equal(seek.verifiedProgressSeconds,2,'Replaying an already seen prefix must not inflate completion');
+const hidden={};record(hidden,0,0,1,true);record(hidden,1,1000);record(hidden,7,7000,1,true);record(hidden,8,8000);assert.equal(hidden.verifiedProgressSeconds,2,'Hidden footage must not count after re-anchoring');
+const stalled={};record(stalled,0,0,1,true);record(stalled,1,1000);record(stalled,1,11000);assert.equal(stalled.verifiedProgressSeconds,1,'Wall time alone never proves playback');record(stalled,1.5,11500);assert.equal(stalled.verifiedProgressSeconds,1.5);
+const late={};record(late,8,8000,1,true);record(late,10,10000);assert.equal(late.verifiedProgressSeconds,2,'Starting on a late frame cannot prove a full video');
+console.log('PASS: 450ms callbacks prove complete playback; seeks, repeated prefixes, hidden intervals, buffering time and late starts cannot spend unplayed shots.');

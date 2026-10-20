@@ -2,7 +2,11 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),htt
 const fixture=fs.readFileSync(path.join(__dirname,'mfa-ui-v204.cjs'),'utf8').match(/const mock=(`[^`]*`);/);const mock=vm.runInNewContext(fixture[1])+`;const original=window.supabase.createClient;window.supabase.createClient=(...args)=>{const c=original(...args);c.auth.mfa={getAuthenticatorAssuranceLevel:async()=>({data:{currentLevel:'aal2'}})};c.rpc=async()=>({data:{enabled:true,approved:true}});return c;};`;
 const server=http.createServer((req,res)=>{try{const file=path.join(root,req.url.split('?')[0]),data=fs.readFileSync(file);res.setHeader('Content-Type',file.endsWith('.css')?'text/css':file.endsWith('.js')?'text/javascript':file.endsWith('.svg')?'image/svg+xml':file.endsWith('.mp4')?'video/mp4':file.endsWith('.mp3')?'audio/mpeg':'text/html');if(req.headers.range){const m=/bytes=(\d+)-(\d*)/.exec(req.headers.range),a=+m[1],z=m[2]?+m[2]:data.length-1;res.writeHead(206,{'Content-Range':`bytes ${a}-${z}/${data.length}`,'Accept-Ranges':'bytes','Content-Length':z-a+1});res.end(data.subarray(a,z+1));}else res.end(data);}catch{res.writeHead(404).end();}}).listen(8997,'127.0.0.1');
 (async()=>{const b=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--autoplay-policy=no-user-gesture-required']});try{
- const c=await b.newContext({viewport:{width:390,height:844},isMobile:process.env.AFL_MOBILE==='1',hasTouch:process.env.AFL_MOBILE==='1'});await c.addInitScript(()=>localStorage.setItem('test-admin','1'));await c.route('**/npm/@supabase/supabase-js@2',r=>r.fulfill({contentType:'text/javascript',body:mock}));await c.route('**/*.supabase.co/**',r=>r.abort());const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ const c=await b.newContext({viewport:{width:390,height:844},isMobile:process.env.AFL_MOBILE==='1',hasTouch:process.env.AFL_MOBILE==='1'});await c.addInitScript(()=>localStorage.setItem('test-admin','1'));if(process.env.AFL_SPARSE_FRAMES==='1')await c.addInitScript(()=>{
+  const native=HTMLVideoElement.prototype.requestVideoFrameCallback,last=new WeakMap();
+  HTMLVideoElement.prototype.requestVideoFrameCallback=function(callback){const video=this;const deliver=(now,meta)=>{if(now-(last.get(video)||0)<450){native.call(video,deliver);return;}last.set(video,now);callback(now,meta);};return native.call(video,deliver);};
+  window.nativeShotEnds=0;document.addEventListener('ended',event=>{if(event.target.id==='sceneShotVideo'||event.target.id==='sceneNextShotVideo')nativeShotEnds++;},true);
+ });if(process.env.AFL_MISSING_FRAMES==='1')await c.addInitScript(()=>{HTMLVideoElement.prototype.requestVideoFrameCallback=function(){return 0;};});await c.route('**/npm/@supabase/supabase-js@2',r=>r.fulfill({contentType:'text/javascript',body:mock}));await c.route('**/*.supabase.co/**',r=>r.abort());const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.goto('http://127.0.0.1:8997/live.html');await p.waitForFunction(()=>document.querySelector('.adminView')&&AIFootball3D.videoStatus.motionReady);
  await p.evaluate(()=>{const m=structuredClone(__row.rules.tiktok_match_v2);m.clock={startedAt:Date.now()-10000,manualStarted:true,round:1,finishedAt:null};m.lease.until=0;__emit(m);});await p.waitForFunction(()=>AIFootballTikTok.getStatus().leader);
  await p.evaluate(()=>{
@@ -12,6 +16,10 @@ const server=http.createServer((req,res)=>{try{const file=path.join(root,req.url
   let started=false;const sample=()=>{const visible=[...document.querySelectorAll('#sceneShotVideo,#sceneNextShotVideo')].some(v=>v.style.opacity==='1');if(visible)started=true;if(started&&AIFootballTikTok.hasPendingShot()){followingFrames++;if(!visible)idleGaps++;}requestAnimationFrame(sample);};requestAnimationFrame(sample);
   AIFootballTikTok.manualShot('A',2);AIFootballTikTok.manualShot('B',1);AIFootballTikTok.manualShot('C',1);
  });
+ if(process.env.AFL_SPARSE_FRAMES==='1'){
+  await p.waitForFunction(()=>nativeShotEnds>0,{},{timeout:25000});await p.waitForTimeout(1000);
+  assert(await p.evaluate(()=>ends.length>=1),'A naturally ended video must acknowledge completion even when iOS presents callbacks every 450ms');
+ }
  await p.waitForFunction(()=>ends.length===4&&Object.values(AIFootballTikTok.getPendingQueue()).every(n=>n===0),{},{timeout:90000});
  await p.waitForFunction(()=>__row.rules.tiktok_match_v2.cue?.finishedAt!=null,{},{timeout:10000});
  const result=await p.evaluate(()=>({ends,whistles,idleGaps,followingFrames,score:__row.rules.tiktok_match_v2.scores,keeper:__row.rules.tiktok_match_v2.keeper}));console.log(result);

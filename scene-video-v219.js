@@ -36,8 +36,15 @@ function makeDeck(id){
  v.addEventListener('ended',()=>{if(shot&&shotVideo===v)endShot(false,true);});
  v.addEventListener('timeupdate',()=>{if(shotVideo===v){checkGoalMoment(v,v.currentTime);checkSceneEffects(v,v.currentTime);revealCurrent(v);reportRealVideoFrame(v,false);}});
  v.addEventListener('seeked',()=>revealCurrent(v));
+ for(const event of ['seeking','seeked'])v.addEventListener(event,()=>{
+  if(v===shotVideo&&shot)recordPlaybackProgress(shot,v.currentTime,performance.now(),v.playbackRate,true);
+ });
  v.addEventListener('loadeddata',()=>revealCurrent(v));
  v.addEventListener('canplay',()=>revealCurrent(v));
+ // A transparent iOS deck may not deliver rVFC at all. The native playing
+ // event also confirms a decoded first frame, including slow cold loads that
+ // outlast the one-shot 180ms fallback.
+ v.addEventListener('playing',()=>{if(v===shotVideo&&v.readyState>=2&&!v.seeking)revealCurrent(v,true);});
  if(typeof v.requestVideoFrameCallback==='function'){const frame=(_,meta)=>{if(shot&&shotVideo===v){noteProgress(v);checkGoalMoment(v,meta.mediaTime);checkSceneEffects(v,meta.mediaTime,meta.expectedDisplayTime);revealCurrent(v,true);reportRealVideoFrame(v,true,meta.mediaTime);}v.requestVideoFrameCallback(frame);};v.requestVideoFrameCallback(frame);}
  return v;
 }
@@ -55,21 +62,35 @@ function armFirstFrame(deck){
 }
 
 let warmedCueKey=null,queuedPreparation=null;
+// Count advancing media against elapsed monotonic time, not callback frequency.
+// Safari may present callbacks hundreds of milliseconds apart while playing
+// normally. Seeks explicitly re-anchor without counting the skipped segment.
+function recordPlaybackProgress(state,mediaTime,mono,rate=1,reset=false){
+ const last=state.progressLastMediaTime,at=state.progressLastMono;
+ if(!reset&&Number.isFinite(last)&&Number.isFinite(at)){
+  const delta=mediaTime-last,elapsed=Math.max(0,(mono-at)/1000);
+  if(delta>0&&delta<=elapsed*Math.max(1,rate)+.12){
+   const ranges=[...(state.playedRanges||[]),[last,mediaTime]].sort((a,b)=>a[0]-b[0]),merged=[];
+   for(const range of ranges){const tail=merged.at(-1);if(tail&&range[0]<=tail[1])tail[1]=Math.max(tail[1],range[1]);else merged.push([...range]);}
+   state.playedRanges=merged;
+   state.verifiedProgressSeconds=merged.reduce((sum,[a,b])=>sum+b-a,0);
+  }
+ }
+ state.progressLastMediaTime=mediaTime;state.progressLastMono=mono;
+}
 function reportRealVideoFrame(deck,frameConfirmed,mediaTime=deck.currentTime){
  if(!shot?.controller)return;
- if(typeof deck.requestVideoFrameCallback==='function'&&!frameConfirmed)return;
+ const mono=performance.now();
+ if(frameConfirmed)shot.lastConfirmedFrameAt=mono;
+ // Some iOS versions expose rVFC but stop delivering it reliably. Native
+ // timeupdate remains usable when confirmed callbacks have been absent.
+ if(typeof deck.requestVideoFrameCallback==='function'&&!frameConfirmed&&mono-(shot.lastConfirmedFrameAt??shot.visibleSince??mono)<750)return;
  // A buffered/loaded video or an invisible background tab does not spend a shot.
  if(!shot?.cueId||shotVideo!==deck||document.hidden||deck.paused||deck.readyState<2||deck.seeking||deck.style.opacity!=='1')return;
  if(deck.currentTime<0.08||window.AIFootballTikTok?.getMatchState?.().running!==true)return;
  // Progress requires video time to advance through decoded frames. A jump
  // caused by seeking or an invisible preload is not a completed shot.
- const last=shot.progressLastMediaTime;
- if(Number.isFinite(last)){
-  const delta=mediaTime-last;
-  // Count genuine advancing decoded frames, not a large seek jump.
-  if(delta>0&&delta<0.3)shot.verifiedProgressSeconds=(shot.verifiedProgressSeconds||0)+delta;
- }
- shot.progressLastMediaTime=mediaTime;
+ recordPlaybackProgress(shot,mediaTime,mono,deck.playbackRate);
  const now=matchNow();
  if(shot.lastFrameReportAt&&now-shot.lastFrameReportAt<1200)return;
  shot.lastFrameReportAt=now;
@@ -171,6 +192,7 @@ function revealCurrent(target,confirmedFrame=false){
   // A cold/private tab can buffer before its first frame: align once before revealing it.
   if(!shot.controller&&!shot.initialFrameAligned){shot.initialFrameAligned=true;const expected=Math.max(0,(matchNow()-shot.syncStartedAt)/1000);if(expected-target.currentTime>.35&&Number.isFinite(target.duration)&&expected<target.duration-.1&&bufferedAt(target,expected)){try{target.currentTime=expected;armFirstFrame(target);return;}catch{}}}
   if(shot.controller){shot.syncStartedAt=matchNow()-target.currentTime*1000;shot.resumeAt=null;}shot.visibleSince??=performance.now();
+  recordPlaybackProgress(shot,target.currentTime,performance.now(),target.playbackRate,true);
   video.pause();
   target.style.zIndex='4';target.style.opacity='1';
   lastFrameAt=performance.now();lastMediaTime=target.currentTime;
@@ -206,6 +228,9 @@ function endShot(force=false,naturalEnd=false){
  const previous=shot;
  if(!force&&naturalEnd&&previous?.controller&&previous?.cueId&&shotVideo&&!document.hidden){
   const mediaTime=Number(shotVideo.currentTime),duration=Number(shotVideo.duration);
+  // The ended event can follow the last displayed callback by >300ms. Count
+  // that natural tail with the same time/seek guard, never a guessed timeout.
+  if(!shotVideo.seeking)recordPlaybackProgress(previous,mediaTime,performance.now(),shotVideo.playbackRate);
   if(Number.isFinite(duration)&&duration>0.5&&Number.isFinite(mediaTime)&&
      mediaTime>=duration-0.3&&Number(previous.verifiedProgressSeconds||0)>=duration-.35)
    window.AIFootballTikTok?.onShotVideoFinished?.({
@@ -334,6 +359,7 @@ function startWaitingIfEmpty(){
 video.addEventListener('loadedmetadata',startWaitingIfEmpty);
 video.addEventListener('loadeddata',()=>setTimeout(()=>mediaCache.warmAll(),700),{once:true});
 document.addEventListener('visibilitychange',()=>{
+ if(shot&&shotVideo)recordPlaybackProgress(shot,shotVideo.currentTime,performance.now(),shotVideo.playbackRate,true);
  if(document.hidden){video.pause();if(shotVideo)shotVideo.pause();}
  else startWaitingIfEmpty();
 });
