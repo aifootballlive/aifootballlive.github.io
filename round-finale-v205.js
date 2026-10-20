@@ -18,7 +18,7 @@ function showConfetti(){
  }
 }
 function isBroadcastController(){
- return document.visibilityState!=='hidden'&&typeof adminAuthed!=='undefined'&&adminAuthed===true&&window.AIFootballTikTok?.getStatus?.().leader===true;
+ return typeof adminAuthed!=='undefined'&&adminAuthed===true&&window.AIFootballTikTok?.getStatus?.().leader===true;
 }
 const shotCalls=new Set();let shotVariant=0,goalVariant=0;
 function trimShots(){if(shotCalls.size>256)shotCalls.delete(shotCalls.values().next().value);}
@@ -105,14 +105,15 @@ function watchKickoff(){
  else if(phase.running){lifecycleStamp=clock.startedAt;lifecyclePhase='playing';}
  else if(!phase.starting&&!phase.running&&lifecyclePhase==='preparing'){lifecyclePhase=null;window.AIFootballAudio?.stopAnnouncements?.();}
 }
-/* Varied, non-intrusive live commentary. Uses the broadcast's existing
+/* Commentary belongs to the broadcast audio, so tab visibility must not mute it.
+   Varied, non-intrusive live commentary. Uses the broadcast's existing
    speech settings; no separate audio stream or duplicate live players. */
 const LIVE_TEAM_NAMES={A:'Altın Pusula',B:'Kızıl Kıvılcım',C:'Gece Yıldızı',D:'Bordo Dalga'};
 let liveRoundKey=null,lastLiveQueues=null,lastLiveGift=null,lastSupportAt=0,lastAtmosphereAt=0,lastDuringMatchAt=0,voiceSequence=0;
 const announcedMilestones=new Set();
 function speakLiveLine(line,key=null,important=false){
  const audio=window.AIFootballAudio;
- if(!audio?.announce||(!important&&audio.announcing)||!audio.enabled||document.hidden)return false;
+ if(!audio?.announce||(!important&&audio.announcing)||!audio.enabled)return false;
  const setting=window.__AI_FOOTBALL_SETTINGS||{};
  if(setting.aiSpeechEnabled===false||setting.soundEnabled===false)return false;
  Promise.resolve(audio.announce(line,key,{important})).catch(error=>console.warn('Canlı spiker',error));
@@ -126,7 +127,7 @@ const prepMilestones=new Set();
 function preMatchSpeechTick(){
  const game=window.AIFootballTikTok;
  const clock=game?.getMatchClock?.(),phase=game?.getMatchState?.();
- if(!clock||!phase||document.hidden)return;
+ if(!clock||!phase)return;
  const now=matchNow();
  if(phase.waiting&&!phase.results&&!phase.running&&!phase.starting){
   const key=String(clock.round||0)+':'+String(clock.finishedAt||0)+':'+String(clock.startedAt||'idle');
@@ -185,7 +186,7 @@ function liveCommentaryTick(){
  const game=window.AIFootballTikTok,audio=window.AIFootballAudio;
  if(!game?.getPendingQueue||!game?.getMatchState||!game?.getMatchClock||!audio)return;
  const info=game.getMatchState(),clock=game.getMatchClock(),queues=game.getPendingQueue();
- if(!clock||!queues||document.hidden)return;
+ if(!clock||!queues)return;
  const roundKey=String(clock.round||0)+':'+String(clock.startedAt||'waiting');
  if(roundKey!==liveRoundKey){
   liveRoundKey=roundKey;lastLiveQueues={...queues};lastLiveGift=game.getStatus?.().lastGift?.id||null;
