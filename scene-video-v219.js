@@ -45,8 +45,10 @@ function makeDeck(id){
  v.addEventListener('timeupdate',()=>{if(shotVideo===v){revealCurrent(v);reportRealVideoFrame(v,false);if(typeof v.requestVideoFrameCallback!=='function'||performance.now()-(shot?.lastConfirmedFrameAt??0)>750)checkGoalMoment(v,v.currentTime);checkSceneEffects(v,v.currentTime);}});
  v.addEventListener('seeked',()=>revealCurrent(v));
  for(const event of ['seeking','seeked'])v.addEventListener(event,()=>{
+  if(v===shotVideo&&shot&&shot.visibleSince!=null)shot.nativeContinuous=false;
   if(v===shotVideo&&shot)recordPlaybackProgress(shot,v.currentTime,performance.now(),v.playbackRate,true);
  });
+ v.addEventListener('ratechange',()=>{if(v===shotVideo&&shot&&shot.visibleSince!=null&&Math.abs(v.playbackRate-1)>.04)shot.nativeContinuous=false;});
  v.addEventListener('loadeddata',()=>revealCurrent(v));
  v.addEventListener('canplay',()=>revealCurrent(v));
  // A transparent iOS deck may not deliver rVFC at all. The native playing
@@ -89,6 +91,17 @@ function recordPlaybackProgress(state,mediaTime,mono,rate=1,reset=false){
  }
  state.progressLastMediaTime=mediaTime;state.progressLastMono=mono;
 }
+// Native played ranges survive sparse/throttled frame callbacks. Reused-deck
+// history is accepted only with a fresh near-zero start, no seek/rate skip,
+// actual current media time and enough monotonic playback time in this cue.
+function provedPlaybackSeconds(state,v,mediaTime,mono){
+ const sampled=Number(state.verifiedProgressSeconds)||0;
+ if(!state.nativeContinuous||!Number.isFinite(state.visibleSince)||Math.abs(v.playbackRate-1)>.04)return sampled;
+ const limit=Math.min(Number(mediaTime)||0,Number(v.currentTime)||0,Math.max(0,(mono-state.visibleSince)/1000)+.12);
+ let native=0;
+ for(let i=0;i<v.played.length;i++){const a=Math.max(0,v.played.start(i)),b=Math.min(limit,v.played.end(i));if(b>a)native+=b-a;}
+ return Math.max(sampled,native);
+}
 function reportRealVideoFrame(deck,frameConfirmed,mediaTime=deck.currentTime){
  if(!shot?.controller)return;
  const mono=performance.now();
@@ -115,7 +128,7 @@ const celebratedShots=new Set();
 function checkGoalMoment(v,time){
  if(!shot||v!==shotVideo||shot.result!=='goal'||!canRunShot()||v.style.opacity!=='1'||v.paused||v.seeking||v.readyState<2)return;
  const moment=goalMoments[shot.team];if(!Number.isFinite(moment)||time<moment)return;
- window.AIFootballTikTok?.onShotGoal?.({playbackOwner:shot.playbackOwner,team:shot.team,cueId:shot.cueId,startsAt:shot.cueStartsAt,mediaTime:time,playedSeconds:shot.verifiedProgressSeconds||0,elapsedMs:performance.now()-(shot.visibleSince??performance.now()),clockStartedAt:window.AIFootballTikTok?.getMatchClock?.()?.startedAt});
+ window.AIFootballTikTok?.onShotGoal?.({playbackOwner:shot.playbackOwner,team:shot.team,cueId:shot.cueId,startsAt:shot.cueStartsAt,mediaTime:time,playedSeconds:provedPlaybackSeconds(shot,v,time,performance.now()),elapsedMs:performance.now()-(shot.visibleSince??performance.now()),clockStartedAt:window.AIFootballTikTok?.getMatchClock?.()?.startedAt});
  const key=shot.cueStartsAt??shot.syncStartedAt;
  if(celebratedShots.has(key))return;
  celebratedShots.add(key);if(celebratedShots.size>256)celebratedShots.delete(celebratedShots.values().next().value);
@@ -213,7 +226,7 @@ function revealCurrent(target,confirmedFrame=false){
   // A cold/private tab can buffer before its first frame: align once before revealing it.
   if(!shot.controller&&shot.visibleSince==null&&!shot.initialFrameAligned){shot.initialFrameAligned=true;const expected=Math.max(0,(matchNow()-shot.syncStartedAt)/1000);if(expected-target.currentTime>.35&&Number.isFinite(target.duration)&&expected<target.duration-.1&&bufferedAt(target,expected)){try{target.currentTime=expected;armFirstFrame(target);return;}catch{}}}
   if(shot.controller)shot.syncStartedAt=matchNow()-target.currentTime*1000;
-  shot.resumeAt=null;shot.visibleSince??=performance.now();
+  shot.resumeAt=null;if(shot.visibleSince==null)shot.nativeContinuous=target.currentTime<=.1;shot.visibleSince??=performance.now();
   recordPlaybackProgress(shot,target.currentTime,performance.now(),target.playbackRate,true);
   video.pause();
   // Pausing alone leaves the large idle MP4 downloading in mobile browsers.
@@ -268,10 +281,12 @@ function endShot(force=false,naturalEnd=false){
   // The ended event can follow the last displayed callback by >300ms. Count
   // that natural tail with the same time/seek guard, never a guessed timeout.
   if(!shotVideo.seeking)recordPlaybackProgress(previous,mediaTime,performance.now(),shotVideo.playbackRate);
+  const playedSeconds=provedPlaybackSeconds(previous,shotVideo,mediaTime,performance.now());
+  if(Number.isFinite(duration)&&mediaTime>=duration-.3&&playedSeconds<duration-.35)console.warn('Şut bitiş doğrulaması bekliyor',{team:previous.team,playedSeconds,sampledSeconds:previous.verifiedProgressSeconds||0,nativeContinuous:previous.nativeContinuous,elapsedMs:performance.now()-(previous.visibleSince??performance.now()),duration});
   if(Number.isFinite(duration)&&duration>0.5&&Number.isFinite(mediaTime)&&
-     mediaTime>=duration-0.3&&Number(previous.verifiedProgressSeconds||0)>=duration-.35)
+     mediaTime>=duration-0.3&&playedSeconds>=duration-.35)
    window.AIFootballTikTok?.onShotVideoFinished?.({
-    playbackOwner:previous.playbackOwner,naturalEnd:true,playedSeconds:previous.verifiedProgressSeconds,elapsedMs:performance.now()-(previous.visibleSince??performance.now()),cueId:previous.cueId,team:previous.team,startsAt:previous.cueStartsAt,
+    playbackOwner:previous.playbackOwner,naturalEnd:true,playedSeconds,elapsedMs:performance.now()-(previous.visibleSince??performance.now()),cueId:previous.cueId,team:previous.team,startsAt:previous.cueStartsAt,
     mediaTime,duration,clockStartedAt:window.AIFootballTikTok?.getMatchClock?.()?.startedAt
    });
  }
