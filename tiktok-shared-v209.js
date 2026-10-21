@@ -2,20 +2,21 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=287,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=288,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // One catalog drives both the visible gift buttons and received TikTok events.
  const GIFT_CATALOG=[
-  {team:'A',coins:1,shots:1,title:'Gül',icon:'rose',names:['rose','gul']},
-  {team:'A',coins:5,shots:5,title:'Türk Kahvesi',icon:'turkish-coffee',names:['turkish coffee','turk kahvesi']},
-  {team:'B',coins:1,shots:1,title:'TikTok',icon:'tiktok',names:['tiktok','tik tok']},
-  {team:'B',coins:5,shots:5,title:'Aşk Kokusu',icon:'love-in-scent',names:['love in scent','ask kokusu','love scent','scent of love']},
-  {team:'C',coins:1,shots:1,title:'Dondurma Külahı',icon:'ice-cream-cone',names:['ice cream cone','dondurma kulahi']},
-  {team:'C',coins:5,shots:5,title:'Aşırı Tepki',icon:'overreact',names:['overreact','asiri tepki','overreaction','over react','extreme reaction']},
-  {team:'D',coins:1,shots:1,title:'Mantap',icon:'mantap',names:['mantap']},
-  {team:'D',coins:5,shots:5,title:'İsimle Selamlama',icon:'name-shoutout',names:['name shoutout','name shout out','isimle selamlama','name greeting','greeting by name']}
+  {team:'A',coins:10,shots:1,title:'Rosa',icon:'rosa',names:['rosa']},
+  {team:'A',coins:100,shots:10,title:'Balon Hediye Kutusu',icon:'balloon-gift-box',names:['balloon gift box','balon hediye kutusu']},
+  {team:'B',coins:10,shots:1,title:'Kalp',icon:'heart',names:['heart','kalp']},
+  {team:'B',coins:100,shots:10,title:'Mishka Bear',icon:'mishka-bear',names:['mishka bear','mishka ayi','mishka ayisi']},
+  {team:'C',coins:10,shots:1,title:'Dostluk Kolyesi',icon:'friendship-necklace',names:['friendship necklace','dostluk kolyesi']},
+  {team:'C',coins:100,shots:10,title:'Buket',icon:'bouquet',names:['bouquet','buket']},
+  {team:'D',coins:10,shots:1,title:'Ağır Çekim',icon:'slow-motion',names:['slow motion','agir cekim']},
+  {team:'D',coins:100,shots:10,title:'Konfeti',icon:'confetti',names:['confetti','konfeti']}
  ];
+ const GIFT_SHOT_COUNTS=new Set(GIFT_CATALOG.map(g=>g.shots));
 
  // A hidden overlay must never become a phantom dark sheet through stale CSS.
  const summaryBoard=document.getElementById('roundSummary');
@@ -264,7 +265,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  // Guest button controls are isolated from settings, reset, or admin match control.
  function validGuestRequest(p){
   return validRequest(p)&&p.guestTrial===true&&typeof p.clientId==='string'&&
-   /^[0-9a-f-]{36}$/i.test(p.clientId)&&(p.count===1||p.count===5);
+   /^[0-9a-f-]{36}$/i.test(p.clientId)&&GIFT_SHOT_COUNTS.has(p.count);
  }
  function guestBudget(p,now=matchNow()){
   if(!validGuestRequest(p))return false;
@@ -585,7 +586,8 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  for(const [i,panel]of [...document.querySelectorAll('.broadcastControls .panel')].entries())for(const [j,button]of [...panel.querySelectorAll('.shot')].entries()){
   const gift=GIFT_CATALOG.filter(g=>g.team===TEAMS[i])[j];
   if(!gift){button.hidden=true;continue;}
-  const image=document.createElement('img');image.src='./assets/gifts-v285/'+gift.icon+'.webp';image.alt=gift.title;image.width=256;image.height=256;image.decoding='async';button.querySelector('.giftVisual').replaceChildren(image);
+  const image=document.createElement('img');image.src='./assets/gifts-v288/'+gift.icon+'.webp';image.alt=gift.title;image.width=256;image.height=256;image.decoding='async';button.querySelector('.giftVisual').replaceChildren(image);
+  button.onclick=()=>window.addShots(gift.team,gift.shots);
   button.title=gift.title+' · '+gift.coins+' jeton · '+gift.shots+' şut';
   button.setAttribute('aria-label',teamShort[gift.team]+' · '+button.title);
   const effect=button.querySelector('.giftEffect');if(effect)effect.textContent=gift.shots+' ŞUT';
@@ -1300,7 +1302,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   guestShot(team,n){
     if(admin())return this.manualShot(team,n);
     n=Number(n);
-    if(!match||match.guestTrialEnabled!==true||!TEAMS.includes(team)||!(n===1||n===5))return false;
+    if(!match||match.guestTrialEnabled!==true||!TEAMS.includes(team)||!GIFT_SHOT_COUNTS.has(n))return false;
     if(matchNow()-lastGuestClickAt<GUEST_SEND_COOLDOWN_MS)return false;
     const pendingCount=[...pendingRequests.values()].filter(x=>x.payload?.guestTrial).length;
     if(pendingCount>=12)return false;

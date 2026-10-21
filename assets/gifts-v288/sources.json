@@ -1,0 +1,54 @@
+{
+  "catalog": "https://streamtoearn.io/gifts?region=TR",
+  "selection": "User screenshots of 10 and 100 coin gifts",
+  "gifts": [
+    {
+      "name": "Rosa",
+      "coins": 10,
+      "file": "rosa.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eb77ead5c3abb6da6034d3cf6cfeb438~tplv-obj.webp"
+    },
+    {
+      "name": "Friendship Necklace",
+      "coins": 10,
+      "file": "friendship-necklace.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/e033c3f28632e233bebac1668ff66a2f.png~tplv-obj.webp"
+    },
+    {
+      "name": "Slow motion",
+      "coins": 10,
+      "file": "slow-motion.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/alisg/webcast-sg/resource/12374117770f779919bf002461fdfac0.png~tplv-obj.webp"
+    },
+    {
+      "name": "Heart",
+      "coins": 10,
+      "file": "heart.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/98bea1b189fba75bf0ca766b4dc1976e~tplv-obj.webp"
+    },
+    {
+      "name": "Bouquet",
+      "coins": 100,
+      "file": "bouquet.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/1bdf0b38142a94af0f71ea53da82a3b1.png~tplv-obj.webp"
+    },
+    {
+      "name": "Balloon Gift Box",
+      "coins": 100,
+      "file": "balloon-gift-box.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/c2cd98b5d3147b983fcbf35d6dd38e36.png~tplv-obj.webp"
+    },
+    {
+      "name": "Mishka Bear",
+      "coins": 100,
+      "file": "mishka-bear.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/d78ed6496fd57286b42ac033acbee299.png~tplv-obj.webp"
+    },
+    {
+      "name": "Confetti",
+      "coins": 100,
+      "file": "confetti.webp",
+      "source": "https://p16-webcast.tiktokcdn.com/img/alisg/webcast-sg/resource/472bf660b0804bb37f616d173edb8a9d.png~tplv-obj.webp"
+    }
+  ]
+}
