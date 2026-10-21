@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=289,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=290,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // One catalog drives both the visible gift buttons and received TikTok events.
@@ -1117,7 +1117,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  }
  window.AIFootballTikTok={get active(){return true;},get connected(){return connected;},getStatus(){return {clientBuild:CLIENT_BUILD,updateRequired:needsRefresh(),autoMatches:autoMatchEnabled(match),guestTrialEnabled:match?.guestTrialEnabled===true,manualMatchStart:!autoMatchEnabled(match),active:true,connected,shared:!!match,leader:owns(),revision:match?.revision,accepted:match?.accepted||0,lastGift:match?.lastGift||null,lastShotQueuedAt:match?.lastShotQueuedAt||0,pending:Object.values(pendingShotCounts(match)).reduce((a,b)=>a+b,0),waitingRequests:pendingRequests.size,channelReady,adminAvailable:!!match?.lease&&match.lease.until>matchNow(),lastError:errorText};},getClock(){return match?{epoch:match.idleEpoch}:null;},getTimings(){return timingFor(match);},
   getLikeBonusStatus(){return window.AIFootballLikeBonus?.status(match)||{enabled:true,progress:0,awarded:0,observed:0};},
-  async setLikeBonusEnabled(enabled){if(!admin()||typeof enabled!=='boolean')return false;return change(m=>{m.likeBonus||={progress:0,awarded:0,observed:0,retired:[]};m.likeBonus.enabled=enabled;},false);},
+  async setLikeBonusEnabled(enabled){if(!admin()||typeof enabled!=='boolean')return false;return change(m=>{m.likeBonus||={progress:0,awarded:0,observed:0,retired:[]};if((m.likeBonus.enabled!==false)===enabled)return false;m.likeBonus.enabled=enabled;if(enabled)m.likeBonus.enabledAt=matchNow();},false);},
   async resetLikeBonusCounter(){if(!admin())return false;const saved=await change(m=>{m.likeBonus||={enabled:true,retired:[]};m.likeBonus.viewers={};m.likeBonus.progress=0;m.likeBonus.observed=0;m.likeBonus.awarded=0;m.likeBonus.resetAt=matchNow();},false);if(saved){likeInbox.clear();saveLikes();}return saved;},
   async setTimings(next){
    if(!admin())return false;

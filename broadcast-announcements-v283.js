@@ -6,8 +6,9 @@
  function render(){
   clearTimeout(timer);
   const now=window.AIFootballTime?.now?.()??Date.now(),index=Math.floor(now/7000)%lines.length;
-  if(node.textContent!==lines[index])node.textContent=lines[index];
-  timer=setTimeout(render,Math.max(100,7000-now%7000+20));
+  const text=window.AIFootballTikTok?.getLikeBonusStatus?.().enabled===false?'BEĞENİ BONUSU KAPALI':lines[index];
+  if(node.textContent!==text)node.textContent=text;
+  timer=setTimeout(render,Math.min(1000,Math.max(100,7000-now%7000+20)));
  }
  document.addEventListener('visibilitychange',render);
  window.AIFootballTime?.ready?.then(render).catch(()=>{});

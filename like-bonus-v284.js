@@ -35,7 +35,7 @@
    // A cumulative room total is only a replay boundary, never a person's like count.
    if(c.seen.length>4000){const removed=c.seen.splice(0,c.seen.length-4000);for(const x of removed)if(x.total!==null)c.floor=Math.max(c.floor||0,x.total);}
    changed=true;
-   if(b.enabled===false)continue;
+   if(b.enabled===false||e.at<=Number(b.enabledAt||0))continue;
    const p=b.viewers[e.viewer]||={progress:0,observed:0,awarded:0};
    p.observed+=e.count;const sum=p.progress+e.count,n=Math.floor(sum/LIMIT);p.progress=sum%LIMIT;p.awarded+=n;
    b.observed+=e.count;b.awarded+=n;rounds+=n;
@@ -57,9 +57,9 @@
  const info=document.createElement('p');info.className='giftToggleHelp';
  const toggle=document.createElement('button');toggle.type='button';toggle.className='adminBtn applyBtn';toggle.id='likeBonusToggle';
  const reset=document.createElement('button');reset.type='button';reset.className='adminBtn logoutBtn';reset.id='likeBonusReset';reset.textContent='BEĞENİ SAYACINI SIFIRLA';
- const help=document.createElement('p');help.className='giftToggleHelp';help.textContent='Her izleyicinin beğenileri ayrı sayılır. Aynı izleyici her 1000 beğeniyi tamamladığında dört takıma birer şut eklenir. Sayacı sıfırlamak bekleyen şutları silmez.';
+ const help=document.createElement('p');help.className='giftToggleHelp';help.textContent='Her izleyicinin beğenileri ayrı sayılır. Aynı izleyici her 1000 beğeniyi tamamladığında dört takıma birer şut eklenir. Canlı yayında açıp kapatabilirsin. Kapalıyken beğeniler şut kazandırmaz; tekrar açınca önceki ilerlemeden devam eder. Hediyelerden gelen şutlar ve bekleyen şutlar etkilenmez.';
  const actions=document.createElement('div');actions.className='adminActions';actions.append(toggle,reset);section.append(title,info,actions,help);anchor.after(section);
- function render(){const api=window.AIFootballTikTok,s=api?.getLikeBonusStatus?.();if(!s)return;const label='BEĞENİ BONUSU: '+(s.enabled?'AÇIK':'KAPALI'),text='İZLEYİCİ: '+s.viewers+' · ÖDÜLE EN YAKIN KİŞİ: '+(LIMIT-s.progress)+' BEĞENİ · VERİLEN BONUS: '+s.awarded;if(toggle.textContent!==label)toggle.textContent=label;if(info.textContent!==text)info.textContent=text;}
+ function render(){const api=window.AIFootballTikTok,s=api?.getLikeBonusStatus?.();if(!s)return;const label=s.enabled?'BEĞENİ BONUSUNU KAPAT':'BEĞENİ BONUSUNU AÇ',text='DURUM: '+(s.enabled?'AÇIK':'KAPALI')+' · '+'İZLEYİCİ: '+s.viewers+' · ÖDÜLE EN YAKIN KİŞİ: '+(LIMIT-s.progress)+' BEĞENİ · VERİLEN BONUS: '+s.awarded;toggle.setAttribute('aria-pressed',String(s.enabled));if(toggle.textContent!==label)toggle.textContent=label;if(info.textContent!==text)info.textContent=text;}
  toggle.addEventListener('click',async()=>{const api=window.AIFootballTikTok;if(!api)return;toggle.disabled=true;try{await api.setLikeBonusEnabled(!api.getLikeBonusStatus().enabled);}finally{toggle.disabled=false;render();}});
  reset.addEventListener('click',async()=>{reset.disabled=true;try{await window.AIFootballTikTok?.resetLikeBonusCounter();}finally{reset.disabled=false;render();}});
  setInterval(render,1500);render();
