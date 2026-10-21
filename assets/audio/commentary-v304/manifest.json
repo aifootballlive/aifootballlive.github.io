@@ -1,0 +1,20 @@
+{
+  "provider": "Runway",
+  "model": "eleven_v3",
+  "presetVoice": "Billy",
+  "language": "tr",
+  "speed": 1.03,
+  "created": "2026-10-21",
+  "lines": {
+    "idle1": "[excited] Doruk Arenası’na hoş geldiniz! Takımlar sahada, gözler başlama düdüğünde. Futbol heyecanına hazır olun!",
+    "idle2": "[confident] Altın Pusula, Kızıl Kıvılcım, Gece Yıldızı ve Bordo Dalga! [excited] Bakalım bugün sahada hangi takımın yıldızı parlayacak!",
+    "idle3": "[excited] Bazen müthiş bir kurtarış, bazen ağlarla buluşan nefis bir şut! [confident] Futbolda heyecan son düdüğe kadar sürer!",
+    "idle4": "[confident] Takımlar başlama düdüğünü bekliyor. [excited] Kaleciler hazır, gözler kalede! Bakalım ilk gol sevinci hangi takımdan gelecek!"
+  },
+  "tasks": {
+    "idle1": "98b2c7fb-02c6-44bf-ac20-8912ebfcb220",
+    "idle2": "3f09f62a-647e-4fe1-adf4-b269a7097533",
+    "idle3": "07d73134-0496-4563-9080-a423be5858f2",
+    "idle4": "1b676743-83aa-42d0-8a8c-a04afc03686b"
+  }
+}

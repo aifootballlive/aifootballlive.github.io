@@ -122,6 +122,21 @@ function speakLiveLine(line,key=null,important=false){
 /* Explanations before kickoff: viewers hear why gifts are queued instead
    of silently expecting an instant shot. No voice flood while waiting. */
 let preWaitingKey=null,preWaitingSince=0,lastPreWaitingSpeech=0,preWaitingVariant=1;
+let idleWaitingVariant=0;
+const waitingAtmosphere={
+ tr:[
+  'Doruk Arenası’na hoş geldiniz! Takımlar sahada, gözler başlama düdüğünde. Futbol heyecanına hazır olun!',
+  'Altın Pusula, Kızıl Kıvılcım, Gece Yıldızı ve Bordo Dalga! Bakalım bugün sahada hangi takımın yıldızı parlayacak!',
+  'Bazen müthiş bir kurtarış, bazen ağlarla buluşan nefis bir şut! Futbolda heyecan son düdüğe kadar sürer!',
+  'Takımlar başlama düdüğünü bekliyor. Kaleciler hazır, gözler kalede! Bakalım ilk gol sevinci hangi takımdan gelecek!'
+ ],
+ en:[
+  'Welcome to Doruk Arena! The teams are on the pitch, waiting for the starting whistle. Get ready for football!',
+  'Four teams, one arena! Which team will shine on the pitch today?',
+  'An amazing save or a beautiful shot into the net! Football can keep us guessing until the final whistle!',
+  'The teams are waiting for kickoff. The goalkeepers are ready! Which team will score the opening goal?'
+ ]
+};
 let preparationKey=null;
 const prepMilestones=new Set();
 function preMatchSpeechTick(){
@@ -136,8 +151,15 @@ function preMatchSpeechTick(){
   }
   if(now-preWaitingSince<8000||lastPreWaitingSpeech&&now-lastPreWaitingSpeech<30000)return;
   const queues=game.getPendingQueue?.()||{},total=Object.values(queues).reduce((n,v)=>n+Math.max(0,Number(v)||0),0);
-  // Explain an existing queue only; an empty queue never prompts for gifts.
-  if(total===0)return;
+  // Empty waiting screens get neutral football commentary, never gift requests.
+  if(total===0){
+   if(now-preWaitingSince<12000||lastPreWaitingSpeech&&now-lastPreWaitingSpeech<45000)return;
+   const language=currentLanguage(),variant=idleWaitingVariant%waitingAtmosphere[language].length;
+   if(speakLiveLine(waitingAtmosphere[language][variant],language==='tr'?'idle'+(variant+1):null)){
+    lastPreWaitingSpeech=now;idleWaitingVariant++;
+   }
+   return;
+  }
   const english=currentLanguage()==='en';
   const lines=english?[
    'The referee has not started the match yet. Queued shots will play in order after kickoff.',
