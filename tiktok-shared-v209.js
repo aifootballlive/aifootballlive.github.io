@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=299,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=300,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // One catalog drives both the visible gift buttons and received TikTok events.
@@ -543,7 +543,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   if(!payload||typeof payload.cueId!=='string'||!matchRunning(match))return false;
   const cue=match?.cue;
   if(!cue||cue.finishedAt||cue.id!==payload.cueId||cue.team!==payload.team||
-     cue.startsAt!==payload.startsAt||!Number.isFinite(payload.mediaTime)||payload.mediaTime<.2)return false;
+     cue.startsAt!==payload.startsAt||!Number.isFinite(payload.mediaTime)||payload.mediaTime+.012<Math.max(.2,Number(payload.kickTime)||0))return false;
   if(localKickedCues.has(cue.id)||Number.isFinite(cue.kickedAt))return true;
   localKickedCues.add(cue.id);
   if(localKickedCues.size>300)localKickedCues.delete(localKickedCues.values().next().value);
@@ -555,7 +555,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   const cue=match?.cue;
   if(!cue||cue.id!==payload.cueId||cue.team!==payload.team||cue.startsAt!==payload.startsAt||cue.playbackOwner!==owner||
      !matchRunning(match)||cue.finishedAt||Number.isFinite(cue.kickedAt)||ballKickAckInFlight.has(cue.id))return;
-  if(!Number.isFinite(payload.mediaTime)||payload.mediaTime<Number(payload.kickTime||0)||payload.mediaTime>cue.durationMs/1000+.25)return;
+  if(!Number.isFinite(payload.mediaTime)||payload.mediaTime+.012<Number(payload.kickTime||0)||payload.mediaTime>cue.durationMs/1000+.25)return;
   ballKickAckInFlight.add(cue.id);
   change(m=>{
    const target=m.cue;
@@ -563,6 +563,11 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
       target.team!==payload.team||target.playbackOwner!==owner||Number.isFinite(target.kickedAt))return false;
    target.kickedAt=matchNow();window.AIFootballMatchReports?.shot(m,target,matchNow());
   },false).catch(error=>console.warn('Şut temas onayı bekleniyor',error)).finally(()=>ballKickAckInFlight.delete(cue.id));
+ }
+ function visibleKeepers(m){
+  const keepers={...m.keeper},cue=m.cue;
+  if(cue&&!cue.finishedAt&&!cue.committed&&cue.result==='save'&&(localKickedCues.has(cue.id)||Number.isFinite(cue.kickedAt)&&!(window.AIFootball3D?.isAnimating&&window.AIFootball3D?.shotStatus?.cueId===cue.id)))keepers[cue.team]=Number(cue.after?.keeper?.[cue.team]??keepers[cue.team]);
+  return keepers;
  }
  function restore(){
   if(!ready()||!match)return;
@@ -586,12 +591,13 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   }
   detectStoredGiftNotice();
   const scores=visibleScores(match);
-  const snapshot=JSON.stringify([scores,match.keeper,counts]);
+  const keepers=visibleKeepers(match);
+  const snapshot=JSON.stringify([scores,keepers,counts]);
   if(snapshot===lastPaintedMatch){paint();return;}
   lastPaintedMatch=snapshot;
   for(const team of ['A','B','C','D']){
    state[team].score=Number(scores[team])||0;
-   state.keeper[team]=Number(match.keeper[team]??state.startKeeper)||0;
+   state.keeper[team]=Number(keepers[team]??state.startKeeper)||0;
    state[team].queue=counts[team];
   }
   render();paint();
@@ -817,9 +823,20 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   if(!saved&&!owns())return;
   for(const [key,e]of batch)if(likeInbox.get(key)===e)likeInbox.delete(key);saveLikes();
  }
+ const METRIC_STORE='afl.pending-live-metrics.v300',metricInbox=new Map();let metricFlushAt=0,metricReceiveChain=Promise.resolve();
+ try{for(const e of JSON.parse(localStorage.getItem(METRIC_STORE)||'[]'))if(e?.key&&Number.isFinite(e.at))metricInbox.set(e.key,e);}catch{}
+ function saveMetrics(){try{localStorage.setItem(METRIC_STORE,JSON.stringify([...metricInbox.values()].slice(-2000)));}catch{}}
+ async function receiveMetrics(raw,room=bridgeRoomId,at=matchNow()){if(!admin()||!window.AIFootballLiveMetrics)return;const e=window.AIFootballLiveMetrics.parse(raw,room,at);if(!e)return;e.key=(await digest(e.identity)).slice(0,24);delete e.identity;delete e.comment;e.viewer=e.viewer?(await digest(e.viewer)).slice(0,24):'';metricInbox.set(e.key,e);if(metricInbox.size>2000)metricInbox.delete(metricInbox.keys().next().value);saveMetrics();}
+ function queueMetrics(raw){const room=bridgeRoomId,at=matchNow();metricReceiveChain=metricReceiveChain.then(()=>receiveMetrics(raw,room,at)).catch(()=>{});}
+ async function flushMetrics(){
+  if(!owns()||!metricInbox.size||matchNow()-metricFlushAt<5000)return;metricFlushAt=matchNow();const batch=[...metricInbox.entries()].slice(0,250);
+  const saved=await change(m=>window.AIFootballLiveMetrics?.apply(m,batch.map(([,e])=>e),matchNow())?undefined:false);
+  if(!saved&&!owns())return;for(const [key,e]of batch)if(metricInbox.get(key)===e)metricInbox.delete(key);saveMetrics();
+ }
  async function receive(raw){
   const kind=String(raw?.event||raw?.type||'').toLowerCase();
-  if(kind==='connected'||kind==='roominfo'){const room=raw.data?.roomId??raw.data?.state?.roomId;if(room)bridgeRoomId=String(room);return false;}
+  if(kind==='connected'||kind==='roominfo'){const room=raw.data?.roomId??raw.data?.state?.roomId;if(room)bridgeRoomId=String(room);queueMetrics(raw);return false;}
+  queueMetrics(raw);
   if(kind==='like')return receiveLike(raw);
   if(raw?.event!=='gift'&&raw?.type!=='gift')return false;
   const g=raw.data||{},id=g.transactionId||g.msgId||g.id,name=g.giftName??g.giftDetails?.giftName,giftId=g.giftId??g.giftDetails?.giftId,type=g.giftType??g.giftDetails?.giftType;
@@ -1115,7 +1132,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
      },false);
     }
     if(!match&&connected)await seed();if(match&&!owns()&&canClaimControl(match))await change(claimControl,false);
-    if(owns()){if(match.lease.until<matchNow()+6000)await change(()=>{});await flush();await flushLikes();await flushRequestInbox();await advance();}}
+    if(owns()){if(match.lease.until<matchNow()+6000)await change(()=>{});await flush();await flushLikes();await flushMetrics();await flushRequestInbox();await advance();}}
    errorText='';paint();
   }catch(e){errorText='Maç bağlantısı bekleniyor';paint();console.warn(e.message);}finally{setTimeout(tick,350);}
  }
@@ -1135,6 +1152,10 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   setInterval(showMatchClock,200);showMatchClock();legend();read().then(ensureChannel).catch(e=>console.warn(e.message));tick();
  }
  window.AIFootballTikTok={get active(){return true;},get connected(){return connected;},getStatus(){return {clientBuild:CLIENT_BUILD,updateRequired:needsRefresh(),autoMatches:autoMatchEnabled(match),guestTrialEnabled:match?.guestTrialEnabled===true,manualMatchStart:!autoMatchEnabled(match),active:true,connected,shared:!!match,leader:owns(),revision:match?.revision,accepted:match?.accepted||0,lastGift:match?.lastGift||null,lastShotQueuedAt:match?.lastShotQueuedAt||0,pending:Object.values(pendingShotCounts(match)).reduce((a,b)=>a+b,0),waitingRequests:pendingRequests.size,channelReady,adminAvailable:!!match?.lease&&match.lease.until>matchNow(),lastError:errorText};},getClock(){return match?{epoch:match.idleEpoch}:null;},getTimings(){return timingFor(match);},
+  getLiveReports(){return admin()?window.AIFootballLiveMetrics?.view(match)||{sessions:[]}:null;},
+  async startLiveReport(){if(!admin()||!match)return false;return change(m=>{window.AIFootballLiveMetrics.create(m,matchNow(),bridgeRoomId);},false);},
+  async endLiveReport(id){if(!admin()||!match||typeof id!=='string')return false;return change(m=>{const s=m.liveReports?.sessions?.find(s=>s.id===id);if(!s||s.status!=='live')return false;window.AIFootballLiveMetrics.end(s,matchNow());},false);},
+  async saveLiveReport(id,values){if(!admin()||!match||typeof id!=='string')return false;return change(m=>window.AIFootballLiveMetrics.manual(m,id,values,matchNow())?undefined:false,false);},
   getMatchReports(){return admin()?window.AIFootballMatchReports?.view(match,matchNow())||{records:[],pending:{}}:null;},
   async setLikeBonusThreshold(value){if(!admin()||!Number.isSafeInteger(value)||value<1||value>1000000)return false;return change(m=>{const b=m.likeBonus||={enabled:true,retired:[]};if((b.threshold||1000)===value)return false;b.threshold=value;for(const p of Object.values(b.viewers||{}))p.progress=0;b.progress=0;b.enabledAt=matchNow();},false);},
   getLikeBonusStatus(){return window.AIFootballLikeBonus?.status(match)||{enabled:true,progress:0,awarded:0,observed:0};},

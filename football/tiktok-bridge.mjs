@@ -32,7 +32,7 @@ const wss=new WebSocketServer({
  }
 });
 const clients=new Set(),recent=new Set(),backlog=[];
-let activeConnection=null,retryDelay=2500,retryTimer=null,reconnectGeneration=0,closing=false,roomId=null,likeBacklog=[];
+let activeConnection=null,retryDelay=2500,retryTimer=null,reconnectGeneration=0,closing=false,roomId=null,likeBacklog=[],metricBacklog=[];
 const now=()=>new Date().toLocaleTimeString('tr-TR',{hour12:false});
 const log=(...msg)=>console.log('['+now()+']',...msg);
 function trimRecent(){while(recent.size>MAX_RECENT)recent.delete(recent.values().next().value);}
@@ -85,6 +85,10 @@ function onLike(event){
  likeBacklog.push(message);if(likeBacklog.length>4000)likeBacklog.shift();
  for(const client of clients)if(client.readyState===1)client.send(JSON.stringify(message));
 }
+function onMetric(kind,event={}){
+ const message={event:kind,data:{id:stableId(event),roomId:String(event.roomId??activeConnection?.roomId??roomId??''),userId:event.userId??event.user?.userId??event.user?.id,uniqueId:event.uniqueId??event.user?.uniqueId,viewerCount:event.viewerCount,totalUser:event.totalUser,totalViewCount:event.totalViewCount}};
+ metricBacklog.push(message);if(metricBacklog.length>2000)metricBacklog.shift();for(const client of clients)if(client.readyState===1)client.send(JSON.stringify(message));
+}
 function stopConnection(){
  try{activeConnection?.disconnect?.()}catch{}
  activeConnection=null;
@@ -104,16 +108,17 @@ async function connectTikTok(){
  });
  connection.on(WebcastEvent.GIFT,onGift);
  connection.on(WebcastEvent.LIKE,onLike);
+ for(const kind of ['roomUser','member','chat','follow','share'])connection.on(kind,e=>onMetric(kind,e));
  // The connector's reconnect behavior can differ between versions; schedule
  // a single replacement on stream close/errors.
  const lost=event=>{if(activeConnection!==connection||generation!==reconnectGeneration)return;scheduleReconnect(event?.message||'baglanti koptu')};
  connection.on('disconnected',()=>lost({message:'disconnected'}));
- connection.on('streamEnd',()=>lost({message:'yayin sona erdi'}));
+ connection.on('streamEnd',()=>{onMetric('streamEnd');lost({message:'yayin sona erdi'});});
  connection.on('error',error=>{log('TikTok hatasi:',error?.message||String(error));lost(error)});
  try{
   const state=await connection.connect();
   if(closing||generation!==reconnectGeneration)return;
-  retryDelay=2500;const nextRoom=state?.roomId??null;if(nextRoom!==roomId)likeBacklog=[];roomId=nextRoom;
+  retryDelay=2500;const nextRoom=state?.roomId??null;if(nextRoom!==roomId){likeBacklog=[];metricBacklog=[];}roomId=nextRoom;
   for(const client of clients)if(client.readyState===1)client.send(JSON.stringify({event:'connected',data:{roomId}}));
   log('TikTok LIVE baglandi @'+username,'oda:',roomId||'bilinmiyor');
  }catch(error){log('TikTok baglanamadi:',error?.message||String(error));scheduleReconnect(error?.message)}
@@ -122,6 +127,7 @@ wss.on('connection',socket=>{
  clients.add(socket);
  socket.send(JSON.stringify({event:'connected',data:{roomId}}));
  for(const message of likeBacklog)socket.send(JSON.stringify(message));
+ for(const message of metricBacklog)socket.send(JSON.stringify(message));
  log('MFA yonetici sayfasi baglandi. Gonderim tamponu:',backlog.length);
  // Re-send buffered events on reconnect; the browser/DB suppresses repeat IDs.
  for(const msg of backlog)socket.send(JSON.stringify(msg));
