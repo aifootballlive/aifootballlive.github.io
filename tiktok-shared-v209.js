@@ -1133,13 +1133,13 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    if(matchNow()-lastRead>(channelReady?3000:1000))await read();ensureChannel();sendRequests().catch(e=>console.warn(e.message));if(admin()&&!connected&&!retry)connect();
    if(admin()){
     if(match&&Number(match.minClientBuild||0)<CLIENT_BUILD)await change(m=>{if(Number(m.minClientBuild||0)>=CLIENT_BUILD)return false;m.minClientBuild=CLIENT_BUILD;},false);
-    // Upgrade old match settings to a one-time MANUAL default. This is saved
-    // in the database before any countdown/auto transition can run.
+    // Fill missing legacy control flags without replacing the remembered
+    // automatic-match preference.
     if(match&&!Object.prototype.hasOwnProperty.call(match,'autoStartV3')){
      await change(m=>{
       if(Object.prototype.hasOwnProperty.call(m,'autoStartV3'))return false;
-      m.autoMatches=false;m.autoStartV2=false;m.autoStartV3=false;
-      m.manualMatchStart=true;
+      const remembered=m.autoMatches===true;m.autoMatches=remembered;m.autoStartV2=remembered;m.autoStartV3=remembered;
+      m.manualMatchStart=!remembered;
      },false);
     }
     if(!match&&connected)await seed();if(match&&!owns()&&canClaimControl(match))await change(claimControl,false);

@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261021-v306-total-like-bonus">
+<meta name="aifootball-release" content="20261021-v307-remember-settings">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script>if(new URLSearchParams(location.search).get('studio')==='tiktok1080')document.documentElement.classList.add('aflTikTokPortraitSource');</script>
 <title>AI Football Live</title>
@@ -2271,7 +2271,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
 <div class="adminSection"><div class="adminSectionTitle">OYUN AYARLARI</div><div class="adminGrid">
 
   <div class="adminField"><label>Bir şut başına kaleci güç kaybı</label><input id="setKeeperCost" type="number" min="1" step="1"></div>
-  <div class="adminField"><label>Şutlar arası süre (ms)</label><input id="setShotDelay" type="number" min="500" step="100"></div>
+  <div class="adminField"><label>Şutlar arası süre (ms)</label><input id="setShotDelay" type="number" min="0" step="100"></div>
 </div></div>
 <div class="adminSection"><div class="adminSectionTitle">SES AYARLARI</div><div class="adminGrid">
   <div class="adminField"><label>Ana ses <span class="adminValue" id="valSoundMaster">88%</span></label><input id="setSoundMaster" type="range" min="0" max="100" value="88" oninput="syncAdminValue('SoundMaster',this.value,'%')"></div>
@@ -2319,7 +2319,7 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
 <script src="./live-metrics-v300.js?v=302"></script>
 <script src="./match-reports-v292.js?v=302"></script>
 <script src="./like-bonus-v284.js?v=306"></script>
-<script src="./tiktok-shared-v209.js?v=306"></script>
+<script src="./tiktok-shared-v209.js?v=307"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2421,6 +2421,14 @@ function syncLiveAdminCounters(){
  }
 }
 function initialKeeper(t){return Number(state.startKeepers?.[t]??10);}
+const ADMIN_DRAFT_STORE='afl.adminSettingsDraft.v1';
+let adminSettingsLoaded=false,adminInputsHydrated=false;
+const adminDraftFields={};
+try{const saved=JSON.parse(localStorage.getItem(ADMIN_DRAFT_STORE)||'{}');if(saved&&typeof saved==='object')Object.assign(adminDraftFields,saved);}catch{}
+function preferenceField(input){return !!input&&/^set(?:InitialKeeper[A-D]|CountdownSeconds|MatchMinutes|OvertimeMinutes|ResultSeconds|ArenaName|BroadcastLanguage|KeeperCost|ShotDelay|SoundMaster|SoundCrowd|SoundEffects|SoundGoal|CameraZoom|StadiumExposure|SoundEnabled|CrowdEnabled|AnnouncerEnabled|AiSpeechEnabled|GoalFxEnabled)$/.test(input.id);}
+function rememberAdminDraft(event){const input=event.target;if(!adminAuthed||!preferenceField(input))return;adminDraftFields[input.id]=input.type==='checkbox'?input.checked:input.value;try{localStorage.setItem(ADMIN_DRAFT_STORE,JSON.stringify(adminDraftFields));}catch{}}
+function restoreAdminDraft(){if(!adminAuthed)return;for(const [id,value]of Object.entries(adminDraftFields)){const input=$(id);if(!preferenceField(input))continue;if(input.type==='checkbox')input.checked=value===true;else if(typeof value==='string'||typeof value==='number')input.value=String(value);}}
+function clearAdminDraft(){for(const id of Object.keys(adminDraftFields))delete adminDraftFields[id];try{localStorage.removeItem(ADMIN_DRAFT_STORE);}catch{}}
 function fillAdminSettings(){
   window.AIFootballBroadcastText?.fill(state.broadcastText||{});
   const set=(id,v)=>{const e=$(id);if(e)e.value=v},check=(id,v)=>{const e=$(id);if(e)e.checked=!!v};
@@ -2437,6 +2445,7 @@ function fillAdminSettings(){
   check('setSoundEnabled',state.soundEnabled);check('setCrowdEnabled',state.crowdEnabled);check('setAnnouncerEnabled',state.announcerEnabled);check('setAiSpeechEnabled',state.aiSpeechEnabled);check('setGoalFxEnabled',state.goalFxEnabled);
   syncAdminValue('SoundMaster',state.soundMaster,'%');syncAdminValue('SoundCrowd',state.soundCrowd,'%');syncAdminValue('SoundEffects',state.soundEffects,'%');syncAdminValue('SoundGoal',state.soundGoal,'%');
   syncAdminValue('CameraZoom',state.cameraZoom,'%');syncAdminValue('StadiumExposure',state.stadiumExposure,'%');
+  restoreAdminDraft();adminInputsHydrated=adminSettingsLoaded&&!!window.AIFootballTikTok?.getMatchClock?.();
 }
 // Independent main-page match launch; visible only to the logged-in admin.
 function syncMainMatchStart(){
@@ -2526,7 +2535,7 @@ function render(){
   
   if($('frontKeeperFillA'))$('frontKeeperFillA').style.width=Math.max(0,Math.min(100,(Number(state.keeper.A)||0)/Math.max(1,initialKeeper('A'))*100))+'%';
   if($('frontKeeperFillB'))$('frontKeeperFillB').style.width=Math.max(0,Math.min(100,(Number(state.keeper.B)||0)/Math.max(1,initialKeeper('B'))*100))+'%';
-  if(!$('adminOverlay').classList.contains('show')&&!$('leagueDrawer').classList.contains('show'))fillAdminSettings();else{syncLiveAdminCounters();previewAdminDraft();}
+  if(!$('adminOverlay').classList.contains('show')&&!$('leagueDrawer').classList.contains('show')||!adminInputsHydrated&&adminSettingsLoaded&&window.AIFootballTikTok?.getMatchClock?.())fillAdminSettings();else{syncLiveAdminCounters();previewAdminDraft();}
 }
 
 function resizeActorPanel(){
@@ -2649,6 +2658,7 @@ function celebrateGoal(team){window.AIFootballAudio?.speakGoal?.();playGoalSound
 document.addEventListener('pointerdown',initAudio,{once:true});
 function teamFromId(id){return id===ids.team.A?'A':id===ids.team.B?'B':null}
 function applyRules(r){
+  if(r&&typeof r==='object')adminSettingsLoaded=true;
   gameRules=r||{};if(!actorLayoutDirty&&!actorLayoutSaving)actorLayout=normalizeActorLayout(gameRules.actor_layout);const numberOr=(value,fallback)=>value!=null&&Number.isFinite(Number(value))?Number(value):fallback;const boolOr=(value,fallback)=>value==null?fallback:!!value;
   state.startKeeper=numberOr(gameRules.goalkeeper_initial_power??gameRules.start_keeper,10);
   state.startKeepers=Object.fromEntries(['A','B','C','D'].map(t=>[t,numberOr(gameRules.goalkeeper_initial_by_team?.[t],10)]));
@@ -2799,13 +2809,14 @@ async function resolveShot(t,shot){const defending=t==='A'?'B':'A';const {data:k
 async function processQueue(){if(window.AIFootballTikTok?.active)return;if(!adminAuthed||state.busy||!ids.game)return;state.busy=true;try{while(adminAuthed&&!window.AIFootballTikTok?.active){const {a,b}=await nextPending();let t=null,shot=null;if(a&&b){t=state.lastTeam==='A'?'B':'A';shot=t==='A'?a:b}else if(a){t='A';shot=a}else if(b){t='B';shot=b}else break;const {data:claimed,error:claimError}=await db.from('pending_shots').update({status:'processing'}).eq('id',shot.id).eq('status','pending').select('id');if(claimError)throw claimError;if(!claimed||!claimed.length)break;await resolveShot(t,shot);await sleep(state.shotDelay)}}catch(e){console.error(e);log('Şut kuyruğu işlenirken hata oluştu')}finally{state.busy=false;await loadRemote(true)}}
 async function applyAdminSettings(){
   if(!adminAuthed)return;
+  if(!adminInputsHydrated){log('Kayıtlı ayarlar yükleniyor, lütfen bekleyin');return;}
   const num=(id,fallback,min,max)=>{let v=Number($(id)?.value);if(!Number.isFinite(v))v=fallback;if(min!=null)v=Math.max(min,v);if(max!=null)v=Math.min(max,v);return v};
   const chk=id=>!!$(id)?.checked;
   const initialByTeam=Object.fromEntries(['A','B','C','D'].map(t=>[t,Math.floor(num('setInitialKeeper'+t,initialKeeper(t),0,10000))]));
   const changedKeeper=Object.fromEntries(Object.entries(initialByTeam).filter(([t,v])=>v!==adminEditBaseline.initial[t]));
   const changedQueues=Object.fromEntries(['A','B','C','D'].map(t=>[t,Math.floor(num('setQueue'+t,state[t].queue,0,10000))]).filter(([t,v])=>v!==adminEditBaseline.queues[t]));
   const changedScores=Object.fromEntries(['A','B','C','D'].map(t=>[t,Math.floor(num('setScore'+t,state[t].score,0,1000000))]).filter(([t,v])=>v!==adminEditBaseline.scores[t]));
-  state.startKeepers=initialByTeam;state.keeperCost=num('setKeeperCost',10,1,10000);state.shotDelay=num('setShotDelay',3000,500,30000);
+  state.startKeepers=initialByTeam;state.keeperCost=num('setKeeperCost',10,1,10000);state.shotDelay=num('setShotDelay',state.shotDelay,0,30000);
   state.soundMaster=num('setSoundMaster',DEFAULT_ADMIN_SETTINGS.soundMaster,0,100);state.soundCrowd=num('setSoundCrowd',DEFAULT_ADMIN_SETTINGS.soundCrowd,0,100);state.soundEffects=num('setSoundEffects',DEFAULT_ADMIN_SETTINGS.soundEffects,0,100);state.soundGoal=num('setSoundGoal',DEFAULT_ADMIN_SETTINGS.soundGoal,0,100);
   state.soundEnabled=chk('setSoundEnabled');state.crowdEnabled=chk('setCrowdEnabled');state.announcerEnabled=chk('setAnnouncerEnabled');state.aiSpeechEnabled=chk('setAiSpeechEnabled');state.goalFxEnabled=chk('setGoalFxEnabled');
   state.broadcastText=window.AIFootballBroadcastText?.read()||{};
@@ -2828,12 +2839,12 @@ async function applyAdminSettings(){
   applyRuntimeSettings();render();
   if(!document.body.classList.contains('settingsMode')&&!document.body.classList.contains('drawerMode'))closeAdmin();
   else{const saveNote=$('adminSaveStatus');if(saveNote)saveNote.textContent='Ayarlar kaydedildi';}
-  log('Tüm admin ayarları kaydedildi')
+  clearAdminDraft();log('Tüm admin ayarları kaydedildi')
 }
 async function restoreDefaultSettings(){
   if(!adminAuthed)return;
   if(!confirm('Tüm admin ayarları varsayılan değerlere dönsün mü?'))return;
-  Object.assign(state,DEFAULT_ADMIN_SETTINGS);state.startKeepers={A:10,B:10,C:10,D:10};
+  clearAdminDraft();Object.assign(state,DEFAULT_ADMIN_SETTINGS);state.startKeepers={A:10,B:10,C:10,D:10};
   fillAdminSettings();
   applyRuntimeSettings();
   await applyAdminSettings();
@@ -2981,6 +2992,8 @@ async function boot(){
  }
  try{if(adminAuthed&&sessionStorage.getItem('afl.adminPane.v284')==='settings')openAdmin();}catch{}
  if(window.AIFootballTikTok?.active){await loadTikTokPresentation();window.AIFootballTikTok.activate();return;}await loadRemote(true);setupRealtime();setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}
+$('adminOverlay').addEventListener('input',rememberAdminDraft);
+$('adminOverlay').addEventListener('change',rememberAdminDraft);
 $('adminOverlay').addEventListener('input',previewAdminDraft);
 $('adminOverlay').addEventListener('change',previewAdminToggle);
 render();boot().finally(()=>window.dispatchEvent(new Event('afl-initial-state-ready')));
