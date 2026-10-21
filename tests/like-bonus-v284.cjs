@@ -11,17 +11,14 @@ m.likeBonus.enabled=false;h.apply(m,[event(7000,2000)],now);m.likeBonus.enabled=
 h.apply(m,[event(10000,1,'r2')],now);assert.equal(m.likeBonus.observed,1,'first historical total counts only newly received likes');h.apply(m,[event(9000,1,'r1')],now);assert.equal(m.likeBonus.current.key,'r2','old room replay rejected');
 const malformed=[{key:'r2',at:now++,total:NaN,count:500},{key:'r2',at:now++,total:-1,count:500},{key:'r2',at:now++,total:null,count:-5,id:'bad'}];assert.equal(h.apply(m,malformed,now).changed,false);
 m=base();const f=id=>h.parse({event:'like',data:{id,likeCount:500,roomId:'f',userId:'alice'}},'',now++);const a=f('a'),b=f('b');h.apply(m,[a,a,b,b],now);assert.deepEqual(counts(m),{A:1,B:1,C:1,D:1});assert.equal(h.parse({event:'like',data:{likeCount:500}},'',now),null);
-// Different viewers never pool their likes; identity survives a handle change.
-m=base();const person=(user,total,count,id='p'+total)=>h.parse({event:'like',data:{userId:user,uniqueId:'renamable',roomId:'people',totalLikeCount:total,likeCount:count,id}},'',now++);
-const alice=person('alice',500,500),bob=person('bob',1000,500);h.apply(m,[alice,bob],now);assert.equal(m.jobs.length,0);assert.equal(h.status(m).progress,500);assert.equal(h.status(m).viewers,2);
-h.apply(m,[person('alice',1500,500)],now);assert.deepEqual(counts(m),{A:1,B:1,C:1,D:1});assert.equal(m.likeBonus.viewers['id:bob'].progress,500);
-h.apply(m,[person('bob',2000,500),person('alice',4000,2000)],now);assert.deepEqual(counts(m),{A:4,B:4,C:4,D:4});
-h.apply(m,[alice,bob,person('alice',1500,500)],now);assert.equal(m.likeBonus.awarded,4);
-// Out-of-order events from different users count their own delta, never the room gap.
-h.apply(m,[person('carol',9000,600),person('dave',8000,500),person('carol',9500,400)],now);assert.equal(m.likeBonus.awarded,5);
-assert.equal(h.parse({event:'like',data:{likeCount:1000,totalLikeCount:999999,id:'missing-user'}},'',now),null);
-assert.equal(h.parse({event:'like',data:{userId:'alice',totalLikeCount:999999,id:'missing-count'}},'',now),null);
-assert.equal(h.parse({event:'like',data:{user:{id:'nested'},likeCount:1,totalLikeCount:1}},'',now).viewer,'id:nested');
+// All viewers pool their likes; cumulative totals recover missed packets.
+m=base();const person=(user,total,count,id='p'+total)=>h.parse({event:'like',data:{userId:user,roomId:'people',totalLikeCount:total,likeCount:count,id}},'',now++);
+h.apply(m,[person('alice',500,500),person('bob',1000,500)],now);assert.deepEqual(counts(m),{A:1,B:1,C:1,D:1});assert.equal(h.status(m).scope,'global');assert.equal(h.status(m).viewers,2);
+h.apply(m,[person('carol',3500,50)],now);assert.deepEqual(counts(m),{A:3,B:3,C:3,D:3});assert.equal(h.status(m).progress,500,'room total recovers missing events');
+h.apply(m,[person('dave',3000,500),person('bob',3500,500)],now);assert.equal(h.status(m).awarded,3,'out-of-order and same total do not double award');
+const anonymous=h.parse({event:'like',data:{totalLikeCount:4000,likeCount:500}},'',now++);anonymous.key='people';h.apply(m,[anonymous],now);assert.equal(h.status(m).awarded,4,'viewer identity is not required');
+const totalOnly=h.parse({event:'like',data:{roomId:'people',totalLikeCount:5000}},'',now++);h.apply(m,[totalOnly],now);assert.equal(h.status(m).awarded,5,'cumulative-only events count after baseline');
+m=base();h.apply(m,[h.parse({event:'like',data:{totalLikeCount:100000,roomId:'late'}},'',now++)],now);assert.equal(h.status(m).awarded,0,'late join never retroactively awards historical likes');
 // Upgrade preserves earned shots, but old pooled progress has no individual owner.
 m=base();m.likeBonus={enabled:true,progress:999,observed:1999,awarded:2,current:{key:'upgrade',mode:'total',last:1999,seen:[]}};m.jobs=[{id:'earned',team:'A',count:2}];h.apply(m,[event(2000,1,'upgrade')],now);assert.equal(m.likeBonus.progress,1);assert.deepEqual(counts(m),{A:2,B:0,C:0,D:0});
 let source=fs.readFileSync(require.resolve('../tiktok-shared-v209.js'),'utf8');const start=source.indexOf(' function change('),end=source.indexOf(' async function digest',start);source=source.slice(0,start)+`async function change(edit){if(window.failWrite)throw Error('offline');if(!admin())return false;const next=clone(match);if(edit(next)===false)return false;match=next;return true;}\n`+source.slice(end);

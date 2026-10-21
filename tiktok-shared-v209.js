@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=302,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=306,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // One catalog drives both the visible gift buttons and received TikTok events.
@@ -1168,7 +1168,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   async endLiveReport(id){if(!admin()||!match||typeof id!=='string')return false;return change(m=>{const s=m.liveReports?.sessions?.find(s=>s.id===id);if(!s||s.status!=='live')return false;window.AIFootballLiveMetrics.end(s,matchNow());},false);},
   async saveLiveReport(id,values){if(!admin()||!match||typeof id!=='string')return false;return change(m=>window.AIFootballLiveMetrics.manual(m,id,values,matchNow())?undefined:false,false);},
   getMatchReports(){return admin()?window.AIFootballMatchReports?.view(match,matchNow())||{records:[],pending:{}}:null;},
-  async setLikeBonusThreshold(value){if(!admin()||!Number.isSafeInteger(value)||value<1||value>1000000)return false;return change(m=>{const b=m.likeBonus||={enabled:true,retired:[]};if((b.threshold||1000)===value)return false;b.threshold=value;for(const p of Object.values(b.viewers||{}))p.progress=0;b.progress=0;b.enabledAt=matchNow();},false);},
+  async setLikeBonusThreshold(value){if(!admin()||!Number.isSafeInteger(value)||value<1||value>1000000)return false;return change(m=>{const b=m.likeBonus||={enabled:true,retired:[]};if((b.threshold||1000)===value)return false;b.threshold=value;b.viewers={};b.progress=0;b.enabledAt=matchNow();},false);},
   getLikeBonusStatus(){return window.AIFootballLikeBonus?.status(match)||{enabled:true,progress:0,awarded:0,observed:0};},
   async setLikeBonusEnabled(enabled){if(!admin()||typeof enabled!=='boolean')return false;return change(m=>{m.likeBonus||={progress:0,awarded:0,observed:0,retired:[]};if((m.likeBonus.enabled!==false)===enabled)return false;m.likeBonus.enabled=enabled;if(enabled)m.likeBonus.enabledAt=matchNow();},false);},
   async resetLikeBonusCounter(){if(!admin())return false;const saved=await change(m=>{m.likeBonus||={enabled:true,retired:[]};m.likeBonus.viewers={};m.likeBonus.progress=0;m.likeBonus.observed=0;m.likeBonus.awarded=0;m.likeBonus.resetAt=matchNow();},false);if(saved){likeInbox.clear();saveLikes();}return saved;},
