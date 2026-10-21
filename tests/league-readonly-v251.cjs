@@ -2,7 +2,7 @@ const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path'),http=require('http'),assert=require('assert/strict');
 const root=path.join(__dirname,'..');
 const server=http.createServer((req,res)=>{
- try{const file=path.join(root,req.url.split('?')[0]);res.setHeader('Content-Type',file.endsWith('.css')?'text/css':file.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(file));}
+ try{const file=path.join(root,req.url.split('?')[0]);res.setHeader('Content-Type',file.endsWith('.css')?'text/css':file.endsWith('.js')?'text/javascript':file.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(file));}
  catch{res.writeHead(404).end();}
 }).listen(8991,'127.0.0.1');
 const league={season:5,completedRounds:1,plannedRounds:20,teams:{A:{played:1,points:3,goals:2}},trophies:{A:3},history:[{round:1,winner:'A',scores:{A:2}}]};
@@ -33,11 +33,11 @@ const league={season:5,completedRounds:1,plannedRounds:20,teams:{A:{played:1,poi
   assert.equal(await page.evaluate(()=>window.injected),undefined);
   assert.deepEqual(await page.evaluate(()=>window.sessionAccess),[]);
   assert.equal(await page.evaluate(()=>localStorage['sb-xozzbaguihyhruloiqjm-auth-token']),'owner-session-sentinel');
-  assert.equal(externalScripts.length,0);
+  assert(externalScripts.every(url=>url.startsWith('http://127.0.0.1:8991/')));
   assert(requests.length>0);
   for(const request of requests){
    assert.equal(request.method,'GET');assert(!request.headers.authorization);assert(!request.headers.cookie);
-   assert.equal(new URL(request.url).searchParams.get('select'),'league:rules->tiktok_match_v2->league,archive:rules->tiktok_match_v2->leagueArchive');
+   assert.equal(new URL(request.url).searchParams.get('select'),'league:rules->tiktok_match_v2->league,archive:rules->tiktok_match_v2->leagueArchive,seasons:rules->tiktok_match_v2->leagueSeasons,resets:rules->tiktok_match_v2->seasonResetHistory');
   }
   await page.evaluate(()=>window.dispatchEvent(new MessageEvent('message',{origin:'https://untrusted.example',source:window,data:{type:'AIFootballLeagueSnapshotV1',league:{season:999}}})));
   assert.equal(await page.locator('#season').textContent(),'5');

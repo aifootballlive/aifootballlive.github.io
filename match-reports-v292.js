@@ -11,12 +11,12 @@
   let r=data.records.find(r=>r.id===id);
   if(!r){
    if(Number.isFinite(m.clock.finishedAt))return null;
-   r={id,season:Number(m.league?.season)||1,round:Number(m.clock.round)||1,matchNumber:(Number(m.league?.completedRounds)||0)+1,plannedRounds:Number(m.league?.plannedRounds)||20,final:!!m.clock.leagueFinal,startedAt:m.clock.startedAt,acceptingFrom:Number(m.clock.countdownStartedAt)||Math.min(now,m.clock.startedAt),endedAt:null,status:'playing',partial:data.trackingStartedAt>m.clock.startedAt,teams:empty()};
+   r={id,season:Number(m.league?.season)||1,round:Number(m.clock.round)||1,matchNumber:Number(m.clock?.matchNumber)||(Number(m.league?.completedRounds)||0)+1,plannedRounds:Number(m.league?.plannedRounds)||20,final:!!m.clock.leagueFinal,startedAt:m.clock.startedAt,acceptingFrom:Number(m.clock.countdownStartedAt)||Math.min(now,m.clock.startedAt),endedAt:null,status:'playing',partial:data.trackingStartedAt>m.clock.startedAt,teams:empty()};
    for(const t of TEAMS)for(const k of ['gifts10','gifts100','gifts','coins','unknown'])r.teams[t][k]=number(data.pending?.[t]?.[k]);
    data.pending=empty();data.records.push(r);
   }
   for(const t of TEAMS)r.teams[t].goals=number(m.scores?.[t]);
-  if(Number.isFinite(m.clock.finishedAt)){r.endedAt=m.clock.finishedAt;r.status=m.clock.interrupted||m.lastResult?.interrupted?'interrupted':'finished';}
+  if(Number.isFinite(m.clock.finishedAt)){r.endedAt=m.clock.finishedAt;r.status=m.clock.interrupted||m.lastResult?.interrupted?'interrupted':'finished';if(r.status==='finished')for(const old of data.records)if(old!==r&&old.season===r.season&&old.matchNumber===r.matchNumber&&old.status==='finished'){old.status='replaced';old.replacedBy=r.id;}}
   return r;
  }
  function gift(m,g,now){

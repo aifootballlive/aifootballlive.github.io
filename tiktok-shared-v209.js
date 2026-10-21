@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=298,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=299,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // One catalog drives both the visible gift buttons and received TikTok events.
@@ -200,7 +200,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    const total=Math.max(1,Math.floor(Number(league.plannedRounds)||20));
    const completed=Math.max(0,Math.floor(Number(league.completedRounds)||0));
    const playing=matchRunning(match,now)||matchStarting(match,now);
-   const current=Math.min(total,completed+(playing?1:0));
+   const current=Number(match?.clock?.matchNumber)||Math.min(total,completed+(playing?1:0));
    const text=season+'. SEZON · '+current+'/'+total+' MAÇ · GOL SAYILARI';
    if(heading.textContent!==text)heading.textContent=text;
   }
@@ -430,13 +430,14 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    const finalists=league.finalists||[];
    const top=Math.max(...finalists.map(t=>Number(scores[t])||0));
    const winners=finalists.filter(t=>(Number(scores[t])||0)===top);
-   league.history.push({round:m.clock.round,at:m.clock.finishedAt,scores,winner:winners.length===1?winners[0]:null,final:true});
-   league.history=league.history.slice(-100);
+   league.history.push({round:m.clock.round,at:m.clock.finishedAt,scores,matchNumber:Number(m.clock.matchNumber)||league.completedRounds+1,startedAt:m.clock.startedAt,winner:winners.length===1?winners[0]:null,final:true});
+
    if(winners.length!==1)league.finalAttempts=(Number(league.finalAttempts)||0)+1;
    league.pendingFinalResult={winner:winners.length===1?winners[0]:null};league.completionPending=true;
    if(hasSeasonShots(m))extendSeasonForShots(m);
    return;
   }
+  if(window.AIFootballLeagueLedger){window.AIFootballLeagueLedger.record(m,m.clock.finishedAt);}else{
   if(league.completedRounds>=league.plannedRounds)return;
   const topScore=Math.max(...TEAMS.map(t=>Number(scores[t])||0));
   const winners=TEAMS.filter(t=>(Number(scores[t])||0)===topScore);
@@ -451,6 +452,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   league.completedRounds++;
   league.history.push({round:m.clock.round,at:m.clock.finishedAt,scores,winner:winners.length===1?winners[0]:null});
   league.history=league.history.slice(-100);
+  }
   if(league.completedRounds>=league.plannedRounds){
    league.completionPending=true;
    if(hasSeasonShots(m))extendSeasonForShots(m);
@@ -781,7 +783,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    // directly; a conflict always rereads before retrying, preserving gifts.
    const base=attempt===0&&preferCached&&row?.id&&row.rules?.[KEY]?.revision===match?.revision?row:await read(),existing=base.rules?.[KEY];if(!existing)return false;
    if(leaseRequired&&!owns(existing))return false;
-   const next=clone(existing);window.AIFootballMatchReports?.sync(next,matchNow());if(edit(next)===false)return false;window.AIFootballMatchReports?.sync(next,matchNow());
+   const next=clone(existing);window.AIFootballLeagueLedger?.sync(next);window.AIFootballMatchReports?.sync(next,matchNow());if(edit(next)===false)return false;window.AIFootballLeagueLedger?.sync(next);window.AIFootballMatchReports?.sync(next,matchNow());
    next.revision=existing.revision+1;next.updatedAt=matchNow();next.clientBuild=CLIENT_BUILD;next.clientRevision=next.revision;
    if(next.lease?.owner===owner){next.lease.until=matchNow()+LEASE;next.lease.priority=controlPriority();}
    const rules={...base.rules,...(patch||{}),[KEY]:next};
@@ -961,15 +963,18 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  function beginNextRound(m,now){
   resolveSeasonCompletion(m);
   if(m.league?.finalists?.length>1&&hasSeasonShots(m))extendSeasonForShots(m);
-  const round=(Number(m.clock?.round)||1)+1;
+  const round=(Number(m.clock?.round)||1)+1;let matchNumber=Number(m.clock?.matchNumber)?Number(m.clock.matchNumber)+1:(Number(m.league?.completedRounds)||0)+1;
   if(m.league?.completedRounds>=m.league?.plannedRounds&&m.league.champion){
    m.leagueArchive ||= [];
    m.leagueArchive.push({season:m.league.season,completedAt:now,champion:m.league.champion,completedRounds:m.league.completedRounds,plannedRounds:m.league.plannedRounds,extraRounds:Number(m.league.extraRounds)||0,
-    trophies:{...m.league.trophies},teams:clone(m.league.teams)});
-   m.leagueArchive=m.leagueArchive.slice(-12);
-   m.league=newLeague((Number(m.league.season)||1)+1,m.league.trophies);
+    trophies:{...m.league.trophies},teams:clone(m.league.teams),history:clone(m.league.history||[]),historyBase:clone(m.league.historyBase||{completedRounds:0,teams:newLeague().teams})});
+   // Season results remain available for historical browsing.
+   window.AIFootballLeagueLedger?.sync(m);
+   m.league=newLeague((Number(m.league.season)||1)+1,m.league.trophies);matchNumber=1;
   }
-  m.clock={startedAt:now+timingFor(m).countdownSeconds*1000,countdownStartedAt:now,manualStarted:false,autoStarted:autoMatchEnabled(m),durationMs:normalMs(m),round,finishedAt:null,leagueFinal:!!(m.league?.completedRounds>=m.league?.plannedRounds&&!m.league?.champion&&m.league?.finalists?.length>1)};
+  const leagueFinal=!!(m.league?.completedRounds>=m.league?.plannedRounds&&!m.league?.champion&&m.league?.finalists?.length>1);
+  if(!leagueFinal)m.league.plannedRounds=Math.max(Number(m.league.plannedRounds)||20,matchNumber);
+  m.clock={startedAt:now+timingFor(m).countdownSeconds*1000,countdownStartedAt:now,manualStarted:false,autoStarted:autoMatchEnabled(m),durationMs:normalMs(m),round,matchNumber,finishedAt:null,leagueFinal};
   m.scores={A:0,B:0,C:0,D:0};
   m.keeper=Object.fromEntries(TEAMS.map(t=>[t,Number(m.initialKeeper?.[t]??state.startKeepers?.[t]??10)]));
   m.cue=null;m.nextCue=null;m.cooldownUntil=0;m.idleEpoch=now;
@@ -1207,7 +1212,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
     m.clock.autoStarted=false;
     m.idleEpoch=now;
    },false);
-  },getLeague(){return match?.league?clone(match.league):newLeague(1);},getGiftProcessingPaused(){return !!match?.processingPaused;},
+  },getLeague(){return match?.league?clone(match.league):newLeague(1);},getLeagueSnapshot(){return match&&window.AIFootballLeagueLedger?window.AIFootballLeagueLedger.snapshot(match):{league:match?.league?clone(match.league):newLeague(1),archive:[]};},getGiftProcessingPaused(){return !!match?.processingPaused;},
   async setGiftProcessingPaused(paused){
    if(!admin())return false;
    return change(m=>{
@@ -1222,8 +1227,29 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   getSeasonControl(){
    if(!admin()||!match)return null;
    return {leagues:[{id:'doruk',name:timingFor(match).arenaName}],season:Number(match.league?.season)||1,
-    resetToken:match.seasonReset?.id||'',pending:pendingShotCounts(match),complete:seasonComplete(match),extraRounds:Number(match.league?.extraRounds)||0,
+    matchNumber:Number(match.clock?.matchNumber)||(Number(match.league?.completedRounds)||0)+1,selectionToken:match.matchSelection?.id||'',seasons:Object.keys(window.AIFootballLeagueLedger?.catalogs(match)||{}).map(Number).sort((a,b)=>a-b),resetToken:match.seasonReset?.id||'',pending:pendingShotCounts(match),complete:seasonComplete(match),extraRounds:Number(match.league?.extraRounds)||0,
     running:matchRunning(match)||matchStarting(match)};
+  },
+  async selectMatch(options){
+   if(!admin()||!match||!window.AIFootballLeagueLedger||options?.leagueId!=='doruk')return false;
+   if(!Number.isSafeInteger(options.season)||options.season<1||options.season>999999||!Number.isSafeInteger(options.matchNumber)||options.matchNumber<1||options.matchNumber>9999)return false;
+   if(!Number.isSafeInteger(options.expectedSeason)||typeof options.resetToken!=='string'||typeof options.selectionToken!=='string')return false;
+   const saved=await change(m=>{
+    if(matchRunning(m)||matchStarting(m)||m.cue&&!m.cue.finishedAt&&hasVideoProof(m,m.cue))return false;
+    if(Number(m.league?.season||1)!==options.expectedSeason||(m.seasonReset?.id||'')!==options.resetToken||(m.matchSelection?.id||'')!==options.selectionToken)return false;
+    const now=matchNow(),all=window.AIFootballLeagueLedger.catalogs(m),trophies=clone(m.league?.trophies||{});
+    const target=all[options.season]?clone(all[options.season]):newLeague(options.season,trophies);
+    window.AIFootballLeagueLedger.normalize(target);
+    // A partially retained legacy table cannot safely replace a result whose score was lost.
+    if(options.matchNumber<=Number(target.historyBase?.completedRounds||0))return false;
+    returnUnplayedCues(m);m.league=target;m.league.trophies=trophies;
+    m.league.plannedRounds=Math.max(Number(target.plannedRounds)||20,options.matchNumber);
+    m.matchSelection={id:crypto.randomUUID(),at:now,season:options.season,matchNumber:options.matchNumber};
+    m.clock={round:(Number(m.clock?.round)||0)+1,matchNumber:options.matchNumber,startedAt:null,manualStarted:false,autoStarted:false,durationMs:normalMs(m),finishedAt:null};
+    m.scores={A:0,B:0,C:0,D:0};m.keeper=Object.fromEntries(TEAMS.map(t=>[t,Number(m.initialKeeper?.[t]??state.startKeepers?.[t]??10)]));
+    m.cue=null;m.nextCue=null;m.cooldownUntil=0;m.lastResult=null;m.idleEpoch=now;m.autoContinuationPaused=true;
+   },false);
+   if(!saved)return false;stagedStarts.clear();timers.forEach(clearTimeout);timers.clear();localKickedCues.clear();window.AIFootball3D?.reset?.();lastPaintedMatch='';restore();return true;
   },
   async resetSeason(options){
    if(!admin()||!match||options?.leagueId!=='doruk'||!Number.isSafeInteger(options.season)||options.season<1||options.season>999999)return false;
@@ -1246,12 +1272,12 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
     }
     const trophies=options.clearHistory?{}:m.league?.trophies||{};
     m.league=newLeague(options.season,trophies);
-    if(options.clearHistory)m.leagueArchive=(m.leagueArchive||[]).filter(item=>item.leagueId&&item.leagueId!=='doruk');
+    if(options.clearHistory){m.leagueArchive=(m.leagueArchive||[]).filter(item=>item.leagueId&&item.leagueId!=='doruk');m.leagueSeasons={};m.seasonResetHistory=[];}
     m.seasonReset={id:crypto.randomUUID(),at:now,leagueId:'doruk'};
     m.scores={A:0,B:0,C:0,D:0};m.keeper=Object.fromEntries(TEAMS.map(t=>[t,Number(m.initialKeeper?.[t]??state.startKeepers?.[t]??10)]));
     m.cue=null;m.nextCue=null;m.cooldownUntil=0;m.lastResult=null;m.idleEpoch=now;
-    m.clock={startedAt:null,manualStarted:false,autoStarted:false,durationMs:normalMs(m),round:1,finishedAt:null};
-    m.autoContinuationPaused=true;
+    m.clock={startedAt:null,manualStarted:false,autoStarted:false,durationMs:normalMs(m),round:1,matchNumber:1,finishedAt:null};
+    m.matchSelection={id:crypto.randomUUID(),at:now,season:options.season,matchNumber:1};m.autoContinuationPaused=true;
     // Preserve receipt IDs so old gifts cannot replay after a reset.
    },false);
    if(!saved)return false;

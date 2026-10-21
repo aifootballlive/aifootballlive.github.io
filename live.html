@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261021-v298-black-white-goal">
+<meta name="aifootball-release" content="20261021-v299-season-match-history">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script>if(new URLSearchParams(location.search).get('studio')==='tiktok1080')document.documentElement.classList.add('aflTikTokPortraitSource');</script>
 <title>AI Football Live</title>
@@ -2311,13 +2311,14 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
 <p class="giftToggleHelp">Şutlar durdurulduğunda gelen hediyeler kuyruğa eklenir. TikTok'ta hediye gönderimini tamamen kapatmak için LIVE ayarlarından hediye seçeneğini kapatmalısın.</p></div></section></div>
 <aside id="leagueDrawer" class="leagueDrawer" aria-label="Lig puan durumu" aria-hidden="true">
  <div class="leagueDrawerHead"><strong>LİG TABLOSU</strong><div class="drawerHeaderActions"><div class="drawerTabs" aria-label="Yönetim sekmeleri"><button id="leagueSettingsTab" type="button" class="drawerTab" aria-pressed="false" onclick="openAdmin()">AYARLAR</button><button id="leagueTableTab" type="button" class="drawerTab" aria-pressed="true" onclick="openLeagueDrawer()">LİG TABLOSU</button></div><button type="button" class="closeBtn" onclick="closeAdmin()">KAPAT</button></div></div>
- <a class="aflLeagueExternal" href="./league.html" target="_blank" rel="noopener">Lig tablosunu ayrı sekmede aç</a><iframe id="leagueDrawerFrame" data-src="./league.html?v=251" title="Lig tablosu" loading="eager"></iframe>
+ <a class="aflLeagueExternal" href="./league.html" target="_blank" rel="noopener">Lig tablosunu ayrı sekmede aç</a><iframe id="leagueDrawerFrame" data-src="./league.html?v=299" title="Lig tablosu" loading="eager"></iframe>
 </aside>
 <div id="goalFx" class="goalFx"><div class="goalWord">GOL!</div></div>
 <script src="./broadcast-layout-v229.js?v=263"></script>
-<script src="./match-reports-v292.js?v=292"></script>
+<script src="./league-ledger-v299.js?v=299"></script>
+<script src="./match-reports-v292.js?v=299"></script>
 <script src="./like-bonus-v284.js?v=292"></script>
-<script src="./tiktok-shared-v209.js?v=298"></script>
+<script src="./tiktok-shared-v209.js?v=299"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -2601,9 +2602,9 @@ function openAdmin(){
 function sendLeagueSnapshot(){
  const iframe=$('leagueDrawerFrame');
  const target=iframe?.contentWindow;
- const league=window.AIFootballTikTok?.getLeague?.();
- if(!target||!league)return;
- try{target.postMessage({type:'AIFootballLeagueSnapshotV1',league,archive:[]},location.origin)}
+ const snapshot=window.AIFootballTikTok?.getLeagueSnapshot?.();
+ if(!target||!snapshot?.league)return;
+ try{target.postMessage({type:'AIFootballLeagueSnapshotV1',...snapshot},location.origin)}
  catch(error){console.warn('Lig verileri iletilemedi',error);}
 }
 function openLeagueDrawer(){
@@ -2625,7 +2626,7 @@ function openLeagueDrawer(){
   });
   iframe.dataset.leagueBound='1';
  }
- if(!iframe.getAttribute('src'))iframe.src='./league.html?v=251';
+ if(!iframe.getAttribute('src'))iframe.src='./league.html?v=299';
  else sendLeagueSnapshot();
  requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
 }
@@ -3076,8 +3077,8 @@ render();boot().finally(()=>window.dispatchEvent(new Event('afl-initial-state-re
 <script src="./interface-fixes-v230.js?v=270"></script>
 <link rel="stylesheet" href="./broadcast-text-v230.css"><script src="./broadcast-text-v230.js?v=284"></script>
 <script src="./broadcast-announcements-v283.js?v=292"></script>
-<script src="./season-control-v248.js?v=250"></script>
-<script src="./match-reports-ui-v292.js?v=292"></script>
+<script src="./season-control-v248.js?v=299"></script>
+<script src="./match-reports-ui-v292.js?v=299"></script>
 <script src="./admin-categories-v293.js?v=293"></script>
 </body>
 </html>
