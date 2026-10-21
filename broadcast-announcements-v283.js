@@ -1,7 +1,7 @@
 /* Shared-clock announcement rotation; no extra layout row or game writes. */
 (()=>{'use strict';
  const node=document.getElementById('leagueProfileHint');if(!node)return;
- const lines=['HER 1000 BEĞENİDE TÜM TAKIMLARA +1 ŞUT','LİG TABLOSU İÇİN PROFİLDEKİ LİNKE TIKLAYIN'];
+ const lines=['KİŞİ BAŞI 1000 BEĞENİ = HER TAKIMA +1 ŞUT','LİG TABLOSU İÇİN PROFİLDEKİ LİNKE TIKLAYIN'];
  let timer;
  function render(){
   clearTimeout(timer);

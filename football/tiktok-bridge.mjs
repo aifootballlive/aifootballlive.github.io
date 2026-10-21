@@ -32,7 +32,7 @@ const wss=new WebSocketServer({
  }
 });
 const clients=new Set(),recent=new Set(),backlog=[];
-let activeConnection=null,retryDelay=2500,retryTimer=null,reconnectGeneration=0,closing=false,roomId=null,lastLikeSnapshot=null;
+let activeConnection=null,retryDelay=2500,retryTimer=null,reconnectGeneration=0,closing=false,roomId=null,likeBacklog=[];
 const now=()=>new Date().toLocaleTimeString('tr-TR',{hour12:false});
 const log=(...msg)=>console.log('['+now()+']',...msg);
 function trimRecent(){while(recent.size>MAX_RECENT)recent.delete(recent.values().next().value);}
@@ -80,10 +80,9 @@ function onLike(event){
  const total=Number(event.totalLikeCount),count=Number(event.likeCount);
  if(!Number.isSafeInteger(total)||total<0||!Number.isSafeInteger(count)||count<1)return;
  const room=String(event.roomId??event.common?.roomId??activeConnection?.roomId??roomId??'');
- const message={event:'like',data:{id:stableId(event)||'like:'+room+':'+total,roomId:room,totalLikeCount:total,likeCount:count}};
- // Likes never occupy/evict the durable paid-gift backlog. One cumulative
- // snapshot recovers missed like totals when the admin reconnects.
- lastLikeSnapshot=message;
+ const message={event:'like',data:{id:stableId(event)||'like:'+room+':'+total,userId:event.userId??event.user?.userId??event.user?.id,uniqueId:event.uniqueId??event.user?.uniqueId,roomId:room,totalLikeCount:total,likeCount:count}};
+ // Keep like replay separate from the paid-gift buffer. Browser receipts deduplicate it.
+ likeBacklog.push(message);if(likeBacklog.length>4000)likeBacklog.shift();
  for(const client of clients)if(client.readyState===1)client.send(JSON.stringify(message));
 }
 function stopConnection(){
@@ -114,7 +113,7 @@ async function connectTikTok(){
  try{
   const state=await connection.connect();
   if(closing||generation!==reconnectGeneration)return;
-  retryDelay=2500;const nextRoom=state?.roomId??null;if(nextRoom!==roomId)lastLikeSnapshot=null;roomId=nextRoom;
+  retryDelay=2500;const nextRoom=state?.roomId??null;if(nextRoom!==roomId)likeBacklog=[];roomId=nextRoom;
   for(const client of clients)if(client.readyState===1)client.send(JSON.stringify({event:'connected',data:{roomId}}));
   log('TikTok LIVE baglandi @'+username,'oda:',roomId||'bilinmiyor');
  }catch(error){log('TikTok baglanamadi:',error?.message||String(error));scheduleReconnect(error?.message)}
@@ -122,7 +121,7 @@ async function connectTikTok(){
 wss.on('connection',socket=>{
  clients.add(socket);
  socket.send(JSON.stringify({event:'connected',data:{roomId}}));
- if(lastLikeSnapshot)socket.send(JSON.stringify(lastLikeSnapshot));
+ for(const message of likeBacklog)socket.send(JSON.stringify(message));
  log('MFA yonetici sayfasi baglandi. Gonderim tamponu:',backlog.length);
  // Re-send buffered events on reconnect; the browser/DB suppresses repeat IDs.
  for(const msg of backlog)socket.send(JSON.stringify(msg));

@@ -1,0 +1,6 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const bridge=fs.readFileSync(require.resolve('../football/tiktok-bridge.mjs'),'utf8');
+const helper=fs.readFileSync(require.resolve('../like-bonus-v284.js'),'utf8');
+const sent=[],c={window:{},document:{getElementById:()=>null},clients:new Set([{readyState:1,send:s=>sent.push(JSON.parse(s))}]),activeConnection:{roomId:'room'},roomId:'room',likeBacklog:[],stableId:d=>d.msgId||null};vm.createContext(c);vm.runInContext(helper,c);vm.runInContext(bridge.slice(bridge.indexOf('function onLike('),bridge.indexOf('function stopConnection(')),c);
+c.onLike({likeCount:500,totalLikeCount:500,user:{userId:'alice'}});c.onLike({likeCount:500,totalLikeCount:1000,userId:'bob'});c.onLike({likeCount:500,totalLikeCount:1500,user:{userId:'alice'}});
+assert.equal(c.likeBacklog.length,3);const m={jobs:[]},h=c.window.AIFootballLikeBonus;h.apply(m,sent.map((e,i)=>h.parse(e,'',i+1)),4);assert.equal(m.likeBonus.awarded,1);assert.equal(m.likeBonus.viewers['id:bob'].progress,500);h.apply(m,sent.map((e,i)=>h.parse(e,'',i+10)),14);assert.equal(m.likeBonus.awarded,1,'bridge replay does not award twice');assert.equal(m.jobs.length,4);console.log('PASS: fallback bridge preserves nested/root viewer IDs, replays separate like buffer, and never pools people or duplicates rewards. No network or live writes.');
