@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=290,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=292,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // One catalog drives both the visible gift buttons and received TikTok events.
@@ -345,6 +345,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    // The HTMLVideoElement 'ended' event plus actual end mediaTime is the
    // authoritative proof of spending a shot, not a guessed timeout.
    target.videoStartedAt||=Math.max(target.startsAt,matchNow()-Math.min(payload.duration*1000,60000));
+   window.AIFootballMatchReports?.shot(m,target,matchNow());
    target.videoFinishedAt=matchNow();target.videoPlayedSeconds=payload.playedSeconds;target.videoElapsedMs=payload.elapsedMs;target.videoPlaybackOwner=owner;
   },false,null,true).then(saved=>{if(saved&&owns())return advance();}).catch(e=>console.warn('Video bitiş onayı yazılamadı',e))
    .finally(()=>videoAckInFlight.delete('finish:'+payload.cueId));
@@ -547,7 +548,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    const target=m.cue;
    if(!owns(m)||!matchRunning(m)||!target||target.id!==payload.cueId||target.startsAt!==payload.startsAt||
       target.team!==payload.team||target.playbackOwner!==owner||Number.isFinite(target.kickedAt))return false;
-   target.kickedAt=matchNow();
+   target.kickedAt=matchNow();window.AIFootballMatchReports?.shot(m,target,matchNow());
   },false).catch(error=>console.warn('Şut temas onayı bekleniyor',error)).finally(()=>ballKickAckInFlight.delete(cue.id));
  }
  function restore(){
@@ -769,7 +770,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    // directly; a conflict always rereads before retrying, preserving gifts.
    const base=attempt===0&&preferCached&&row?.id&&row.rules?.[KEY]?.revision===match?.revision?row:await read(),existing=base.rules?.[KEY];if(!existing)return false;
    if(leaseRequired&&!owns(existing))return false;
-   const next=clone(existing);if(edit(next)===false)return false;
+   const next=clone(existing);window.AIFootballMatchReports?.sync(next,matchNow());if(edit(next)===false)return false;window.AIFootballMatchReports?.sync(next,matchNow());
    next.revision=existing.revision+1;next.updatedAt=matchNow();next.clientBuild=CLIENT_BUILD;next.clientRevision=next.revision;
    if(next.lease?.owner===owner){next.lease.until=matchNow()+LEASE;next.lease.priority=controlPriority();}
    const rules={...base.rules,...(patch||{}),[KEY]:next};
@@ -820,7 +821,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   if(!selected||!Number.isSafeInteger(repeats)||repeats<1||!Number.isSafeInteger(count)||count>10000)return false;
   const key=await digest(JSON.stringify([String(id),String(g.uniqueId||g.user?.uniqueId||g.userId||g.user?.userId||''),String(giftId||name||'')]));
   if(match?.receipts.includes(key))return false;
-  inbox.set(key,{team:selected.team,count,name:String(name||giftId),receivedAt:matchNow()});
+  inbox.set(key,{team:selected.team,count,coins:selected.coins,units:repeats,name:String(name||giftId),receivedAt:matchNow()});
   saveGiftInbox();
   if(!matchRunning(match))showQueuedGiftNotice(key,selected.team);
   // Update the team's pending-shot number immediately without starting any clip.
@@ -839,7 +840,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
      if(seen.has(key))continue;
      seen.add(key);m.receipts.push(key);changed=true;
      if(Number(g.receivedAt||0)<=Number(m.queueClearAt?.[g.team]||0))continue;
-     m.accepted++;
+     m.accepted++;window.AIFootballMatchReports?.gift(m,g,matchNow());
      m.lastGift={id:key,team:g.team,count:g.count,name:g.name};m.giftNotices||={};m.giftNotices[g.team]={id:key,at:matchNow()};
      m.jobs.push({id:key,team:g.team,count:g.count,nextIndex:0});
      changed=true;
@@ -1116,6 +1117,8 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   setInterval(showMatchClock,200);showMatchClock();legend();read().then(ensureChannel).catch(e=>console.warn(e.message));tick();
  }
  window.AIFootballTikTok={get active(){return true;},get connected(){return connected;},getStatus(){return {clientBuild:CLIENT_BUILD,updateRequired:needsRefresh(),autoMatches:autoMatchEnabled(match),guestTrialEnabled:match?.guestTrialEnabled===true,manualMatchStart:!autoMatchEnabled(match),active:true,connected,shared:!!match,leader:owns(),revision:match?.revision,accepted:match?.accepted||0,lastGift:match?.lastGift||null,lastShotQueuedAt:match?.lastShotQueuedAt||0,pending:Object.values(pendingShotCounts(match)).reduce((a,b)=>a+b,0),waitingRequests:pendingRequests.size,channelReady,adminAvailable:!!match?.lease&&match.lease.until>matchNow(),lastError:errorText};},getClock(){return match?{epoch:match.idleEpoch}:null;},getTimings(){return timingFor(match);},
+  getMatchReports(){return admin()?window.AIFootballMatchReports?.view(match,matchNow())||{records:[],pending:{}}:null;},
+  async setLikeBonusThreshold(value){if(!admin()||!Number.isSafeInteger(value)||value<1||value>1000000)return false;return change(m=>{const b=m.likeBonus||={enabled:true,retired:[]};if((b.threshold||1000)===value)return false;b.threshold=value;for(const p of Object.values(b.viewers||{}))p.progress=0;b.progress=0;b.enabledAt=matchNow();},false);},
   getLikeBonusStatus(){return window.AIFootballLikeBonus?.status(match)||{enabled:true,progress:0,awarded:0,observed:0};},
   async setLikeBonusEnabled(enabled){if(!admin()||typeof enabled!=='boolean')return false;return change(m=>{m.likeBonus||={progress:0,awarded:0,observed:0,retired:[]};if((m.likeBonus.enabled!==false)===enabled)return false;m.likeBonus.enabled=enabled;if(enabled)m.likeBonus.enabledAt=matchNow();},false);},
   async resetLikeBonusCounter(){if(!admin())return false;const saved=await change(m=>{m.likeBonus||={enabled:true,retired:[]};m.likeBonus.viewers={};m.likeBonus.progress=0;m.likeBonus.observed=0;m.likeBonus.awarded=0;m.likeBonus.resetAt=matchNow();},false);if(saved){likeInbox.clear();saveLikes();}return saved;},
