@@ -4,7 +4,7 @@
  const fields=['totalViews','totalJoined','likes','newFollowers','giftGivers','comments','fans','diamonds','earningsUsd','peakViewers'];
  const kinds=new Set(['connected','roominfo','roomuser','like','member','chat','comment','follow','share','gift','streamend']);
  const data=m=>m.liveReports||=( {version:1,sessions:[],activeId:null} );
- function create(m,now,room=''){const d=data(m),old=d.sessions.find(s=>s.id===d.activeId);if(old?.status==='live')end(old,now);const s={id:'live:'+now+':'+room,room,startedAt:now,endedAt:null,status:'live',partial:true,observed:{likes:0,joins:0,viewers:0,giftGivers:0,comments:0,newFollowers:0,shares:0,gifts:0,coins:0},reported:{},manual:{},seen:[],people:{},donors:{},followers:{},updatedAt:now};d.sessions.push(s);d.activeId=s.id;return s;}
+ function create(m,now,room='',automatic=false){const d=data(m),old=d.sessions.find(s=>s.id===d.activeId);if(old?.status==='live')end(old,now);const s={id:'live:'+now+':'+room,room,startedAt:now,endedAt:null,status:'live',partial:true,automatic,lastEventAt:automatic?now:null,observed:{likes:0,joins:0,viewers:0,giftGivers:0,comments:0,newFollowers:0,shares:0,gifts:0,coins:0},reported:{},manual:{},seen:[],people:{},donors:{},followers:{},updatedAt:now};d.sessions.push(s);d.activeId=s.id;return s;}
  function end(s,now){s.status='ended';s.endedAt=now;s.currentViewers=0;}
  function parse(raw,room,now){const kind=String(raw?.event||raw?.type||'').toLowerCase().replace(/[_-]/g,'');if(!kinds.has(kind))return null;const d=raw.data||{},u=d.user||{},viewer=String(d.userId??u.userId??u.id??d.uniqueId??u.uniqueId??'').slice(0,200),r=String(d.roomId??d.room_id??d.common?.roomId??d.state?.roomId??room??'').slice(0,100);
   if(['connected','roominfo'].includes(kind)&&!r)return null;
@@ -16,10 +16,11 @@
  function distinct(s,map,key,count){if(!key||s[map]?.[key])return;const set=s[map]||={};if(Object.keys(set).length>=5000){s.truncated=true;return;}set[key]=1;s.observed[count]++;}
  function apply(m,batch,now){let changed=false;for(const e of batch.slice().sort((a,b)=>a.at-b.at)){
   const d=data(m);let s=d.sessions.find(s=>s.id===d.activeId);
-  if(!s||e.room&&s.room&&s.room!==e.room){const prior=e.room&&d.sessions.find(x=>x.room===e.room);if(prior){s=prior;if(prior.status!=='ended')d.activeId=s.id;}else s=create(m,e.at,e.room);}
+  if(!s||e.room&&s.room&&s.room!==e.room){const prior=e.room&&d.sessions.find(x=>x.room===e.room);if(prior){s=prior;if(prior.status!=='ended')d.activeId=s.id;}else s=create(m,e.at,e.room,true);}
   if(e.at<s.startedAt){const prior=d.sessions.slice().reverse().find(x=>x.startedAt<=e.at&&(!x.endedAt||e.at<=x.endedAt)&&(!e.room||x.room===e.room));if(!prior)continue;s=prior;}
   if(s.status==='ended'&&e.at>s.endedAt)continue;if(!s.room&&e.room)s.room=e.room;
-  if(s.seen.includes(e.key))continue;s.seen.push(e.key);if(s.seen.length>4000)s.seen.shift();s.updatedAt=now;changed=true;
+  if(s.seen.includes(e.key))continue;s.seen.push(e.key);if(s.seen.length>4000)s.seen.shift();s.updatedAt=now;s.automatic=true;s.lastEventAt=now;changed=true;
+  if(!m.practiceMode&&m.matchMode==='live'&&m.clock?.startedAt>0&&!Number.isFinite(m.clock.finishedAt)&&(m.clock.manualStarted||m.clock.autoStarted)&&e.at>=m.clock.startedAt&&e.kind!=='streamend')m.clock.recordForLeague=true;
   distinct(s,'people',e.viewer,'viewers');
   if(e.current!==null){if(s.status==='live')s.currentViewers=e.current;s.reported.peakViewers=Math.max(s.reported.peakViewers||0,e.current);}
   for(const [key,value]of [['likes',e.likeTotal],['totalJoined',e.joined],['totalViews',e.views]])if(value!==null)s.reported[key]=Math.max(s.reported[key]||0,value);

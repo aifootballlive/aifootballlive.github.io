@@ -41,7 +41,7 @@ const league={season:5,completedRounds:1,plannedRounds:20,teams:{A:{played:1,poi
   }
   await page.evaluate(()=>window.dispatchEvent(new MessageEvent('message',{origin:'https://untrusted.example',source:window,data:{type:'AIFootballLeagueSnapshotV1',league:{season:999}}})));
   assert.equal(await page.locator('#season').textContent(),'5');
-  await page.getByRole('button',{name:'Kıvılcım Arenası',exact:true}).click();assert((await page.locator('#leagueInfo').textContent()).includes('henüz başlamadı'));
+  await page.getByRole('button',{name:'Kıvılcım Arenası',exact:true}).click();assert((await page.locator('#leagueInfo').textContent()).includes('Veri yok'));assert.equal(await page.locator('#leagueArenaData').isVisible(),false);assert.equal(await page.locator('#emptyArena').isVisible(),true);await page.getByRole('button',{name:'Doruk Arenası',exact:true}).click();assert.equal(await page.locator('#leagueArenaData').isVisible(),true);assert.equal(await page.locator('#emptyArena').isVisible(),false);
   mode='error';await page.reload();await page.getByText('Canlı lig bilgileri bekleniyor. Takımlar gösteriliyor.',{exact:true}).waitFor();
   assert.equal(await page.locator('#standings tr').count(),4);
   await context.close();console.log(width+': GET only, no auth/session access, no game links, safe text, foreign messages rejected, offline fallback PASS');

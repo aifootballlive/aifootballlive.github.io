@@ -29,7 +29,7 @@ function refresh(){if(busy)return;const next=window.AIFootballTikTok?.getSeasonC
  const pending=Object.values(next.pending||{}).reduce((sum,n)=>sum+Number(n||0),0);id('seasonResetCurrent').textContent='Mevcut sezon: '+next.season+' • Bekleyen şut: '+pending+(next.running?' • Önce aktif maçı durdur.':'');}
 for(const field of ['matchSelectSeason','matchSelectNumber'])id(field).addEventListener('input',()=>{selectionDirty=true;});
 id('matchSelectSubmit').addEventListener('click',async()=>{
- if(selectionBusy||busy)return;refresh();if(!snapshot)return;
+ if(selectionBusy||busy)return;refresh();if(!snapshot)return;if(snapshot.practice){id('matchSelectStatus').textContent='Maç kategorisinden canlı yayın moduna geçip sezon seçebilirsin.';return;}
  const season=Number(id('matchSelectSeason').value),matchNumber=Number(id('matchSelectNumber').value);
  if(!Number.isSafeInteger(season)||season<1||season>999999||!Number.isSafeInteger(matchNumber)||matchNumber<1||matchNumber>9999){id('matchSelectStatus').textContent='Geçerli bir sezon ve maç numarası seç.';return;}
  const expected={expectedSeason:snapshot.season,resetToken:snapshot.resetToken,selectionToken:snapshot.selectionToken||'',clockToken:snapshot.clockToken,stopCurrent:!!snapshot.running};selectionBusy=true;refresh();id('matchSelectStatus').textContent=expected.stopCurrent?'Aktif maç kaydediliyor, seçilen maç hazırlanıyor…':'Maç hazırlanıyor…';

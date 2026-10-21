@@ -5,13 +5,14 @@
  const key=m=>Number(m?.clock?.startedAt)>0?[m.seasonReset?.id||'',m.league?.season||1,m.clock.round||1,m.clock.startedAt].join(':'):null;
  function sync(m,now){
   const data=m.matchReports||={version:1,trackingStartedAt:now,records:[],pending:empty()};
+  if(m.practiceMode||m.matchMode==='live'&&m.clock?.recordForLeague!==true)return null;
   const id=key(m),started=m.clock?.manualStarted===true||m.clock?.autoStarted===true;
   for(const r of data.records)if(r.status==='playing'&&r.id!==id){r.status='interrupted';r.endedAt=now;}
   if(!id||!started)return null;
   let r=data.records.find(r=>r.id===id);
   if(!r){
    if(Number.isFinite(m.clock.finishedAt))return null;
-   r={id,season:Number(m.league?.season)||1,round:Number(m.clock.round)||1,matchNumber:Number(m.clock?.matchNumber)||(Number(m.league?.completedRounds)||0)+1,plannedRounds:Number(m.league?.plannedRounds)||20,final:!!m.clock.leagueFinal,startedAt:m.clock.startedAt,acceptingFrom:Number(m.clock.countdownStartedAt)||Math.min(now,m.clock.startedAt),endedAt:null,status:'playing',partial:data.trackingStartedAt>m.clock.startedAt,normalMinutes:Number(m.timing?.normalMinutes)||25,overtimeMinutes:Number.isFinite(Number(m.timing?.overtimeMinutes))?Number(m.timing.overtimeMinutes):5,liveSessionIds:[],teams:empty()};
+   r={id,season:Number(m.league?.season)||1,round:Number(m.clock.round)||1,matchNumber:Number(m.clock?.matchNumber)||(Number(m.league?.completedRounds)||0)+1,plannedRounds:Number(m.league?.plannedRounds)||20,final:!!m.clock.leagueFinal,startedAt:m.clock.startedAt,acceptingFrom:Number(m.clock.countdownStartedAt)||Math.min(now,m.clock.startedAt),endedAt:null,status:'playing',partial:data.trackingStartedAt>m.clock.startedAt||m.matchMode==='live'&&now>m.clock.startedAt,normalMinutes:Number(m.timing?.normalMinutes)||25,overtimeMinutes:Number.isFinite(Number(m.timing?.overtimeMinutes))?Number(m.timing.overtimeMinutes):5,liveSessionIds:[],teams:empty()};
    for(const t of TEAMS)for(const k of ['gifts10','gifts100','gifts','coins','unknown'])r.teams[t][k]=number(data.pending?.[t]?.[k]);
    data.pending=empty();data.records.push(r);
   }

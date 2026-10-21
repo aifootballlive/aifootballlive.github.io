@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=301,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=302,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // One catalog drives both the visible gift buttons and received TikTok events.
@@ -102,8 +102,10 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  function matchStarting(m,now=matchNow()){
   const c=m?.clock;return !!c&&!Number.isFinite(c.finishedAt)&&(c.manualStarted===true||c.autoStarted===true)&&Number.isFinite(c.startedAt)&&c.startedAt>now;
  }
- function seasonComplete(m){return !!m?.league?.champion&&Number(m.league.completedRounds)>=Number(m.league.plannedRounds);}
- function canContinueAutomatically(m){return autoMatchEnabled(m)&&!m.autoContinuationPaused&&!seasonComplete(m);}
+ function officialMatch(m){return !m?.practiceMode&&(m?.matchMode!=='live'||m?.clock?.recordForLeague===true);}
+ function broadcastConfirmed(m){const s=m?.liveReports?.sessions?.find(s=>s.id===m.liveReports.activeId);return !!s&&s.status==='live'&&s.automatic===true&&matchNow()-Number(s.lastEventAt||0)<120000;}
+ function seasonComplete(m){return !m?.practiceMode&& !!m?.league?.champion&&Number(m.league.completedRounds)>=Number(m.league.plannedRounds);}
+ function canContinueAutomatically(m){return !m?.practiceMode&&!(m?.matchMode==='live'&&m?.clock?.finishedAt&&!m?.clock?.recordForLeague)&&autoMatchEnabled(m)&&!m.autoContinuationPaused&&!seasonComplete(m);}
  // The combined winner + league screen is one uninterrupted duration.
  // An in-progress result keeps its deadline even if future settings change.
  function breakDeadlines(m){
@@ -201,7 +203,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    const completed=Math.max(0,Math.floor(Number(league.completedRounds)||0));
    const playing=matchRunning(match,now)||matchStarting(match,now);
    const current=Number(match?.clock?.matchNumber)||Math.min(total,completed+(playing?1:0));
-   const text=season+'. SEZON · '+current+'/'+total+' MAÇ · GOL SAYILARI';
+   const text=match?.practiceMode?'DENEME MAÇI · SONUÇLAR KAYDEDİLMEZ':season+'. SEZON · '+current+'/'+total+' MAÇ · GOL SAYILARI';
    if(heading.textContent!==text)heading.textContent=text;
   }
   const arena=document.getElementById('liveArenaName');
@@ -248,7 +250,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   if(waiting&&!waiting.hidden)waiting.hidden=true;
   const result=document.getElementById('matchResultBanner'),league=document.getElementById('leagueBreakPanel');
   if(result&&result.hidden!==!showingSummary)result.hidden=!showingSummary;
-  if(league&&league.hidden!==!showingSummary)league.hidden=!showingSummary;
+  if(league)league.hidden=!showingSummary||!!match?.practiceMode;
   if(showingSummary){
    announceMatchResult(match);
    const winner=match.clock.interrupted?'MAÇ TEKNİK NEDENLE DURDU':
@@ -296,7 +298,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  function flushManualBurst(team){
   const burst=manualBursts.get(team);if(!burst)return;
   manualBursts.delete(team);clearTimeout(burst.timer);
-  const payload={id:crypto.randomUUID(),team,count:burst.count,sentAt:matchNow()};
+  const payload={id:crypto.randomUUID(),team,count:burst.count,sentAt:matchNow(),practice:!!burst.practice,modeToken:burst.modeToken||''};
   pendingRequests.set(payload.id,{payload,lastSent:0,resolve:ok=>burst.resolvers.forEach(done=>done(ok))});
   rememberRequests();sendRequests().catch(e=>console.warn(e.message));
  }
@@ -307,7 +309,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  const videoAckInFlight=new Set();
  let lastGiftNoticeCount=null;const seenTeamNotices=new Map();const giftNoticeTimers=new Map(),giftNoticeKeys=new Map();
  function showQueuedGiftNotice(id,team){
-  if(!TEAMS.includes(team))return;
+  if(!TEAMS.includes(team)||match?.practiceMode)return;
   if(id&&giftNoticeKeys.get(team)===id)return;
   giftNoticeKeys.set(team,id);
   let node=document.getElementById('pendingGiftNotice'+team);
@@ -422,7 +424,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   return true;
  }
  function recordLeagueRound(m){
-  if(m.lastResult?.interrupted)return;
+  if(m.lastResult?.interrupted||!officialMatch(m))return;
   m.league ||= newLeague(1);
   const league=m.league;
   const scores={...m.scores};
@@ -576,15 +578,15 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   // commits the gift receipt to the shared database. Once acknowledged, do not
   // double-count the same gift alongside its persisted job.
   for(const [giftKey,gift] of inbox){
-   if(!match.receipts?.includes(giftKey)&&Number(gift.receivedAt||0)>Number(match.queueClearAt?.[gift.team]||0)&&counts[gift.team]!==undefined)
+   if(!match.practiceMode&&!match.receipts?.includes(giftKey)&&Number(gift.receivedAt||0)>Number(match.queueClearAt?.[gift.team]||0)&&counts[gift.team]!==undefined)
     counts[gift.team]+=Math.max(1,Math.floor(Number(gift.count)||1));
   }
   // Optimistic UI: count unconfirmed requests and not-yet-flushed button bursts immediately.
   for(const r of pendingRequests.values()){
    const p=r.payload;
-   if(!match.commandReceipts?.includes(p.id)&&Number(p.sentAt||0)>Number(match.queueClearAt?.[p.team]||0)&&counts[p.team]!==undefined)counts[p.team]+=p.count;
+   if((!match.practiceMode&&!p.practice||match.practiceMode&&p.practice&&(p.modeToken||'')===(match.modeToken||''))&&!match.commandReceipts?.includes(p.id)&&Number(p.sentAt||0)>Number(match.queueClearAt?.[p.team]||0)&&counts[p.team]!==undefined)counts[p.team]+=p.count;
   }
-  for(const [team,burst] of manualBursts)if(counts[team]!==undefined)counts[team]+=burst.count;
+  for(const [team,burst] of manualBursts)if(counts[team]!==undefined&&(!match.practiceMode&&!burst.practice||match.practiceMode&&burst.practice&&(burst.modeToken||'')===(match.modeToken||'')))counts[team]+=burst.count;
   for(const team of TEAMS){
    if(displayedQueues[team]!==null&&counts[team]>displayedQueues[team])queueShimmer(team);
    displayedQueues[team]=counts[team];
@@ -740,7 +742,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   try{const requests=[...pendingRequests.values()].map(r=>r.payload).filter(validRequest).slice(0,80);
    if(!requests.length)return;
    // Supabase's authenticated write/RLS path also works from a non-leader admin phone.
-   await change(m=>{m.commandReceipts||=[];const seen=new Set(m.commandReceipts);let added=false;for(const p of requests){if(seen.has(p.id))continue;seen.add(p.id);m.commandReceipts.push(p.id);added=true;if(Number(p.sentAt||0)<=Number(m.queueClearAt?.[p.team]||0))continue;m.jobs.push({id:'button:'+p.id,team:p.team,count:p.count,nextIndex:0});m.giftNotices||={};m.giftNotices[p.team]={id:p.id,at:matchNow()};added=true;}if(!added)return false;m.lastShotQueuedAt=matchNow();primeQueuedShots(m,matchNow());m.commandReceipts=m.commandReceipts.slice(-4000);},false);
+   await change(m=>{m.commandReceipts||=[];const seen=new Set(m.commandReceipts);let added=false;for(const p of requests){if(seen.has(p.id))continue;seen.add(p.id);m.commandReceipts.push(p.id);added=true;if(Number(p.sentAt||0)<=Number(m.queueClearAt?.[p.team]||0))continue;if(p.practice&&(!m.practiceMode||(p.modeToken||'')!==(m.modeToken||'')))continue;(m.practiceMode&&!p.practice?(m.savedLiveJobs||=[]):m.jobs).push({id:'button:'+p.id,team:p.team,count:p.count,nextIndex:0});m.giftNotices||={};m.giftNotices[p.team]={id:p.id,at:matchNow()};added=true;}if(!added)return false;m.lastShotQueuedAt=matchNow();primeQueuedShots(m,matchNow());m.commandReceipts=m.commandReceipts.slice(-4000);},false);
    for(const p of requests)if(match.commandReceipts?.includes(p.id)&&!matchRunning(match))showQueuedGiftNotice(p.id,p.team);
    acknowledgeRequests();
   }finally{sendingRequests=false;}
@@ -853,7 +855,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   if(match?.receipts.includes(key))return false;
   inbox.set(key,{team:selected.team,count,coins:selected.coins,units:repeats,name:String(name||giftId),receivedAt:matchNow()});
   saveGiftInbox();
-  if(!matchRunning(match))showQueuedGiftNotice(key,selected.team);
+  if(!matchRunning(match)&&!match?.practiceMode)showQueuedGiftNotice(key,selected.team);
   // Update the team's pending-shot number immediately without starting any clip.
   restore();
   return true;
@@ -872,7 +874,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
      if(Number(g.receivedAt||0)<=Number(m.queueClearAt?.[g.team]||0))continue;
      m.accepted++;window.AIFootballMatchReports?.gift(m,g,matchNow());
      m.lastGift={id:key,team:g.team,count:g.count,name:g.name};m.giftNotices||={};m.giftNotices[g.team]={id:key,at:matchNow()};
-     m.jobs.push({id:key,team:g.team,count:g.count,nextIndex:0});
+     (m.practiceMode?(m.savedLiveJobs||=[]):m.jobs).push({id:key,team:g.team,count:g.count,nextIndex:0});
      changed=true;
     }
     if(!changed)return false;
@@ -948,7 +950,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  }
  // Queue acceptance and cue scheduling share one authenticated CAS write.
  function primeQueuedShots(m,now){
-  if(!window.AIFootball3D?.getShotTiming)return;
+  if(!window.AIFootball3D?.getShotTiming||!m.practiceMode&&!officialMatch(m))return;
   if(!matchRunning(m,now)||m.processingPaused||now>=m.clock.startedAt+normalMs(m)+overtimeMs(m))return;
   if(!m.cue||m.cue.finishedAt){
    const job=takeJob(m,m.cue?.team);if(!job)return;
@@ -973,11 +975,16 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   const highest=Math.max(...contenders.map(t=>Number(m.scores?.[t])||0));
   const winners=contenders.filter(t=>(Number(m.scores?.[t])||0)===highest);
   m.clock.winner=winners.length===1?winners[0]:null;
-  m.lastResult={round:m.clock.round,finishedAt:now,scores:{...m.scores},winner:m.clock.winner,leagueFinal:!!m.clock.leagueFinal};
+  m.lastResult={round:m.clock.round,finishedAt:now,scores:{...m.scores},winner:m.clock.winner,leagueFinal:!!m.clock.leagueFinal,practice:!!m.practiceMode,recorded:officialMatch(m)};
   recordLeagueRound(m);
   return true;
  }
  function beginNextRound(m,now){
+  if(m.practiceMode){
+   m.practiceMatchNumber=(Number(m.practiceMatchNumber)||1)+1;
+   m.clock={round:(Number(m.clock?.round)||1)+1,matchNumber:Number(m.practiceLiveState?.clock?.matchNumber)||1,startedAt:now+timingFor(m).countdownSeconds*1000,countdownStartedAt:now,manualStarted:false,autoStarted:false,durationMs:normalMs(m),finishedAt:null,recordForLeague:false};
+   m.scores={A:0,B:0,C:0,D:0};m.keeper=Object.fromEntries(TEAMS.map(t=>[t,Number(m.initialKeeper?.[t]??state.startKeepers?.[t]??10)]));m.cue=null;m.nextCue=null;m.cooldownUntil=0;m.idleEpoch=now;return;
+  }
   resolveSeasonCompletion(m);
   if(m.league?.finalists?.length>1&&hasSeasonShots(m))extendSeasonForShots(m);
   const round=(Number(m.clock?.round)||1)+1;let matchNumber=Number(m.clock?.matchNumber)?Number(m.clock.matchNumber)+1:(Number(m.league?.completedRounds)||0)+1;
@@ -991,7 +998,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   }
   const leagueFinal=!!(m.league?.completedRounds>=m.league?.plannedRounds&&!m.league?.champion&&m.league?.finalists?.length>1);
   if(!leagueFinal)m.league.plannedRounds=Math.max(Number(m.league.plannedRounds)||20,matchNumber);
-  m.clock={startedAt:now+timingFor(m).countdownSeconds*1000,countdownStartedAt:now,manualStarted:false,autoStarted:autoMatchEnabled(m),durationMs:normalMs(m),round,matchNumber,finishedAt:null,leagueFinal};
+  m.clock={startedAt:now+timingFor(m).countdownSeconds*1000,countdownStartedAt:now,manualStarted:false,autoStarted:autoMatchEnabled(m),durationMs:normalMs(m),round,matchNumber,finishedAt:null,leagueFinal,recordForLeague:m.matchMode==='live'?broadcastConfirmed(m):undefined};
   m.scores={A:0,B:0,C:0,D:0};
   m.keeper=Object.fromEntries(TEAMS.map(t=>[t,Number(m.initialKeeper?.[t]??state.startKeepers?.[t]??10)]));
   m.cue=null;m.nextCue=null;m.cooldownUntil=0;m.idleEpoch=now;
@@ -1014,7 +1021,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   m.cue.finishedAt=matchNow();m.cooldownUntil=0;
   // The server must already contain completion proof before this cue is
   // replaced. This second CAS runs immediately after the proof is saved.
-  if(!m.processingPaused&&hasPlayableJobs(m)&&window.AIFootball3D?.getShotTiming&&matchRunning(m)&&matchNow()<m.clock.startedAt+normalMs(m)+overtimeMs(m)){
+  if((m.practiceMode||officialMatch(m))&&!m.processingPaused&&hasPlayableJobs(m)&&window.AIFootball3D?.getShotTiming&&matchRunning(m)&&matchNow()<m.clock.startedAt+normalMs(m)+overtimeMs(m)){
    const job=takeJob(m,m.cue.team);
    if(job)m.cue=makeCue(m,job,matchNow()+40);
   }
@@ -1041,7 +1048,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   }
   if(Number.isFinite(match.clock.finishedAt)){
    // Gifts received during the results screen still belong to this season.
-   if(match.league?.completionPending&&now>=breakDeadlines(match).summaryUntil){
+   if(!match.practiceMode&&officialMatch(match)&&match.league?.completionPending&&now>=breakDeadlines(match).summaryUntil){
     await change(m=>{if(!m.league?.completionPending||matchNow()<breakDeadlines(m).summaryUntil)return false;return resolveSeasonCompletion(m);});
     return;
    }
@@ -1108,7 +1115,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   // even when no shots are pending. Do not finish the match early.
   // The waiting video is decoration; on mobile it can be unready even
   // while the dedicated shot MP4s are perfectly playable.
-  if(match.processingPaused||!hasPlayableJobs(match)||!window.AIFootball3D?.beginShot||!window.AIFootball3D?.getShotTiming)return;
+  if(!match.practiceMode&&!officialMatch(match)||match.processingPaused||!hasPlayableJobs(match)||!window.AIFootball3D?.beginShot||!window.AIFootball3D?.getShotTiming)return;
   await change(m=>{
    if(m.clock?.finishedAt||!matchRunning(m)||m.cue&&!m.cue.finishedAt||!m.jobs.length)return false;
    const job=takeJob(m,m.cue?.team);if(!job)return false;
@@ -1229,6 +1236,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
      m.clock.interrupted=false;
      m.clock.summaryUntil=null;
     }
+    m.clock.recordForLeague=m.practiceMode?false:m.matchMode==='live'?broadcastConfirmed(m):m.clock.recordForLeague;
     m.clock.manualStarted=true;
     m.clock.autoStarted=false;
     m.idleEpoch=now;
@@ -1245,14 +1253,33 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
     }
    },false);
   },
+  getMatchMode(){if(!admin()||!match)return null;return {mode:match.practiceMode?'practice':'live',running:matchRunning(match)||matchStarting(match),confirmed:broadcastConfirmed(match),recording:officialMatch(match),savedLiveShots:(match.savedLiveJobs||[]).reduce((n,j)=>n+Math.max(1,Number(j.count)||1),0)};},
+  async setMatchMode(mode){
+   if(!admin()||!match||!['live','practice'].includes(mode)||mode===(match.practiceMode?'practice':'live'))return false;
+   if(matchRunning(match)||matchStarting(match)){if(!await window.AIFootballTikTok.finishCurrentRound())return false;}
+   const saved=await change(m=>{
+    if(matchRunning(m)||matchStarting(m)||mode===(m.practiceMode?'practice':'live'))return false;
+    returnUnplayedCues(m);
+    if(mode==='practice'){
+     m.practiceLiveState={clock:clone(m.clock),scores:clone(m.scores),keeper:clone(m.keeper),lastResult:m.lastResult?clone(m.lastResult):null,processingPaused:!!m.processingPaused};
+     m.savedLiveJobs=clone(m.jobs);m.jobs=[];m.practiceMode=true;m.practiceMatchNumber=1;
+     m.clock={round:(Number(m.clock?.round)||1)+1,matchNumber:Number(m.clock?.matchNumber)||(Number(m.league?.completedRounds)||0)+1,startedAt:null,manualStarted:false,autoStarted:false,finishedAt:null,durationMs:normalMs(m),recordForLeague:false};
+     m.scores={A:0,B:0,C:0,D:0};m.keeper=Object.fromEntries(TEAMS.map(t=>[t,Number(m.initialKeeper?.[t]??state.startKeepers?.[t]??10)]));m.lastResult=null;m.processingPaused=false;
+    }else{
+     const prior=m.practiceLiveState||{};m.jobs=clone(m.savedLiveJobs||[]);m.clock=prior.clock||{round:1,matchNumber:1,startedAt:null,manualStarted:false,finishedAt:null};m.scores=prior.scores||{A:0,B:0,C:0,D:0};m.keeper=prior.keeper||Object.fromEntries(TEAMS.map(t=>[t,10]));m.lastResult=prior.lastResult||null;m.processingPaused=!!prior.processingPaused;m.practiceMode=false;m.savedLiveJobs=[];delete m.practiceLiveState;
+    }
+    m.matchMode=mode;m.modeToken=crypto.randomUUID();m.cue=null;m.nextCue=null;m.cooldownUntil=0;m.idleEpoch=matchNow();m.autoContinuationPaused=true;
+   },false);
+   if(saved){stagedStarts.clear();timers.forEach(clearTimeout);timers.clear();localKickedCues.clear();window.AIFootball3D?.reset?.();lastPaintedMatch='';restore();}return saved;
+  },
   getSeasonControl(){
    if(!admin()||!match)return null;
    return {leagues:[{id:'doruk',name:timingFor(match).arenaName}],season:Number(match.league?.season)||1,
     clockToken:JSON.stringify([match.clock?.round||0,match.clock?.startedAt??null,match.clock?.finishedAt??null]),matchNumber:Number(match.clock?.matchNumber)||(Number(match.league?.completedRounds)||0)+1,selectionToken:match.matchSelection?.id||'',seasons:Object.keys(window.AIFootballLeagueLedger?.catalogs(match)||{}).map(Number).sort((a,b)=>a-b),resetToken:match.seasonReset?.id||'',pending:pendingShotCounts(match),complete:seasonComplete(match),extraRounds:Number(match.league?.extraRounds)||0,
-    running:matchRunning(match)||matchStarting(match)};
+    practice:!!match.practiceMode,running:matchRunning(match)||matchStarting(match)};
   },
   async selectMatch(options){
-   if(!admin()||!match||!window.AIFootballLeagueLedger||options?.leagueId!=='doruk')return false;
+   if(!admin()||!match||match.practiceMode||!window.AIFootballLeagueLedger||options?.leagueId!=='doruk')return false;
    if(!Number.isSafeInteger(options.season)||options.season<1||options.season>999999||!Number.isSafeInteger(options.matchNumber)||options.matchNumber<1||options.matchNumber>9999)return false;
    if(!Number.isSafeInteger(options.expectedSeason)||typeof options.resetToken!=='string'||typeof options.selectionToken!=='string')return false;
    const token=m=>JSON.stringify([m.clock?.round||0,m.clock?.startedAt??null,m.clock?.finishedAt??null]);
@@ -1290,7 +1317,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    if(!saved)return false;stagedStarts.clear();timers.forEach(clearTimeout);timers.clear();localKickedCues.clear();window.AIFootball3D?.reset?.();lastPaintedMatch='';restore();return true;
   },
   async resetSeason(options){
-   if(!admin()||!match||options?.leagueId!=='doruk'||!Number.isSafeInteger(options.season)||options.season<1||options.season>999999)return false;
+   if(!admin()||!match||match.practiceMode||options?.leagueId!=='doruk'||!Number.isSafeInteger(options.season)||options.season<1||options.season>999999)return false;
    if(typeof options.clearPending!=='boolean'||typeof options.clearHistory!=='boolean')return false;
    if(!Number.isSafeInteger(options.expectedSeason)||typeof options.resetToken!=='string')return false;
    if(options.clearPending)for(const team of [...manualBursts.keys()])flushManualBurst(team);
@@ -1409,7 +1436,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
     }
     let burst=manualBursts.get(team);
     if(burst&&burst.count+n>50){flushManualBurst(team);burst=null;}
-    if(!burst){burst={count:0,resolvers:[],timer:null};manualBursts.set(team,burst);}
+    if(!burst){burst={count:0,resolvers:[],timer:null,practice:!!match.practiceMode,modeToken:match.modeToken||''};manualBursts.set(team,burst);}
     burst.count+=n;
     clearTimeout(burst.timer);burst.timer=setTimeout(()=>flushManualBurst(team),25);
     return true;

@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="aifootball-release" content="20261021-v299-season-match-history">
+<meta name="aifootball-release" content="20261021-v302-practice-live-reset">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src https://xozzbaguihyhruloiqjm.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Doruk Arenası - Lig Tablosu</title>
@@ -269,6 +269,8 @@ h2{font-size:clamp(22px,3.2vw,27px)!important}
 <button type="button" class="leagueChoice" data-name="Dünya Kubbesi">Dünya Kubbesi</button>
 </nav>
 <div id="leagueInfo" role="status" class="note" style="margin:0 0 16px">Şu anda Doruk Arenası aktif. Diğer ligler ileride açılacak.</div>
+<p id="emptyArena" class="panel note" role="status" hidden>Veri yok. Bu arena henüz hazırlanmadı.</p>
+<div id="leagueArenaData">
 <section class="summary" aria-label="Lig bilgileri">
 <div class="stat"><span>SEZON</span><strong id="season">1</strong></div>
 <div class="stat"><span>OYNANAN MAÇ</span><strong id="rounds">0 / 20</strong></div>
@@ -281,6 +283,7 @@ h2{font-size:clamp(22px,3.2vw,27px)!important}
 <p class="note">O: Oynanan, G: Galibiyet, B: Beraberlik, M: Mağlubiyet. Tek lider 3 puan; birincilikte eşitlik 1 puan. 5 galibiyette 1 yıldız, sezon şampiyonluğunda 1 kupa kazanılır. Bağlantı kesintisinden dolayı iptal edilen maçlara puan verilmez.</p></section>
 <section class="panel"><h2>Maç Sonuçları ve Puanlar</h2><div id="history" class="history"><div class="note">Henüz tamamlanan maç yok.</div></div></section>
 <section class="panel"><h2>Önceki Sezonlar</h2><div id="archive" class="history"><div class="note">Henüz tamamlanan sezon yok.</div></div></section>
+</div>
 <p class="note">Bu sayfa yaklaşık her 10 saniyede bir yenilenir. Yayın görüntüsündeki lig düğmesi TikTok içinden tıklanamaz; bağlantıyı tarayıcıda açabilirsiniz.</p>
 </main>
 <script src="./league-ledger-v299.js?v=299"></script>
@@ -391,13 +394,12 @@ async function refresh(){
   console.warn('League refresh',error.message);
  }finally{clearTimeout(timeout);working=false;}
 }
-for(const button of document.querySelectorAll('.leagueChoice'))button.addEventListener('click',()=>{
+for(const button of document.querySelectorAll('.leagues .leagueChoice'))button.addEventListener('click',()=>{
  for(const item of document.querySelectorAll('.leagueChoice')){
   item.classList.toggle('selected',item===button);
   if(item===button)item.setAttribute('aria-current','true');else item.removeAttribute('aria-current');
  }
- id('leagueInfo').textContent=button.dataset.name==='Doruk Arenası'?'Doruk Arenası aktif. Aşağıda canlı lig tablosu bulunuyor.':
-  button.dataset.name+' henüz başlamadı. Aşağıdaki tablo aktif Doruk Arenası’na aittir.';
+ const ready=button.dataset.name==='Doruk Arenası';id('leagueArenaData').hidden=!ready;id('emptyArena').hidden=ready;id('leagueInfo').textContent=ready?'Doruk Arenası aktif. Aşağıda canlı lig tablosu bulunuyor.':button.dataset.name+' • Veri yok. Bu arena henüz hazırlanmadı.';
 });
 refresh();setInterval(refresh,10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
 })();

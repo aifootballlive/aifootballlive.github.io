@@ -1,0 +1,13 @@
+# Practice and live-only official records
+
+The stuck stop/reconnect path was caused by an already-scored, native-frame-proven goal whose return-walk tail had not finished. The client retired that cue while the server still counted it as unplayed. A narrowly checked private goal-proof helper now permits retirement of exactly that scored cue, retaining existing full-video completion requirements for ordinary shots. Real unplayed jobs still cannot disappear. The SQL regression verifies the scored-goal stop, rejects a missing goal proof and unrelated paid-job removal, and checks practice isolation. No public write grants or RLS policies changed.
+
+Practice mode stores the real queue separately, uses its own current scores and test jobs, never writes league results or match reports, and restores the untouched real queue on exit. Actual TikTok gifts and earned personal-like bonuses arriving during practice go to the saved real queue. Manual test requests carry a mode generation so a delayed button burst cannot enter the real queue after exit. Both modes use the same native video/proof engine.
+
+Live-mode official results require actual local-relay LIVE event evidence. A manually opened statistics record alone does not verify a broadcast. Unconfirmed live mode cannot spend queued gift shots; native LIVE evidence enables the official match flag. Practice and unconfirmed results never enter standings/history/reports. LIVE aggregate counts continue to be captured automatically when their events are available; unavailable TikTok payout/end-summary fields remain unknown without optional manual input.
+
+Unimplemented arenas now show an empty-state message and hide Doruk standings until Doruk is selected again.
+
+At the user's explicit request, the shared production league/match data was reset atomically to season 1, match 1/20, all scores and queues zero, manual waiting state; archives, cups, match reports and old legacy match events/queues were cleared. Configuration, owner authentication/device settings and replay-suppression receipts were retained. Real LIVE aggregate records were retained. The one-time reset script is in ops/restart-season-one-v302.sql. Do not rerun it without a new explicit reset request. The minimum client build is 302.
+
+Verified against production: reset state, zero historical counts and queues, scored-goal/private queue SQL tests, security advisor (only the previously known leaked-password-protection warning). Local unit and mobile/desktop browser tests cover a real practice goal clip, no recorded result, real queue restoration, late test-request isolation, mode authorization, real LIVE confirmation, read-only empty arenas, admin categories, existing paid-shot handoff and season/report/fast-video regressions.
