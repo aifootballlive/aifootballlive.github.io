@@ -1,14 +1,18 @@
-const vm=require('vm'),fs=require('fs'),assert=require('assert/strict');let now=10000000;
-let clock={round:1,startedAt:null},phase={waiting:true},busy=false;const calls=[],timers=[];
-const settings={aiSpeechEnabled:true,soundEnabled:true};
-const sandbox={console,Date:{now:()=>now},setInterval:fn=>timers.push(fn),setTimeout:()=>{},document:{hidden:false,visibilityState:'visible',getElementById:()=>null},window:{__AI_FOOTBALL_SETTINGS:settings,AIFootballTikTok:{getMatchClock:()=>clock,getMatchState:()=>phase,getPendingQueue:()=>({A:0,B:0,C:0,D:0}),getStatus:()=>({}),getTimings:()=>({normalMinutes:3,overtimeMinutes:0,language:'tr'}),getCurrentCue:()=>null},AIFootballAudio:{enabled:true,get announcing(){return busy;},announce:async(line,key)=>{calls.push({line,key});return true;}}}};
-vm.runInNewContext(fs.readFileSync(require.resolve('../round-finale-v205.js'),'utf8'),sandbox);
-const tick=timers[1],count=()=>calls.filter(c=>c.key==='liveGifts').length;
-tick();now+=15000;tick();assert.equal(count(),0,'no live-match explanation before kickoff');
-clock={round:1,startedAt:now};phase={running:true};tick();now+=13000;tick();assert.equal(count(),1);assert(calls.at(-1).line.includes('Maç devam ederken de şut hediyesi gönderebilirsiniz'));
-tick();assert.equal(count(),1,'do not repeat immediately');
-now+=61000;busy=true;tick();assert.equal(count(),1,'do not interrupt a current announcement');busy=false;tick();assert.equal(count(),2);
-settings.aiSpeechEnabled=false;now+=61000;tick();assert.equal(count(),2,'respect announcer setting');settings.aiSpeechEnabled=true;
-now=clock.startedAt+155000;tick();assert.equal(count(),2,'last thirty seconds are reserved for final calls');
-phase={results:true,running:false};tick();assert.equal(count(),2,'no in-match explanation during results');
-console.log('PASS: explicitly explains gifts during play, running-only, once per minute, respects busy/mute and final thirty seconds');
+const vm=require('vm'),fs=require('fs'),assert=require('assert/strict');
+const retired=['support2','support3','waiting2','waiting4','empty1','empty2','empty3','queued1','queued2','liveGifts'];
+for(const language of ['tr','en']){
+ let now=10000000,clock={round:1,startedAt:null},phase={waiting:true},queues={A:0,B:0,C:0,D:0},busy=false;const calls=[],timers=[];
+ const settings={aiSpeechEnabled:true,soundEnabled:true};
+ const sandbox={console,Date:{now:()=>now},setInterval:fn=>timers.push(fn),setTimeout(){},document:{hidden:true,getElementById:()=>null},window:{__AI_FOOTBALL_SETTINGS:settings,AIFootballTikTok:{getMatchClock:()=>clock,getMatchState:()=>phase,getPendingQueue:()=>queues,getStatus:()=>({}),getTimings:()=>({normalMinutes:25,overtimeMinutes:0,language}),getCurrentCue:()=>null},AIFootballAudio:{enabled:true,get announcing(){return busy;},announce:async(line,key)=>{calls.push({line,key});return true;}}}};
+ vm.runInNewContext(fs.readFileSync(require.resolve('../round-finale-v205.js'),'utf8'),sandbox);
+ const [pre,live]=timers;pre();live();for(let i=0;i<150;i++){now+=1000;pre();live();}assert.equal(calls.length,0,'empty waiting queue never invites gifts');
+ queues.A=2;now+=15000;pre();live();assert(calls.length>0);assert(calls.some(c=>c.key==='queueInfo'||language==='en'&&c.line.includes('added')));const n=calls.length;live();assert.equal(calls.length,n,'no duplicate receipt');
+ clock={round:2,startedAt:now};phase={running:true};live();const before=calls.length;for(let i=0;i<90;i++){now+=1000;live();}assert.equal(calls.length,before,'no scheduled live-match requests or queue growth appeals');
+ queues.B=5;now+=15000;live();assert.equal(calls.length,before+1);assert.equal(calls.at(-1).key,language==='tr'?'queueInfo':null);
+ settings.aiSpeechEnabled=false;queues.C=5;now+=15000;live();assert.equal(calls.length,before+1);settings.aiSpeechEnabled=true;busy=true;queues.D=5;now+=15000;live();assert.equal(calls.length,before+1);busy=false;
+ phase={results:true};queues.A=9;now+=15000;live();assert.equal(calls.length,before+1);
+ assert(calls.every(c=>!retired.includes(c.key)));assert(calls.every(c=>!/gönder|hediyenizle|desteğinizi|send.*gift|support your team/i.test(c.line)));
+}
+const audio=fs.readFileSync(require.resolve('../stadium-audio-v219.js'),'utf8'),start=audio.indexOf('async function announce('),end=audio.indexOf('\nfunction applause()',start);let played=0,stopped=0;
+const c={retiredGiftSpeechKeys:new Set(retired),enabled:true,userMuted:false,settings:{soundEnabled:true,aiSpeechEnabled:true},speechSources:new Set(),speechPending:false,speechGeneration:0,window:{},stopAnnouncements(){stopped++;},leagueClip:async()=>{played++;return true;}};vm.createContext(c);vm.runInContext(audio.slice(start,end),c);
+(async()=>{for(const key of retired)assert.equal(await c.announce('Retired invitation',key),false);assert.equal(played,0);assert.equal(stopped,0);assert.equal(await c.announce('Gelen şutlar sıraya alınır ve oynatılır.','queueInfo'),true);assert.equal(played,1);assert.equal(await c.announce('Gol!','goal1'),true);console.log('PASS: no gift requests before/during/after match in TR/EN; neutral queue notices remain; empty queue stays quiet; mute/busy respected; retired audio blocked centrally before fetch/play/fallback; goal commentary retained.');})().catch(e=>{console.error(e);process.exitCode=1;});

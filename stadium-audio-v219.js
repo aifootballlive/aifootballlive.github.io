@@ -296,11 +296,14 @@ function boot(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 const leagueAudioCache=new Map(),leagueAudioSources=new Set(),speechSources=new Set();let leagueAudioGeneration=0,speechGeneration=0,speechPending=false,lastSpeechKey=null;
-const extraSpeechKeys=new Set(['support1','support2','support3','final30a','final30b','final30c','atmosphere1','atmosphere2','waiting1','waiting2','waiting3','waiting4','prepare15','prepare5','final300','final120','final60','final20','final10','final5','empty1','empty2','empty3','queued1','queued2','liveGifts']);
+// Retired solicitation clips must never play, even through an outdated caller.
+const retiredGiftSpeechKeys=new Set(['support2','support3','waiting2','waiting4','empty1','empty2','empty3','queued1','queued2','liveGifts']);
+const extraSpeechKeys=new Set(['support1','final30a','final30b','final30c','atmosphere1','atmosphere2','waiting1','waiting3','prepare15','prepare5','final300','final120','final60','final20','final10','final5','queueInfo']);
 const speechKeys=new Set(['prepare','kickoff','shot1','shot2','goal1','goal2','save','league']);
 function stopAnnouncements(){speechGeneration++;speechPending=false;for(const source of speechSources){try{source.stop();}catch{}}speechSources.clear();try{window.speechSynthesis?.cancel();}catch{}}
 function loadLeagueClip(key){
- if(!leagueAudioCache.has(key)){const folder=key==='applause'?'league-v193':'commentary-v253';const pending=fetch('./assets/audio/'+folder+'/'+key+'.mp3?v=259').then(r=>{if(!r.ok)throw Error('Announcement unavailable');return r.arrayBuffer();}).then(b=>ctx.decodeAudioData(b));leagueAudioCache.set(key,pending);pending.catch(()=>leagueAudioCache.delete(key));}
+ if(retiredGiftSpeechKeys.has(key))return Promise.reject(Error('Gift solicitation audio retired'));
+ if(!leagueAudioCache.has(key)){const folder=key==='applause'?'league-v193':key==='queueInfo'?'commentary-v286':'commentary-v253';const pending=fetch('./assets/audio/'+folder+'/'+key+'.mp3?v=259').then(r=>{if(!r.ok)throw Error('Announcement unavailable');return r.arrayBuffer();}).then(b=>ctx.decodeAudioData(b));leagueAudioCache.set(key,pending);pending.catch(()=>leagueAudioCache.delete(key));}
  return leagueAudioCache.get(key);
 }
 let speechWarmed=false;
@@ -322,6 +325,7 @@ async function leagueClip(key,group='goal',volume=1,speech=false){
  }catch(error){console.warn('League announcement unavailable',error);return false;}
 }
 async function announce(text,key,options={}){
+ if(retiredGiftSpeechKeys.has(key))return false;
  if(!enabled||userMuted||!settings.soundEnabled||settings.aiSpeechEnabled===false)return false;
  if(options.important===false&&(speechSources.size||speechPending||window.speechSynthesis?.speaking))return false;
  stopAnnouncements();const ticket=speechGeneration;speechPending=true;
