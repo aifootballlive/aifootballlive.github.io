@@ -308,13 +308,13 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  const inbox=new Map(),played=new Set(),timers=new Map(),clone=v=>JSON.parse(JSON.stringify(v));
  const videoAckInFlight=new Set();
  let lastGiftNoticeCount=null;const seenTeamNotices=new Map();const giftNoticeTimers=new Map(),giftNoticeKeys=new Map();
- function showQueuedGiftNotice(id,team){
-  if(!TEAMS.includes(team)||match?.practiceMode)return;
+ function showQueuedGiftNotice(id,team,savedForLive=false){
+  if(!TEAMS.includes(team))return;
   if(id&&giftNoticeKeys.get(team)===id)return;
-  giftNoticeKeys.set(team,id);
   let node=document.getElementById('pendingGiftNotice'+team);
   if(!node){const card=document.querySelector('.broadcastControls>.team'+team);if(!card)return;node=document.createElement('div');node.id='pendingGiftNotice'+team;node.className='teamGiftNotice';node.setAttribute('role','status');node.setAttribute('aria-live','polite');card.append(node);}
-  node.textContent=matchRunning(match)?'Şut eklendi! Sırayla oynanacak.':'Şutlar maç başlayınca otomatik başlayacaktır.';
+  giftNoticeKeys.set(team,id);
+  node.textContent=savedForLive?'Şut canlı maç için sıraya eklendi.':matchRunning(match)?'Şut eklendi! Sırayla oynanacak.':'Şutlar maç başlayınca otomatik başlayacaktır.';
   node.hidden=false;
   clearTimeout(giftNoticeTimers.get(team));
   giftNoticeTimers.set(team,setTimeout(()=>{node.hidden=true;window.dispatchEvent(new Event('resize'));},3000));
@@ -322,10 +322,10 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  }
  function detectStoredGiftNotice(){
   if(!match)return;
-  for(const [team,notice]of Object.entries(match.giftNotices||{}))if(notice?.id&&seenTeamNotices.get(team)!==notice.id){seenTeamNotices.set(team,notice.id);if(matchNow()-notice.at<3000)showQueuedGiftNotice(notice.id,team);}
+  for(const [team,notice]of Object.entries(match.giftNotices||{}))if(notice?.id&&seenTeamNotices.get(team)!==notice.id){seenTeamNotices.set(team,notice.id);if(matchNow()-notice.at<3000)showQueuedGiftNotice(notice.id,team,!!notice.savedForLive);}
   const n=Math.max(0,Number(match.accepted)||0);
   if(lastGiftNoticeCount!==null&&n>lastGiftNoticeCount)
-   showQueuedGiftNotice(match.lastGift?.id||String(n),match.lastGift?.team);
+   showQueuedGiftNotice(match.lastGift?.id||String(n),match.lastGift?.team,!!match.practiceMode);
   lastGiftNoticeCount=n;
  }
  function acknowledgeVideoStart(payload){
@@ -742,8 +742,8 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   try{const requests=[...pendingRequests.values()].map(r=>r.payload).filter(validRequest).slice(0,80);
    if(!requests.length)return;
    // Supabase's authenticated write/RLS path also works from a non-leader admin phone.
-   await change(m=>{m.commandReceipts||=[];const seen=new Set(m.commandReceipts);let added=false;for(const p of requests){if(seen.has(p.id))continue;seen.add(p.id);m.commandReceipts.push(p.id);added=true;if(Number(p.sentAt||0)<=Number(m.queueClearAt?.[p.team]||0))continue;if(p.practice&&(!m.practiceMode||(p.modeToken||'')!==(m.modeToken||'')))continue;(m.practiceMode&&!p.practice?(m.savedLiveJobs||=[]):m.jobs).push({id:'button:'+p.id,team:p.team,count:p.count,nextIndex:0});m.giftNotices||={};m.giftNotices[p.team]={id:p.id,at:matchNow()};added=true;}if(!added)return false;m.lastShotQueuedAt=matchNow();primeQueuedShots(m,matchNow());m.commandReceipts=m.commandReceipts.slice(-4000);},false);
-   for(const p of requests)if(match.commandReceipts?.includes(p.id)&&!matchRunning(match))showQueuedGiftNotice(p.id,p.team);
+   await change(m=>{m.commandReceipts||=[];const seen=new Set(m.commandReceipts);let added=false;for(const p of requests){if(seen.has(p.id))continue;seen.add(p.id);m.commandReceipts.push(p.id);added=true;if(Number(p.sentAt||0)<=Number(m.queueClearAt?.[p.team]||0))continue;if(p.practice&&(!m.practiceMode||(p.modeToken||'')!==(m.modeToken||'')))continue;(m.practiceMode&&!p.practice?(m.savedLiveJobs||=[]):m.jobs).push({id:'button:'+p.id,team:p.team,count:p.count,nextIndex:0});m.giftNotices||={};m.giftNotices[p.team]={id:p.id,at:matchNow(),savedForLive:!!(m.practiceMode&&!p.practice)};added=true;}if(!added)return false;m.lastShotQueuedAt=matchNow();primeQueuedShots(m,matchNow());m.commandReceipts=m.commandReceipts.slice(-4000);},false);
+   for(const p of requests)if(match.commandReceipts?.includes(p.id)&&!matchRunning(match))showQueuedGiftNotice(p.id,p.team,!!(match.practiceMode&&!p.practice));
    acknowledgeRequests();
   }finally{sendingRequests=false;}
  }
@@ -855,7 +855,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   if(match?.receipts.includes(key))return false;
   inbox.set(key,{team:selected.team,count,coins:selected.coins,units:repeats,name:String(name||giftId),receivedAt:matchNow()});
   saveGiftInbox();
-  if(!matchRunning(match)&&!match?.practiceMode)showQueuedGiftNotice(key,selected.team);
+  showQueuedGiftNotice(key,selected.team,!!match?.practiceMode);
   // Update the team's pending-shot number immediately without starting any clip.
   restore();
   return true;
@@ -873,7 +873,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
      seen.add(key);m.receipts.push(key);changed=true;
      if(Number(g.receivedAt||0)<=Number(m.queueClearAt?.[g.team]||0))continue;
      m.accepted++;window.AIFootballMatchReports?.gift(m,g,matchNow());
-     m.lastGift={id:key,team:g.team,count:g.count,name:g.name};m.giftNotices||={};m.giftNotices[g.team]={id:key,at:matchNow()};
+     m.lastGift={id:key,team:g.team,count:g.count,name:g.name};m.giftNotices||={};m.giftNotices[g.team]={id:key,at:matchNow(),savedForLive:!!m.practiceMode};
      (m.practiceMode?(m.savedLiveJobs||=[]):m.jobs).push({id:key,team:g.team,count:g.count,nextIndex:0});
      changed=true;
     }

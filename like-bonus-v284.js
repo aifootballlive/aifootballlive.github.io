@@ -45,7 +45,7 @@
   if(rounds){
    m.jobs||=[];m.giftNotices||={};
    const stamp='likes:'+now+':'+b.awarded;
-   for(const team of TEAMS){(m.practiceMode?(m.savedLiveJobs||=[]):m.jobs).push({id:stamp+':'+team,team,count:rounds,nextIndex:0});m.giftNotices[team]={id:stamp+':'+team,at:now};}
+   for(const team of TEAMS){(m.practiceMode?(m.savedLiveJobs||=[]):m.jobs).push({id:stamp+':'+team,team,count:rounds,nextIndex:0});m.giftNotices[team]={id:stamp+':'+team,at:now,savedForLive:!!m.practiceMode};}
    m.lastShotQueuedAt=now;b.lastAwardAt=now;
   }
   return {changed,rounds};
