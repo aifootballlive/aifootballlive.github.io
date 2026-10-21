@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=300,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=301,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // One catalog drives both the visible gift buttons and received TikTok events.
@@ -1248,14 +1248,31 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   getSeasonControl(){
    if(!admin()||!match)return null;
    return {leagues:[{id:'doruk',name:timingFor(match).arenaName}],season:Number(match.league?.season)||1,
-    matchNumber:Number(match.clock?.matchNumber)||(Number(match.league?.completedRounds)||0)+1,selectionToken:match.matchSelection?.id||'',seasons:Object.keys(window.AIFootballLeagueLedger?.catalogs(match)||{}).map(Number).sort((a,b)=>a-b),resetToken:match.seasonReset?.id||'',pending:pendingShotCounts(match),complete:seasonComplete(match),extraRounds:Number(match.league?.extraRounds)||0,
+    clockToken:JSON.stringify([match.clock?.round||0,match.clock?.startedAt??null,match.clock?.finishedAt??null]),matchNumber:Number(match.clock?.matchNumber)||(Number(match.league?.completedRounds)||0)+1,selectionToken:match.matchSelection?.id||'',seasons:Object.keys(window.AIFootballLeagueLedger?.catalogs(match)||{}).map(Number).sort((a,b)=>a-b),resetToken:match.seasonReset?.id||'',pending:pendingShotCounts(match),complete:seasonComplete(match),extraRounds:Number(match.league?.extraRounds)||0,
     running:matchRunning(match)||matchStarting(match)};
   },
   async selectMatch(options){
    if(!admin()||!match||!window.AIFootballLeagueLedger||options?.leagueId!=='doruk')return false;
    if(!Number.isSafeInteger(options.season)||options.season<1||options.season>999999||!Number.isSafeInteger(options.matchNumber)||options.matchNumber<1||options.matchNumber>9999)return false;
    if(!Number.isSafeInteger(options.expectedSeason)||typeof options.resetToken!=='string'||typeof options.selectionToken!=='string')return false;
+   const token=m=>JSON.stringify([m.clock?.round||0,m.clock?.startedAt??null,m.clock?.finishedAt??null]);
+   const identityMatches=m=>Number(m.league?.season||1)===options.expectedSeason&&(m.seasonReset?.id||'')===options.resetToken&&(m.matchSelection?.id||'')===options.selectionToken;
+   let stoppedClock=null;
+   if(options.stopCurrent===true){
+    if(typeof options.clockToken!=='string')return false;
+    const stopped=await change(m=>{
+     if(!identityMatches(m)||token(m)!==options.clockToken||!matchRunning(m)&&!matchStarting(m))return false;
+     const existing=window.AIFootballLeagueLedger.catalogs(m)[options.season];
+     if(existing&&options.matchNumber<=Number(window.AIFootballLeagueLedger.normalize(clone(existing)).historyBase?.completedRounds||0))return false;
+     m.autoContinuationPaused=true;
+     if(matchStarting(m)){returnUnplayedCues(m);m.clock={...m.clock,startedAt:null,countdownStartedAt:null,manualStarted:false,autoStarted:false,finishedAt:null,summaryUntil:null};}
+     else closeRound(m,matchNow());
+     stoppedClock=token(m);
+    },false);
+    if(!stopped)return false;
+   }
    const saved=await change(m=>{
+    if((stoppedClock||options.clockToken)&&token(m)!==(stoppedClock||options.clockToken))return false;
     if(matchRunning(m)||matchStarting(m)||m.cue&&!m.cue.finishedAt&&hasVideoProof(m,m.cue))return false;
     if(Number(m.league?.season||1)!==options.expectedSeason||(m.seasonReset?.id||'')!==options.resetToken||(m.matchSelection?.id||'')!==options.selectionToken)return false;
     const now=matchNow(),all=window.AIFootballLeagueLedger.catalogs(m),trophies=clone(m.league?.trophies||{});
