@@ -24,6 +24,7 @@ const shotCalls=new Set();let shotVariant=0,goalVariant=0;
 function trimShots(){if(shotCalls.size>256)shotCalls.delete(shotCalls.values().next().value);}
 function currentLanguage(){return window.AIFootballTikTok?.getTimings?.()?.language==='en'?'en':'tr';}
 function speak(text,important=true,key=null){
+ if(window.AIFootballHostSpeech?.speaking)return;
  if(key&&currentLanguage()==='tr'&&window.AIFootballAudio?.announce){window.AIFootballAudio.announce(text,key,{important});return;}
  if(!important&&window.AIFootballAudio?.announcing)return;
  if(!isBroadcastController()||!('speechSynthesis' in window))return;

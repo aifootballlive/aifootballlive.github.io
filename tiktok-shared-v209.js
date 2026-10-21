@@ -1166,6 +1166,17 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   setInterval(showMatchClock,200);showMatchClock();legend();read().then(ensureChannel).catch(e=>console.warn(e.message));tick();
  }
  window.AIFootballTikTok={get active(){return true;},get connected(){return connected;},getStatus(){return {clientBuild:CLIENT_BUILD,updateRequired:needsRefresh(),autoMatches:autoMatchEnabled(match),guestTrialEnabled:match?.guestTrialEnabled===true,manualMatchStart:!autoMatchEnabled(match),active:true,connected,shared:!!match,leader:owns(),revision:match?.revision,accepted:match?.accepted||0,lastGift:match?.lastGift||null,lastShotQueuedAt:match?.lastShotQueuedAt||0,pending:Object.values(pendingShotCounts(match)).reduce((a,b)=>a+b,0),waitingRequests:pendingRequests.size,channelReady,adminAvailable:!!match?.lease&&match.lease.until>matchNow(),lastError:errorText};},getClock(){return match?{epoch:match.idleEpoch}:null;},getTimings(){return timingFor(match);},
+  getHostAnnouncement(){return admin()&&match?.hostAnnouncement?clone(match.hostAnnouncement):null;},
+  async sendHostAnnouncement(text){
+   if(!admin()||typeof text!=='string')return false;text=text.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').trim();if(!text||text.length>500)return false;
+   return change(m=>{const previous=m.hostAnnouncement,now=matchNow();if(previous&&['pending','playing'].includes(previous.status)&&now<previous.expiresAt)return false;m.hostAnnouncement={id:crypto.randomUUID(),text,at:now,expiresAt:now+90000,status:'pending'};},false);
+  },
+  async claimHostAnnouncement(id){
+   if(!owns())return null;const saved=await change(m=>{const a=m.hostAnnouncement;if(!owns(m)||a?.id!==id||a.status!=='pending'||matchNow()>=a.expiresAt)return false;a.status='playing';a.playbackOwner=owner;a.startedAt=matchNow();},false);
+   return saved&&match?.hostAnnouncement?.id===id&&match.hostAnnouncement.playbackOwner===owner?clone(match.hostAnnouncement):null;
+  },
+  async finishHostAnnouncement(id,error=false){if(!admin())return false;return change(m=>{const a=m.hostAnnouncement;if(a?.id!==id||a.status!=='playing'||a.playbackOwner!==owner)return false;a.status=error?'error':'finished';a.finishedAt=matchNow();},false);},
+  async cancelHostAnnouncement(){if(!admin())return false;return change(m=>{const a=m.hostAnnouncement;if(!a||!['pending','playing'].includes(a.status))return false;a.status='cancelled';a.finishedAt=matchNow();},false);},
   getLiveReports(){return admin()?window.AIFootballLiveMetrics?.view(match)||{sessions:[]}:null;},
   async startLiveReport(){if(!admin()||!match)return false;return change(m=>{window.AIFootballLiveMetrics.create(m,matchNow(),bridgeRoomId);},false);},
   async endLiveReport(id){if(!admin()||!match||typeof id!=='string')return false;return change(m=>{const s=m.liveReports?.sessions?.find(s=>s.id===id);if(!s||s.status!=='live')return false;window.AIFootballLiveMetrics.end(s,matchNow());},false);},

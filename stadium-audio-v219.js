@@ -300,7 +300,7 @@ const leagueAudioCache=new Map(),leagueAudioSources=new Set(),speechSources=new 
 const retiredGiftSpeechKeys=new Set(['support2','support3','waiting2','waiting4','empty1','empty2','empty3','queued1','queued2','liveGifts']);
 const extraSpeechKeys=new Set(['support1','final30a','final30b','final30c','atmosphere1','atmosphere2','waiting1','waiting3','prepare15','prepare5','final300','final120','final60','final20','final10','final5','queueInfo']);
 const speechKeys=new Set(['idle1','idle2','idle3','idle4','prepare','kickoff','shot1','shot2','goal1','goal2','save','league']);
-function stopAnnouncements(){speechGeneration++;speechPending=false;for(const source of speechSources){try{source.stop();}catch{}}speechSources.clear();try{window.speechSynthesis?.cancel();}catch{}}
+function stopAnnouncements(){window.AIFootballHostSpeech?.stop?.();speechGeneration++;speechPending=false;for(const source of speechSources){try{source.stop();}catch{}}speechSources.clear();try{window.speechSynthesis?.cancel();}catch{}}
 function loadLeagueClip(key){
  if(retiredGiftSpeechKeys.has(key))return Promise.reject(Error('Gift solicitation audio retired'));
  if(!leagueAudioCache.has(key)){const folder=/^idle[1-4]$/.test(key)?'commentary-v304':key==='applause'?'league-v193':key==='queueInfo'?'commentary-v286':'commentary-v253';const pending=fetch('./assets/audio/'+folder+'/'+key+'.mp3?v=259').then(r=>{if(!r.ok)throw Error('Announcement unavailable');return r.arrayBuffer();}).then(b=>ctx.decodeAudioData(b));leagueAudioCache.set(key,pending);pending.catch(()=>leagueAudioCache.delete(key));}
@@ -325,7 +325,7 @@ async function leagueClip(key,group='goal',volume=1,speech=false){
  }catch(error){console.warn('League announcement unavailable',error);return false;}
 }
 async function announce(text,key,options={}){
- if(retiredGiftSpeechKeys.has(key))return false;
+ if(retiredGiftSpeechKeys.has(key)||window.AIFootballHostSpeech?.speaking)return false;
  if(!enabled||userMuted||!settings.soundEnabled||settings.aiSpeechEnabled===false)return false;
  if(options.important===false&&(speechSources.size||speechPending||window.speechSynthesis?.speaking))return false;
  stopAnnouncements();const ticket=speechGeneration;speechPending=true;
