@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261021-v307-remember-settings">
+<meta name="aifootball-release" content="20261022-v308-like-bonus-card">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script>if(new URLSearchParams(location.search).get('studio')==='tiktok1080')document.documentElement.classList.add('aflTikTokPortraitSource');</script>
 <title>AI Football Live</title>
@@ -2009,6 +2009,8 @@ body:not(.drawerMode):not(.settingsMode)>.wrap.adminView>.head>.headRight{positi
 }
 
 
+#broadcastViewport #leagueProfileHint[data-like-bonus="true"]{background:#103c32!important;color:#fff5b8!important;border-color:#f3cf68!important;box-shadow:0 0 10px #d5b14a55;pointer-events:none!important;white-space:nowrap;font-size:clamp(9px,2.45cqw,13px)!important}
+
 /* Compact broadcast HUD stays above the goal crossbar. */
 #broadcastViewport>.broadcastControls{height:auto!important;min-height:0!important;bottom:auto!important;align-items:start!important}
 #broadcastViewport.adminView>.broadcastControls>.panel,#broadcastViewport:not(.adminView)>.broadcastControls>.panel{height:auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;gap:2px!important;padding:3px!important}
@@ -2318,8 +2320,8 @@ html.aflTikTokPortraitSource body:not(.drawerMode):not(.settingsMode) > .wrap{
 <script src="./league-ledger-v299.js?v=299"></script>
 <script src="./live-metrics-v300.js?v=302"></script>
 <script src="./match-reports-v292.js?v=302"></script>
-<script src="./like-bonus-v284.js?v=306"></script>
-<script src="./tiktok-shared-v209.js?v=307"></script>
+<script src="./like-bonus-v284.js?v=308"></script>
+<script src="./tiktok-shared-v209.js?v=308"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://xozzbaguihyhruloiqjm.supabase.co';
@@ -3090,7 +3092,7 @@ render();boot().finally(()=>window.dispatchEvent(new Event('afl-initial-state-re
 <script src="./update-watch-v2.js?v=2"></script>
 <script src="./interface-fixes-v230.js?v=270"></script>
 <link rel="stylesheet" href="./broadcast-text-v230.css"><script src="./broadcast-text-v230.js?v=284"></script>
-<script src="./broadcast-announcements-v283.js?v=306"></script>
+<script src="./broadcast-announcements-v283.js?v=308"></script>
 <script src="./season-control-v248.js?v=302"></script>
 <script src="./match-reports-ui-v292.js?v=300"></script>
 <script src="./live-metrics-ui-v300.js?v=300"></script>

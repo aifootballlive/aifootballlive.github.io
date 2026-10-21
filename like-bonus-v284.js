@@ -13,7 +13,7 @@
   const key=String(d.roomId??d.room_id??d.common?.roomId??room??'').slice(0,100)||'unknown-'+new Date(now).toISOString().slice(0,10);
   return {key,viewer,total,count:count??0,id,at:now};
  }
- function status(m){const b=m?.likeBonus||{},active=b.scope==='global';return {enabled:b.enabled!==false,threshold:threshold(m),scope:'global',viewers:Object.keys(b.viewers||{}).length,progress:active?Number(b.progress)||0:0,awarded:active?Number(b.awarded)||0:0,observed:active?Number(b.observed)||0:0};}
+ function status(m){const b=m?.likeBonus||{},active=b.scope==='global';return {enabled:b.enabled!==false,threshold:threshold(m),scope:'global',notice:active&&b.notice?{...b.notice}:null,viewers:Object.keys(b.viewers||{}).length,progress:active?Number(b.progress)||0:0,awarded:active?Number(b.awarded)||0:0,observed:active?Number(b.observed)||0:0};}
  function apply(m,batch,now){
   let changed=false,rounds=0;
   const b=m.likeBonus||={enabled:true,retired:[]};
@@ -50,6 +50,7 @@
   if(rounds){
    m.jobs||=[];m.giftNotices||={};
    const stamp='likes:'+now+':'+b.awarded;
+   b.notice={id:stamp,at:now,rounds,threshold:threshold(m),savedForLive:!!m.practiceMode};
    for(const team of TEAMS){(m.practiceMode?(m.savedLiveJobs||=[]):m.jobs).push({id:stamp+':'+team,team,count:rounds,nextIndex:0});m.giftNotices[team]={id:stamp+':'+team,at:now,savedForLive:!!m.practiceMode};}
    m.lastShotQueuedAt=now;b.lastAwardAt=now;
   }

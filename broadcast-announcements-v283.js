@@ -7,10 +7,16 @@
   clearTimeout(timer);
   const now=window.AIFootballTime?.now?.()??Date.now(),index=Math.floor(now/7000)%lines.length;
   const status=window.AIFootballTikTok?.getLikeBonusStatus?.(),threshold=status?.threshold||1000;
-  const text=status?.enabled===false?'BEĞENİ BONUSU KAPALI':index===0?'TOPLAM '+threshold+' BEĞENİ = HER TAKIMA +1 ŞUT':lines[index];
+  const bonus=status?.notice,age=now-Number(bonus?.at),fresh=!!bonus?.id&&age>=0&&age<2000;
+  node.dataset.likeBonus=String(fresh);
+  if(fresh){node.setAttribute('role','status');node.setAttribute('aria-live','polite');}
+  else{node.removeAttribute('role');node.removeAttribute('aria-live');}
+  const bonusText=fresh?((Number(bonus.threshold)||threshold)*(Number(bonus.rounds)||1))+' BEĞENİ BONUSU · HER TAKIMA +'+(Number(bonus.rounds)||1)+' ŞUT':'';
+  const text=fresh?bonusText:status?.enabled===false?'BEĞENİ BONUSU KAPALI':index===0?'TOPLAM '+threshold+' BEĞENİ = HER TAKIMA +1 ŞUT':lines[index];
   if(node.textContent!==text)node.textContent=text;
-  timer=setTimeout(render,Math.min(1000,Math.max(100,7000-now%7000+20)));
+  timer=setTimeout(render,fresh?Math.max(16,2000-age):Math.min(1000,Math.max(100,7000-now%7000+20)));
  }
+ window.addEventListener('afl-like-bonus',render);
  document.addEventListener('visibilitychange',render);
  window.AIFootballTime?.ready?.then(render).catch(()=>{});
  render();

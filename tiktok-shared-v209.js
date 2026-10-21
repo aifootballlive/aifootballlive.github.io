@@ -307,6 +307,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  const endedCues=new Set(),stagedStarts=new Map(),cueTimings=new Map();
  const inbox=new Map(),played=new Set(),timers=new Map(),clone=v=>JSON.parse(JSON.stringify(v));
  const videoAckInFlight=new Set();
+ let lastLikeNoticeId=null;
  let lastGiftNoticeCount=null;const seenTeamNotices=new Map();const giftNoticeTimers=new Map(),giftNoticeKeys=new Map();
  function showQueuedGiftNotice(id,team,savedForLive=false){
   if(!TEAMS.includes(team))return;
@@ -322,7 +323,9 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  }
  function detectStoredGiftNotice(){
   if(!match)return;
-  for(const [team,notice]of Object.entries(match.giftNotices||{}))if(notice?.id&&seenTeamNotices.get(team)!==notice.id){seenTeamNotices.set(team,notice.id);if(matchNow()-notice.at<3000)showQueuedGiftNotice(notice.id,team,!!notice.savedForLive);}
+  const bonus=match.likeBonus?.notice;
+  if(bonus?.id&&bonus.id!==lastLikeNoticeId){lastLikeNoticeId=bonus.id;window.dispatchEvent(new Event('afl-like-bonus'));}
+  for(const [team,notice]of Object.entries(match.giftNotices||{}))if(notice?.id&&seenTeamNotices.get(team)!==notice.id){seenTeamNotices.set(team,notice.id);if(!String(notice.id).startsWith('likes:')&&matchNow()-notice.at<3000)showQueuedGiftNotice(notice.id,team,!!notice.savedForLive);}
   const n=Math.max(0,Number(match.accepted)||0);
   if(lastGiftNoticeCount!==null&&n>lastGiftNoticeCount)
    showQueuedGiftNotice(match.lastGift?.id||String(n),match.lastGift?.team,!!match.practiceMode);
