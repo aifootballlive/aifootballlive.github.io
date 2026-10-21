@@ -1,6 +1,6 @@
 /* Like bonuses use authenticated game writes; this module only validates/mutates a draft. */
 (()=>{'use strict';
- const TEAMS=['A','B','C','D'],LIMIT=500;
+ const TEAMS=['A','B','C','D'],LIMIT=1000;
  const integer=(v,min=0)=>v!=null&&v!==''&&Number.isSafeInteger(Number(v))&&Number(v)>=min&&Number(v)<=1e12?Number(v):null;
  function parse(raw,room,now){
   if(String(raw?.event||raw?.type||'').toLowerCase()!=='like')return null;
@@ -48,11 +48,11 @@
  const overlay=document.getElementById('adminOverlay'),anchor=overlay?.querySelector('.adminSection');
  if(!anchor)return;
  const section=document.createElement('section');section.className='adminSection';section.id='likeBonusSettings';
- const title=document.createElement('div');title.className='adminSectionTitle';title.textContent='500 BEĞENİ BONUSU';
+ const title=document.createElement('div');title.className='adminSectionTitle';title.textContent='1000 BEĞENİ BONUSU';
  const info=document.createElement('p');info.className='giftToggleHelp';
  const toggle=document.createElement('button');toggle.type='button';toggle.className='adminBtn applyBtn';toggle.id='likeBonusToggle';
  const reset=document.createElement('button');reset.type='button';reset.className='adminBtn logoutBtn';reset.id='likeBonusReset';reset.textContent='BEĞENİ SAYACINI SIFIRLA';
- const help=document.createElement('p');help.className='giftToggleHelp';help.textContent='Her 500 yeni beğenide dört takıma birer şut eklenir. Sayacı sıfırlamak bekleyen şutları silmez.';
+ const help=document.createElement('p');help.className='giftToggleHelp';help.textContent='Her 1000 yeni beğenide dört takıma birer şut eklenir. Sayacı sıfırlamak bekleyen şutları silmez.';
  const actions=document.createElement('div');actions.className='adminActions';actions.append(toggle,reset);section.append(title,info,actions,help);anchor.after(section);
  function render(){const api=window.AIFootballTikTok,s=api?.getLikeBonusStatus?.();if(!s)return;const label='BEĞENİ BONUSU: '+(s.enabled?'AÇIK':'KAPALI'),text='SAYILAN BEĞENİ: '+s.observed+' · SONRAKİ ÖDÜL: '+(LIMIT-s.progress)+' BEĞENİ · VERİLEN BONUS: '+s.awarded;if(toggle.textContent!==label)toggle.textContent=label;if(info.textContent!==text)info.textContent=text;}
  toggle.addEventListener('click',async()=>{const api=window.AIFootballTikTok;if(!api)return;toggle.disabled=true;try{await api.setLikeBonusEnabled(!api.getLikeBonusStatus().enabled);}finally{toggle.disabled=false;render();}});
