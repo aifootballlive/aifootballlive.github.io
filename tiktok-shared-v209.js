@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=294,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=296,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // One catalog drives both the visible gift buttons and received TikTok events.
@@ -61,13 +61,14 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   m.cue=null;m.nextCue=null;
  }
  const goalMediaSeconds={A:3.4,B:3.8,C:4,D:3.35};
+ const cueGoalMoment=cue=>Number.isFinite(cue.goalMediaSeconds)?cue.goalMediaSeconds:goalMediaSeconds[cue.team];
  const localGoals=new Set(),goalAckInFlight=new Set();
  const goalKey=cue=>cue.id+':'+cue.startsAt;
  function hasGoalProof(m,cue){
   return cue?.result==='goal'&&cue.committed===true&&hasVideoProof(m,cue)&&
    cue.goalPlaybackOwner===cue.playbackOwner&&Number.isFinite(cue.goalAt)&&cue.goalAt>=cue.videoStartedAt&&
-   Number.isFinite(cue.goalMediaTime)&&cue.goalMediaTime>=goalMediaSeconds[cue.team]&&
-   Number.isFinite(cue.goalPlayedSeconds)&&cue.goalPlayedSeconds>=goalMediaSeconds[cue.team]-.35&&cue.goalElapsedMs>=goalMediaSeconds[cue.team]*1000-500;
+   Number.isFinite(cue.goalMediaTime)&&cue.goalMediaTime>=cueGoalMoment(cue)&&
+   Number.isFinite(cue.goalPlayedSeconds)&&cue.goalPlayedSeconds>=cueGoalMoment(cue)-.35&&cue.goalElapsedMs>=cueGoalMoment(cue)*1000-500;
  }
  function waitingForNextScores(m,now=matchNow()){const end=breakDeadlines(m);return !!end&&now>=end.summaryUntil;}
  function visibleScores(m){
@@ -82,13 +83,13 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   const cue=match?.cue;
   if(!payload||!matchRunning(match)||!cue||cue.result!=='goal'||cue.finishedAt||cue.id!==payload.cueId||
      cue.team!==payload.team||cue.startsAt!==payload.startsAt||payload.clockStartedAt!==match.clock.startedAt||
-     !Number.isFinite(payload.mediaTime)||payload.mediaTime<goalMediaSeconds[cue.team])return false;
+     !Number.isFinite(payload.mediaTime)||payload.mediaTime<cueGoalMoment(cue))return false;
   const key=goalKey(cue);
   if(!localGoals.has(key)){localGoals.add(key);if(localGoals.size>300)localGoals.delete(localGoals.values().next().value);lastPaintedMatch='';restore();}
   // Local spectators only align their visual score to their decoded frame.
   // Persistence requires the current authenticated playback owner and proof.
   if(!owns()||payload.playbackOwner!==owner||cue.playbackOwner!==owner||!hasVideoProof(match,cue)||hasGoalProof(match,cue)||goalAckInFlight.has(key)||
-     !Number.isFinite(payload.playedSeconds)||payload.playedSeconds<goalMediaSeconds[cue.team]-.35||!Number.isFinite(payload.elapsedMs)||payload.elapsedMs<goalMediaSeconds[cue.team]*1000-500)return true;
+     !Number.isFinite(payload.playedSeconds)||payload.playedSeconds<cueGoalMoment(cue)-.35||!Number.isFinite(payload.elapsedMs)||payload.elapsedMs<cueGoalMoment(cue)*1000-500)return true;
   goalAckInFlight.add(key);
   change(m=>{
    const target=m.cue;
@@ -625,7 +626,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
     timers.set(cue.id,setTimeout(start,200));return;
    }
    if(matchNow()>=cue.endsAt)return; // Never consume an expired slot.
-   const accepted=window.AIFootball3D.beginShot(cue.team,{startsAt:cue.videoStartedAt||cue.startsAt,playbackOwner:cue.playbackOwner,variation:cue.variation,result:cue.result,cueStartsAt:cue.startsAt,cueId:cue.id});
+   const accepted=window.AIFootball3D.beginShot(cue.team,{startsAt:cue.videoStartedAt||cue.startsAt,playbackOwner:cue.playbackOwner,variation:cue.variation,result:cue.result,playbackMode:cue.playbackMode,cueStartsAt:cue.startsAt,cueId:cue.id});
    if(accepted!==true){
     timers.set(cue.id,setTimeout(start,240));return;
    }
@@ -903,26 +904,28 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   }
   m.jobs=result;
  }
+ function fastModeFor(m,extra=0){const n=Object.values(pendingShotCounts(m)).reduce((a,b)=>a+b,0)+extra;return n>20?true:n<=10?false:!!m.fastShotMode;}
  function makeCue(m,j,startsAt){
+  m.fastShotMode=fastModeFor(m,1);const playbackMode=m.fastShotMode?'fast':'normal';
   const def=j.team,after={scores:{...m.scores,C:m.scores.C||0,D:m.scores.D||0},keeper:{...m.keeper,C:m.keeper.C??state.startKeeper,D:m.keeper.D??state.startKeeper}},goal=after.keeper[def]<=0;
   if(goal){after.scores[j.team]++;after.keeper[def]=Number(m.initialKeeper?.[def]??state.startKeepers?.[def]??10);}else after.keeper[def]=Math.max(0,after.keeper[def]-(Number(state.keeperCost)||10));
-  const timing=window.AIFootball3D?.getShotTiming?.(j.team,goal?'goal':'save')||{outcomeMs:1850,durationMs:14000};
-  return {playbackProtocol:204,playbackOwner:m.lease?.owner||owner,durationMs:timing.durationMs||14000,id:j.id,team:j.team,result:goal?'goal':'save',variation:m.shotSequence++,startsAt,outcomeAt:startsAt+(timing.outcomeMs||1850),endsAt:startsAt+(timing.durationMs||14000),after,committed:false,finishedAt:null};
+  const timing=window.AIFootball3D?.getShotTiming?.(j.team,goal?'goal':'save',playbackMode)||{outcomeMs:1850,durationMs:14000};
+  return {playbackMode,goalMediaSeconds:timing.goalSeconds??goalMediaSeconds[j.team],playbackProtocol:204,playbackOwner:m.lease?.owner||owner,durationMs:timing.durationMs||14000,id:j.id,team:j.team,result:goal?'goal':'save',variation:m.shotSequence++,startsAt,outcomeAt:startsAt+(timing.outcomeMs||1850),endsAt:startsAt+(timing.durationMs||14000),after,committed:false,finishedAt:null};
  }
- function reserveNext(m,job,startsAt){const projected=m.cue&&!m.cue.committed?{...m,scores:m.cue.after.scores,keeper:m.cue.after.keeper}:m;const cue=makeCue(projected,job,startsAt);m.shotSequence=projected.shotSequence;return cue;}
+ function reserveNext(m,job,startsAt){const projected=m.cue&&!m.cue.committed?{...m,scores:m.cue.after.scores,keeper:m.cue.after.keeper}:m;const cue=makeCue(projected,job,startsAt);m.shotSequence=projected.shotSequence;m.fastShotMode=projected.fastShotMode;return cue;}
  function prepareQueuedPreview(m){
   if(!m?.cue||m.cue.finishedAt||m.processingPaused||m.nextCue||!m.jobs?.length||window.AIFootball3D?.shotStatus?.cueId!==m.cue.id)return;
   // Read-only prediction: predecode the next clip without reserving or spending a gift.
-  const preview=clone(m),job=takeJob(preview,m.cue.team);if(!job)return;
+  const preview=clone(m);preview.cue=null;preview.nextCue=null;const job=takeJob(preview,m.cue.team);if(!job)return;
   const keeper=!m.cue.committed?m.cue.after.keeper:m.keeper;
-  window.AIFootball3D?.prepareUpcomingShot?.({id:'preview:'+job.id,team:job.team,result:Number(keeper[job.team])<=0?'goal':'save'});
+  window.AIFootball3D?.prepareUpcomingShot?.({id:'preview:'+job.id,team:job.team,playbackMode:fastModeFor(preview,1)?'fast':'normal',result:Number(keeper[job.team])<=0?'goal':'save'});
  }
  function prepareInitialPreview(m){
   if(!m||m.cue||m.nextCue||m.clock?.finishedAt||m.processingPaused||!hasPlayableJobs(m))return;
   const preview=clone(m),job=takeJob(preview,null);if(!job)return;
   // Preload/decode invisibly while waiting/counting down. Never reserve a gift,
   // start a shot or change its official start boundary before kickoff.
-  window.AIFootball3D?.prepareUpcomingShot?.({id:'first-preview:'+job.id,team:job.team,result:Number(m.keeper[job.team])<=0?'goal':'save'});
+  window.AIFootball3D?.prepareUpcomingShot?.({id:'first-preview:'+job.id,team:job.team,playbackMode:fastModeFor(preview,1)?'fast':'normal',result:Number(m.keeper[job.team])<=0?'goal':'save'});
  }
  // Queue acceptance and cue scheduling share one authenticated CAS write.
  function primeQueuedShots(m,now){

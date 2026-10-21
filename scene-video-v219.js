@@ -29,9 +29,9 @@ const clips={
  D:{save:'./assets/scene-v123/ts-save.mp4',goal:'./assets/scene-v140/ts-goal.mp4'}
 };
 for(const [team,outcomes]of Object.entries(clips))for(const result of Object.keys(outcomes)){const entry=mediaCache.manifest[team+'_'+result];if(entry?.src)outcomes[result]=entry.src;}
-const keyFor=(team,result)=>team+'_'+(result==='goal'?'goal':'save');
-const srcFor=key=>{const [team,result]=key.split('_');return clips[team]?.[result]||null;};
-const allKeys=Object.keys(clips).flatMap(team=>['save','goal'].map(result=>team+'_'+result));
+const keyFor=(team,result,mode)=>team+'_'+(result==='goal'?'goal':'save')+(mode==='fast'?'_fast':'');
+const srcFor=key=>mediaCache.manifest[key]?.src||null;
+const allKeys=Object.keys(mediaCache.manifest);
 const durationByKey=new Map(Object.entries(mediaCache.manifest).map(([key,entry])=>[key,entry.seconds]));
 const failedMetadata=new Set(),probes=[];
 let lastFrameAt=performance.now(),lastMediaTime=-1,lastRecovery=0,recoveryCount=0,reloading=false;
@@ -127,7 +127,7 @@ const goalMoments={A:3.4,B:3.8,C:4,D:3.35};
 const celebratedShots=new Set();
 function checkGoalMoment(v,time){
  if(!shot||v!==shotVideo||shot.result!=='goal'||!canRunShot()||v.style.opacity!=='1'||v.paused||v.seeking||v.readyState<2)return;
- const moment=goalMoments[shot.team];if(!Number.isFinite(moment)||time<moment)return;
+ const moment=mediaCache.manifest[shot.clipKey]?.goalSeconds??goalMoments[shot.team];if(!Number.isFinite(moment)||time<moment)return;
  window.AIFootballTikTok?.onShotGoal?.({playbackOwner:shot.playbackOwner,team:shot.team,cueId:shot.cueId,startsAt:shot.cueStartsAt,mediaTime:time,playedSeconds:provedPlaybackSeconds(shot,v,time,performance.now()),elapsedMs:performance.now()-(shot.visibleSince??performance.now()),clockStartedAt:window.AIFootballTikTok?.getMatchClock?.()?.startedAt});
  const key=shot.cueStartsAt??shot.syncStartedAt;
  if(celebratedShots.has(key))return;
@@ -187,7 +187,7 @@ function prepareUpcomingShot(cue){
  // Finish buffering the current original mobile clip before another full MP4
  // competes for bandwidth. The remaining playback time prebuffers the next.
  if(mediaCache.mobile&&shot&&shotVideo&&(shotVideo.style.opacity!=='1'||!Number.isFinite(shotVideo.duration)||!bufferedAt(shotVideo,shotVideo.currentTime,Math.max(0,shotVideo.duration-shotVideo.currentTime-.1)))){queuedPreparation=cue;return;}
- const key=keyFor(cue.team,cue.result),identity=cue.id+':'+key;
+ const key=keyFor(cue.team,cue.result,cue.playbackMode),identity=cue.id+':'+key;
  mediaCache.warm(key,{priority:100}).then(url=>{if(url&&warmedCueKey===identity){const spare=spareDeck();if(spare!==shotVideo&&spare.dataset.clipKey===key&&spare.style.opacity!=='1'&&spare.getAttribute('src')!==url){assignClip(spare,key,url);warmedCueKey=null;prepareUpcomingShot(cue);}}}).catch(()=>{});
  const spare=spareDeck();
  if(warmedCueKey===identity&&spare.dataset.clipKey===key)return;
@@ -314,7 +314,7 @@ function beginShot(team,options={}){
  holdingForQueue=false;
  const old=shotVideo;
  const target=spareDeck();
- const key=keyFor(team,options.result);
+ const key=keyFor(team,options.result,options.playbackMode);
  releaseWaitingDownload();
  mediaCache.warm(key,{priority:200}).catch(()=>{});
  assignClip(target,key);
@@ -322,7 +322,7 @@ function beginShot(team,options={}){
  if(old)old.playbackRate=1;
  target.playbackRate=1;target.style.opacity='0';
  shotVideo=target;lastFrameAt=performance.now();lastMediaTime=-1;recoveryCount=0;reloading=false;
- shot={controller:window.AIFootballTikTok?.getStatus?.().leader===true,playbackOwner:options.playbackOwner,team,result:options.result,cueId:options.cueId||null,cueStartsAt:options.cueStartsAt??options.startsAt??matchNow(),syncStartedAt:options.startsAt??matchNow()};
+ shot={clipKey:key,playbackMode:options.playbackMode||'normal',controller:window.AIFootballTikTok?.getStatus?.().leader===true,playbackOwner:options.playbackOwner,team,result:options.result,cueId:options.cueId||null,cueStartsAt:options.cueStartsAt??options.startsAt??matchNow(),syncStartedAt:options.startsAt??matchNow()};
  warmedCueKey=null;
  playShot();
  if(shot.result==='goal'){
@@ -337,7 +337,7 @@ function beginShot(team,options={}){
 function finishShot(team,result){
  if(!shot||shot.team!==team)return;
  shot.result=result;
- const desired=keyFor(team,result);
+ const desired=keyFor(team,result,shot.playbackMode);shot.clipKey=desired;
  if(shotVideo?.dataset.clipKey!==desired){
    const old=shotVideo,target=spareDeck();
    assignClip(target,desired);
@@ -435,10 +435,10 @@ document.addEventListener('visibilitychange',()=>{
  else startWaitingIfEmpty();
 });
 window.addEventListener('pageshow',startWaitingIfEmpty);
-function getShotTiming(team,result){
- const key=keyFor(team,result),duration=durationByKey.get(key);
+function getShotTiming(team,result,mode='normal'){
+ const key=keyFor(team,result,mode),duration=durationByKey.get(key),entry=mediaCache.manifest[key];
  const fallback=result==='goal'?(team==='A'?8:10):(team==='B'?14:10);
- return {outcomeMs:result==='goal'?Math.round((goalMoments[team]||4)*1000):team==='A'?5000:5500,durationMs:Math.round((duration||fallback)*1000)};
+ return {goalSeconds:entry?.goalSeconds??goalMoments[team],outcomeMs:entry?.outcomeSeconds?Math.round(entry.outcomeSeconds*1000):result==='goal'?Math.round((goalMoments[team]||4)*1000):team==='A'?5000:5500,durationMs:Math.round((duration||fallback)*1000)};
 }
 window.AIFootball3D={
  getShotTiming,prepareUpcomingShot,

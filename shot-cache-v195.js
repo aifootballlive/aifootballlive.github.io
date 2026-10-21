@@ -2,7 +2,7 @@
 (()=>{'use strict';
 const originals={"A_save": {"src": "./assets/scene-v112/fb-shot.mp4", "seconds": 10.01, "bytes": 7237013}, "A_goal": {"src": "./assets/scene-v110/fb-shot.mp4", "seconds": 8.0, "bytes": 6592959}, "B_save": {"src": "./assets/scene-v116/gs-shot.mp4", "seconds": 14.02, "bytes": 11202821}, "B_goal": {"src": "./assets/scene-v126/gs-goal.mp4", "seconds": 10.01, "bytes": 7529480}, "C_save": {"src": "./assets/scene-v125/bjk-save.mp4", "seconds": 10.01, "bytes": 7664786}, "C_goal": {"src": "./assets/scene-v132/bjk-goal.mp4", "seconds": 10.01, "bytes": 6980251}, "D_save": {"src": "./assets/scene-v123/ts-save.mp4", "seconds": 10.01, "bytes": 7611015}, "D_goal": {"src": "./assets/scene-v140/ts-goal.mp4", "seconds": 10.01, "bytes": 6761835}},CACHE='football-original-shots-v195',MAX_URLS=3;
 const mobile=!!(window.matchMedia?.('(pointer:coarse)').matches||/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||''));
-const manifest=Object.fromEntries(Object.entries(originals).map(([key,item])=>[key,{...item,originalSrc:item.src}]));
+const manifest=Object.fromEntries(Object.entries({...originals,...window.AIFootballFastClips}).map(([key,item])=>[key,{...item,originalSrc:item.src}]));
 const urls=new Map(),pending=new Map(),queue=[],cached=new Set(),temporary=new Map();let active=0,networkFetches=0,failures=0,storageDisabled=false;
 const absolute=key=>new URL(manifest[key].src,location.href).href;
 const storePromise=typeof caches==='undefined'?Promise.resolve(null):caches.open(CACHE).catch(()=>null);
