@@ -21,7 +21,7 @@
   if(active)return Promise.reject(Error('Önce mevcut duyurunun bitmesini bekle.'));
   loadVoices();if(!voices.length)return Promise.reject(Error('Cihazda yerel konuşma sesi bulunamadı. Türkçe konuşma sesi ekleyip tekrar dene.'));
   window.AIFootballAudio.stopAnnouncements();
-  return new Promise((resolve,reject)=>{const utterance=new SpeechSynthesisUtterance(text);utterance.voice=chooseVoice();utterance.lang='tr-TR';utterance.rate=.94;utterance.pitch=1.12;const settings=window.AIFootballAudio.settings||{};utterance.volume=Math.max(0,Math.min(1,Number(settings.soundMaster??88)/100*Number(settings.soundGoal??100)/100));
+  return new Promise((resolve,reject)=>{const utterance=new SpeechSynthesisUtterance(text);utterance.voice=chooseVoice();utterance.lang='tr-TR';utterance.rate=1.03;utterance.pitch=1;const settings=window.AIFootballAudio.settings||{};utterance.volume=Math.max(0,Math.min(1,Number(settings.soundMaster??88)/100*Number(settings.soundGoal??100)/100*1.25));
    const job={utterance,finish(error){if(active!==job)return;clearTimeout(job.timer);active=null;error?reject(error):resolve();}};active=job;utterance.onend=()=>job.finish();utterance.onerror=()=>job.finish(Error('Tarayıcı duyuruyu okuyamadı. Yayın bilgisayarında SESİ AÇ’a dokunup tekrar dene.'));job.timer=setTimeout(()=>{try{window.speechSynthesis.cancel();}catch{}job.finish(Error('Seslendirme tamamlanamadı.'));},85000);try{window.speechSynthesis.resume();window.speechSynthesis.speak(utterance);}catch{job.finish(Error('Seslendirme başlatılamadı.'));}
   });
  }
