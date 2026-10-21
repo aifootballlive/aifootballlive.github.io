@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=292,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=294,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // One catalog drives both the visible gift buttons and received TikTok events.
@@ -69,7 +69,9 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    Number.isFinite(cue.goalMediaTime)&&cue.goalMediaTime>=goalMediaSeconds[cue.team]&&
    Number.isFinite(cue.goalPlayedSeconds)&&cue.goalPlayedSeconds>=goalMediaSeconds[cue.team]-.35&&cue.goalElapsedMs>=goalMediaSeconds[cue.team]*1000-500;
  }
+ function waitingForNextScores(m,now=matchNow()){const end=breakDeadlines(m);return !!end&&now>=end.summaryUntil;}
  function visibleScores(m){
+  if(waitingForNextScores(m))return {A:0,B:0,C:0,D:0};
   const scores={...m.scores},cue=m.cue;
   if(cue?.result!=='goal'||cue.finishedAt)return scores;
   if(localGoals.has(goalKey(cue)))scores[cue.team]=Math.max(Number(scores[cue.team])||0,Number(cue.after?.scores?.[cue.team])||0);
@@ -180,8 +182,16 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
    window.AIFootballRoundCelebration?.start?.(m.clock.winner, m.lastResult?.scores);
   }
  }
+ let lastWaitingScorePhase=null;
+ function refreshWaitingScoreDisplay(){
+  const waiting=waitingForNextScores(match);if(waiting===lastWaitingScorePhase)return;lastWaitingScorePhase=waiting;
+  if(!match||!ready())return;const scores=visibleScores(match);
+  for(const team of TEAMS)state[team].score=Number(scores[team])||0;
+  lastPaintedMatch='';render();
+ }
  function showMatchClock(){
   const hud=document.getElementById('matchClockHud');if(!hud)return;
+  refreshWaitingScoreDisplay();
   const now=matchNow(),state=matchClockView(match,now),timing=timingFor(match),ends=breakDeadlines(match);
   const heading=document.getElementById('goalsHeading');
   if(heading){
