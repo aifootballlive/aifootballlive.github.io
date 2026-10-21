@@ -25,7 +25,7 @@ if(sound)document.getElementById('matchControls')?.append(sound);
 const clips={
  A:{save:'./assets/scene-v112/fb-shot.mp4',goal:'./assets/scene-v110/fb-shot.mp4'},
  B:{save:'./assets/scene-v116/gs-shot.mp4',goal:'./assets/scene-v126/gs-goal.mp4'},
- C:{save:'./assets/scene-v125/bjk-save.mp4',goal:'./assets/scene-v132/bjk-goal.mp4'},
+ C:{save:'./assets/scene-v125/bjk-save.mp4',goal:'./assets/scene-v298/bjk-goal.mp4'},
  D:{save:'./assets/scene-v123/ts-save.mp4',goal:'./assets/scene-v140/ts-goal.mp4'}
 };
 for(const [team,outcomes]of Object.entries(clips))for(const result of Object.keys(outcomes)){const entry=mediaCache.manifest[team+'_'+result];if(entry?.src)outcomes[result]=entry.src;}
