@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261021-v294-clear-waiting-scores">
+<meta name="aifootball-release" content="20261021-v295-session-resume">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script>if(new URLSearchParams(location.search).get('studio')==='tiktok1080')document.documentElement.classList.add('aflTikTokPortraitSource');</script>
 <title>AI Football Live</title>
@@ -2659,7 +2659,7 @@ function applyRules(r){
   applyRuntimeSettings();render()
 }
 function handleEventRow(row,animate=true){if(window.AIFootballTikTok?.active)return;if(!row||!row.id||seenEvents.has(row.id))return;seenEvents.add(row.id);const attack=teamFromId(row.attacking_team_id),defend=teamFromId(row.defending_team_id);if(row.event_type==='goal'){log('GOL! '+(attack?nameOf(attack):''));if(animate&&attack){window.AIFootball3D?.finishShot?.(attack,'goal');celebrateGoal(attack)}}else if(row.event_type==='saved'){log((defend?nameOf(defend)+' ':'')+'kalecisi kurtardı!')}else if(row.event_type==='reset'){log('Maç sıfırlandı')}}
-let authCheck=null,authGeneration=0;
+let authCheck=null,authGeneration=0,authPending=false,authRetryTimer=null;
 function applyAuthRole(user,checking=false){
  adminAuthed=!!(user&&user.id===ADMIN_UID);
  // Keep the current panel/draft visible through token checks, without granting writes.
@@ -2684,36 +2684,35 @@ function applyAuthRole(user,checking=false){
 }
 async function getAuth(){
  if(authCheck)return authCheck;
- const generation=authGeneration;
+ const temporary=error=>!!error&&(error.name==='AuthRetryableFetchError'||error.name==='TypeError'||error.name==='AbortError'||Number(error.status)===0||Number(error.status)===429||Number(error.status)>=500||/fetch|network|timeout/i.test(error.message||''));
+ const retry=()=>{authPending=true;applyAuthRole(null,true);clearTimeout(authRetryTimer);authRetryTimer=setTimeout(()=>getAuth().catch(()=>{}),3000);};
+ const deny=()=>{authPending=false;clearTimeout(authRetryTimer);applyAuthRole(null);};
  authCheck=(async()=>{
-  try{
-   const local=await db.auth.getSession();
-   if(generation!==authGeneration)return;
-   if(!local.data?.session){applyAuthRole(null);return;}
-   const {data,error}=await db.auth.getUser();
-   if(generation!==authGeneration)return;
-   if(error){applyAuthRole(null);console.warn('Admin oturumu sunucuda doğrulanamadı');return;}
-   // Never unlock the administrator from a password-only (AAL1) session.
-   // live.html is always a viewing entry point. Only an explicit login action
-   // navigates to MFA/device setup; incomplete sessions stay on the game.
-   if(data?.user?.id===ADMIN_UID){
-    if(!db.auth.mfa){applyAuthRole(null);return;}
-    const {data:mfa,error:mfaError}=await db.auth.mfa.getAuthenticatorAssuranceLevel();
-    if(mfaError){applyAuthRole(null);return;}
-    if(mfa?.currentLevel!=='aal2'){
-     applyAuthRole(null);
-     return;
+  // A refresh event can arrive during getSession/getUser. Finish the newest
+  // verification before boot decides whether a login redirect is needed.
+  for(let attempt=0;attempt<8;attempt++){
+   const generation=authGeneration;
+   try{
+    const local=await db.auth.getSession();if(generation!==authGeneration)continue;
+    if(local.error){if(temporary(local.error))retry();else deny();return;}
+    if(!local.data?.session){deny();return;}
+    const {data,error}=await db.auth.getUser();if(generation!==authGeneration)continue;
+    if(error){if(temporary(error))retry();else deny();return;}
+    if(data?.user?.id===ADMIN_UID){
+     if(!db.auth.mfa){deny();return;}
+     const {data:mfa,error:mfaError}=await db.auth.mfa.getAuthenticatorAssuranceLevel();if(generation!==authGeneration)continue;
+     if(mfaError){if(temporary(mfaError))retry();else deny();return;}
+     if(mfa?.currentLevel!=='aal2'){deny();return;}
+     const device=await db.rpc('admin_device_status');if(generation!==authGeneration)continue;
+     if(device.error){if(temporary(device.error))retry();else deny();return;}
+     if(typeof device.data?.enabled!=='boolean'){deny();return;}
+     try{if(device.data.approved===true)localStorage.setItem('afl.approvedAdminBrowser.v1','approved');else localStorage.removeItem('afl.approvedAdminBrowser.v1');}catch{}
+     if(device.data.enabled&&!device.data.approved){deny();return;}
     }
-   }
-   if(data?.user?.id===ADMIN_UID){
-    const device=await db.rpc('admin_device_status');
-    if(generation!==authGeneration)return;
-    if(device.error||typeof device.data?.enabled!=='boolean'){applyAuthRole(null);return;}
-    try{if(device.data.approved===true)localStorage.setItem('afl.approvedAdminBrowser.v1','approved');else localStorage.removeItem('afl.approvedAdminBrowser.v1');}catch{}
-    if(device.data.enabled&&!device.data.approved){applyAuthRole(null);return;}
-   }
-   applyAuthRole(data?.user);
-  }catch(error){applyAuthRole(null);console.warn('Oturum doğrulanamadı, yönetim kilitlendi');}
+    authPending=false;clearTimeout(authRetryTimer);applyAuthRole(data?.user);return;
+   }catch(error){if(generation!==authGeneration)continue;if(temporary(error))retry();else deny();return;}
+  }
+  retry();
  })().finally(()=>authCheck=null);return authCheck;
 }
 async function loadRemote(force=false){if(window.AIFootballTikTok?.active)return;if(polling||(!force&&state.busy)||document.hidden)return;polling=true;try{const {data:g,error:ge}=await db.from('games').select('id,rules').eq('name','AI Football Live').limit(1).single();if(ge)throw ge;ids.game=g.id;applyRules(g.rules);const {data:teams,error:te}=await db.from('teams').select('id,name,score').eq('game_id',ids.game);if(te)throw te;const a=teams.find(x=>x.name==='Sarı-Lacivert'),b=teams.find(x=>x.name==='Sarı-Kırmızı');if(!a||!b)throw new Error('Takımlar bulunamadı');ids.team.A=a.id;ids.team.B=b.id;state.A.score=a.score||0;state.B.score=b.score||0;const {data:gks,error:gke}=await db.from('goalkeepers').select('id,team_id').eq('game_id',ids.game);if(gke)throw gke;for(const gk of gks){if(gk.team_id===ids.team.A)ids.goalkeeper.A=gk.id;if(gk.team_id===ids.team.B)ids.goalkeeper.B=gk.id}const {data:kss,error:kse}=await db.from('goalkeeper_opponent_state').select('id,goalkeeper_id,power').eq('game_id',ids.game);if(kse)throw kse;for(const ks of kss){if(ks.goalkeeper_id===ids.goalkeeper.A){ids.keeperState.A=ks.id;state.keeper.A=Number(ks.power)}if(ks.goalkeeper_id===ids.goalkeeper.B){ids.keeperState.B=ks.id;state.keeper.B=Number(ks.power)}}const {data:pending,error:pe}=await db.from('pending_shots').select('attacking_team_id').eq('game_id',ids.game).eq('status','pending');if(pe)throw pe;state.A.queue=pending.filter(x=>x.attacking_team_id===ids.team.A).length;state.B.queue=pending.filter(x=>x.attacking_team_id===ids.team.B).length;const {data:last}=await db.from('game_events').select('id,event_type,attacking_team_id,defending_team_id,created_at').eq('game_id',ids.game).order('created_at',{ascending:false}).limit(1);render();if(last&&last[0])handleEventRow(last[0],false);setConn()}catch(e){console.error(e);$('connectionStatus').textContent='Bağlantı hatası'}finally{polling=false;if(window.AIFootballTikTok?.active)window.AIFootballTikTok.restore()}}
@@ -2950,14 +2949,14 @@ async function toggleGiftProcessing(){
  finally{el.disabled=false;render();}
 }
 async function resetMatch(){if(window.AIFootballTikTok?.active){if(adminAuthed&&confirm('Maç sıfırlansın mı? Dört kaleci kayıtlı başlangıç gücüne dönecek.')){await window.AIFootballTikTok.reset();render();closeAdmin();}return;}if(!adminAuthed||!confirm('Maç tamamen sıfırlansın mı?'))return;await Promise.all([db.from('teams').update({score:0}).eq('id',ids.team.A),db.from('teams').update({score:0}).eq('id',ids.team.B),db.from('pending_shots').delete().eq('game_id',ids.game),db.from('goalkeeper_opponent_state').update({power:state.startKeeper,initial_power:state.startKeeper}).eq('game_id',ids.game)]);state.A.score=0;state.B.score=0;state.A.queue=0;state.B.queue=0;state.keeper.A=state.startKeeper;state.keeper.B=state.startKeeper;render();closeAdmin();log('Maç sıfırlandı')}
-async function logoutAdmin(){await db.auth.signOut();adminAuthed=false;render();location.replace('./admin-edm2026.html')}
+async function logoutAdmin(){const {error}=await db.auth.signOut({scope:'local'});if(error){const note=$('adminSaveStatus');if(note)note.textContent='Çıkış yapılamadı. Bağlantıyı kontrol et.';return;}adminAuthed=false;render();location.replace('./admin-edm2026.html')}
 function onPending(payload){if(window.AIFootballTikTok?.active)return;const row=payload.new||{};const t=teamFromId(row.attacking_team_id);if(payload.eventType==='INSERT'&&row.status==='pending'&&t){state[t].queue++;render();if(adminAuthed)processQueue();return}if(payload.eventType==='UPDATE'&&row.status==='processing'&&t&&!terminalShots.has(row.id)){terminalShots.add(row.id);state[t].queue=Math.max(0,state[t].queue-1);render();window.AIFootballTikTok?.onShotStarted(t);return}if(payload.eventType==='DELETE'){loadRemote(true)}}
 function setupRealtime(){if(window.AIFootballTikTok?.active||!ids.game)return;const channel=db.channel('match-'+ids.game).on('postgres_changes',{event:'UPDATE',schema:'public',table:'teams',filter:'game_id=eq.'+ids.game},p=>{if(window.AIFootballTikTok?.active)return;const t=teamFromId(p.new.id);if(t){state[t].score=Number(p.new.score)||0;render()}}).on('postgres_changes',{event:'UPDATE',schema:'public',table:'goalkeeper_opponent_state',filter:'game_id=eq.'+ids.game},p=>{if(window.AIFootballTikTok?.active)return;if(p.new.id===ids.keeperState.A)state.keeper.A=Number(p.new.power);if(p.new.id===ids.keeperState.B)state.keeper.B=Number(p.new.power);render()}).on('postgres_changes',{event:'*',schema:'public',table:'pending_shots',filter:'game_id=eq.'+ids.game},onPending).on('postgres_changes',{event:'INSERT',schema:'public',table:'game_events',filter:'game_id=eq.'+ids.game},p=>handleEventRow(p.new,true)).on('postgres_changes',{event:'UPDATE',schema:'public',table:'games',filter:'id=eq.'+ids.game},p=>applyRules(p.new.rules)).subscribe(status=>{realtimeStatus=status;setConn();if(status==='SUBSCRIBED'){loadRemote(true)}})}
 async function refreshAndResume(){if(document.hidden||(typeof localShotBusy!=='undefined'&&localShotBusy))return;await loadRemote(true);}
 async function loadTikTokPresentation(){try{const {data,error}=await db.from('games').select('rules').eq('name','AI Football Live').limit(1).single();if(error)throw error;if(data?.rules)applyRules(data.rules);if(window.AIFootballTikTok?.active)window.AIFootballTikTok.restore();}catch(e){console.warn('TikTok presentation settings unavailable',e)}}
 async function boot(){
  db.auth.onAuthStateChange((event,session)=>{
-  if(event==='SIGNED_OUT'){authGeneration++;applyAuthRole(null);return;}
+  if(event==='SIGNED_OUT'){authGeneration++;authPending=false;clearTimeout(authRetryTimer);applyAuthRole(null);return;}
   if(event==='INITIAL_SESSION'){if(!session)applyAuthRole(null);return;}
   // Cached session claims cannot directly open the admin panel. Verify
   // the current user through Supabase Auth before restoring any controls.
@@ -2974,8 +2973,9 @@ async function boot(){
  await getAuth();
  if(location.hash==='#admin'){
   history.replaceState(null,'',location.pathname+location.search);
-  if(!adminAuthed){location.replace('./admin-edm2026.html?next=settings');return;}
-  openAdmin();
+  try{sessionStorage.setItem('afl.adminPane.v284','settings');}catch{}
+  if(!adminAuthed&&!authPending){location.replace('./admin-edm2026.html?next=settings');return;}
+  if(adminAuthed)openAdmin();
  }
  try{if(adminAuthed&&sessionStorage.getItem('afl.adminPane.v284')==='settings')openAdmin();}catch{}
  if(window.AIFootballTikTok?.active){await loadTikTokPresentation();window.AIFootballTikTok.activate();return;}await loadRemote(true);setupRealtime();setInterval(refreshAndResume,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAndResume()});window.addEventListener('online',refreshAndResume);}

@@ -2,6 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
+<meta name="aifootball-auth-release" content="20261021-v295-session-resume">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
 <title>AI Football Live Admin</title>
@@ -58,9 +59,12 @@ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Oftm7DRbr0Vdt9gTLFGAaw_LQq4PCnP';
 const ADMIN_UID='6893f884-6b91-4224-abaa-43f87df0966f';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const form=document.getElementById('loginForm'),btn=document.getElementById('loginBtn'),msg=document.getElementById('msg');
+let resumeBusy=false,profileGeneration=0,profileRetry=null,logoutRequested=false;
 function show(text,ok=false){msg.textContent=text;msg.className='msg'+(ok?' ok':'')}
 async function finishIfAdmin(user){
- if(!user||user.id!==ADMIN_UID)return false;
+ if(!user||user.id!==ADMIN_UID||logoutRequested)return false;
+ if(resumeBusy)return true;resumeBusy=true;
+ try{
  // A browser storage flag is not device authentication. Recheck via the Auth server.
  const {data,error}=await db.auth.getUser();
  if(error||data?.user?.id!==ADMIN_UID){show('Kimlik doğrulaması teyit edilemedi.');return false;}
@@ -71,25 +75,33 @@ async function finishIfAdmin(user){
  if(device.error||typeof device.data?.enabled!=='boolean'){show('Cihaz güvenliği doğrulanamadı. Tekrar dene.');return false;}
  if(device.data.enabled&&!device.data.approved){location.replace('./admin-devices.html');return true;}
  show('Giriş başarılı. Oyun açılıyor…',true);
- setTimeout(()=>location.replace(new URLSearchParams(location.search).get('next')==='settings'?'./admin-settings.html':'./live.html'),350);return true;
+ const next=new URLSearchParams(location.search).get('next');setTimeout(()=>{if(!logoutRequested)location.replace(next==='settings'?'./live.html#admin':next==='security'?'./admin-security.html':'./live.html');},350);return true;
+ }catch{show('Oturum bağlantısı bekleniyor. Tekrar denenecek.');return false;}finally{resumeBusy=false;}
 }
 function showProfile(user){const isAdmin=!!(user&&user.id===ADMIN_UID);form.hidden=isAdmin;document.getElementById('profile').hidden=!isAdmin;document.getElementById('profileEmail').textContent=isAdmin?(user.email||'Admin hesabı'):'';}
-(async()=>{try{const {data}=await db.auth.getUser();showProfile(data&&data.user);}catch(e){show('Oturum kontrol edilemedi. Tekrar deneyebilirsin.')}})();
+async function checkProfile(){
+ const generation=++profileGeneration;clearTimeout(profileRetry);
+ try{
+  const {data,error}=await db.auth.getUser();if(generation!==profileGeneration||logoutRequested)return;
+  if(error){if([400,401,403].includes(Number(error.status))){showProfile(null);show('Oturum sona ermiş. Yeniden giriş yap.');return;}show('Oturum bağlantısı bekleniyor…');profileRetry=setTimeout(checkProfile,3000);return;}
+  showProfile(data?.user);
+  if(data?.user?.id===ADMIN_UID&&new URLSearchParams(location.search).get('next')==='settings'){
+   if(!await finishIfAdmin(data.user))profileRetry=setTimeout(checkProfile,3000);
+  }
+ }catch{if(generation===profileGeneration&&!logoutRequested){show('Oturum bağlantısı bekleniyor…');profileRetry=setTimeout(checkProfile,3000);}}
+}
+checkProfile();
 db.auth.onAuthStateChange((event,session)=>{
- if(event==='SIGNED_OUT'){showProfile(null);return;}
- // Never promote a cached session object to an admin profile. Verify the
- // server-issued identity first, even when the Auth SDK refreshes a token.
- showProfile(null);
- if(!session)return;
- setTimeout(async()=>{
-  try{
-   const {data,error}=await db.auth.getUser();
-   showProfile(!error?data?.user:null);
-  }catch{showProfile(null);}
- },0);
+ if(event==='SIGNED_OUT'){logoutRequested=true;profileGeneration++;clearTimeout(profileRetry);showProfile(null);return;}
+ // Revalidate the stored session without clearing the profile during refresh.
+ if(session){logoutRequested=false;setTimeout(checkProfile,0);}
 });
-document.getElementById('logoutBtn').addEventListener('click',async()=>{const logout=document.getElementById('logoutBtn');logout.disabled=true;try{const {error}=await db.auth.signOut({scope:'local'});if(error)throw error;showProfile(null);document.getElementById('password').value='';show('Bu tarayıcıdaki oturum kapatıldı.',true);}catch(e){show('Çıkış yapılamadı. Tekrar dene.')}finally{logout.disabled=false}});
-form.addEventListener('submit',async e=>{e.preventDefault();btn.disabled=true;show('Giriş yapılıyor…');const email=document.getElementById('email').value.trim();const password=document.getElementById('password').value;const {data,error}=await db.auth.signInWithPassword({email,password});if(error){show('Giriş başarısız: e-posta veya şifreyi kontrol et.');btn.disabled=false;return}if(!data.user||data.user.id!==ADMIN_UID){await db.auth.signOut();show('Bu hesap admin olarak yetkili değil.');btn.disabled=false;return}if(!await finishIfAdmin(data.user))btn.disabled=false});
+window.addEventListener('online',()=>{if(!logoutRequested)checkProfile();});
+window.addEventListener('pageshow',()=>{if(!logoutRequested)checkProfile();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!logoutRequested)checkProfile();});
+
+document.getElementById('logoutBtn').addEventListener('click',async()=>{const logout=document.getElementById('logoutBtn');logout.disabled=true;logoutRequested=true;profileGeneration++;clearTimeout(profileRetry);try{const {error}=await db.auth.signOut({scope:'local'});if(error)throw error;showProfile(null);document.getElementById('password').value='';show('Bu tarayıcıdaki oturum kapatıldı.',true);}catch(e){logoutRequested=false;show('Çıkış yapılamadı. Tekrar dene.')}finally{logout.disabled=false}});
+form.addEventListener('submit',async e=>{e.preventDefault();logoutRequested=false;btn.disabled=true;show('Giriş yapılıyor…');const email=document.getElementById('email').value.trim();const password=document.getElementById('password').value;const {data,error}=await db.auth.signInWithPassword({email,password});if(error){show('Giriş başarısız: e-posta veya şifreyi kontrol et.');btn.disabled=false;return}if(!data.user||data.user.id!==ADMIN_UID){await db.auth.signOut({scope:'local'});show('Bu hesap admin olarak yetkili değil.');btn.disabled=false;return}if(!await finishIfAdmin(data.user))btn.disabled=false});
 </script>
 </body>
 </html>
