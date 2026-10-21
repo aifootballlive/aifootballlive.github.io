@@ -103,7 +103,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   const c=m?.clock;return !!c&&!Number.isFinite(c.finishedAt)&&(c.manualStarted===true||c.autoStarted===true)&&Number.isFinite(c.startedAt)&&c.startedAt>now;
  }
  function officialMatch(m){return !m?.practiceMode&&(m?.matchMode!=='live'||m?.clock?.recordForLeague===true);}
- function broadcastConfirmed(m){const s=m?.liveReports?.sessions?.find(s=>s.id===m.liveReports.activeId);return !!s&&s.status==='live'&&s.automatic===true&&matchNow()-Number(s.lastEventAt||0)<120000;}
+ function broadcastConfirmed(m){if(Number(m?.lastLiveGiftAt)>0&&matchNow()-Number(m.lastLiveGiftAt)<120000)return true;const s=m?.liveReports?.sessions?.find(s=>s.id===m.liveReports.activeId);return !!s&&s.status==='live'&&s.automatic===true&&matchNow()-Number(s.lastEventAt||0)<120000;}
  function seasonComplete(m){return !m?.practiceMode&& !!m?.league?.champion&&Number(m.league.completedRounds)>=Number(m.league.plannedRounds);}
  function canContinueAutomatically(m){return !m?.practiceMode&&!(m?.matchMode==='live'&&m?.clock?.finishedAt&&!m?.clock?.recordForLeague)&&autoMatchEnabled(m)&&!m.autoContinuationPaused&&!seasonComplete(m);}
  // The combined winner + league screen is one uninterrupted duration.
@@ -872,6 +872,10 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
      if(seen.has(key))continue;
      seen.add(key);m.receipts.push(key);changed=true;
      if(Number(g.receivedAt||0)<=Number(m.queueClearAt?.[g.team]||0))continue;
+     // An accepted real TikTok gift is LIVE evidence even if aggregate metric
+     // events are missing. Practice still protects it in the real gift queue.
+     m.lastLiveGiftAt=matchNow();
+     if(!m.practiceMode&&m.matchMode==='live'&&(matchRunning(m)||matchStarting(m)))m.clock.recordForLeague=true;
      m.accepted++;window.AIFootballMatchReports?.gift(m,g,matchNow());
      m.lastGift={id:key,team:g.team,count:g.count,name:g.name};m.giftNotices||={};m.giftNotices[g.team]={id:key,at:matchNow(),savedForLive:!!m.practiceMode};
      (m.practiceMode?(m.savedLiveJobs||=[]):m.jobs).push({id:key,team:g.team,count:g.count,nextIndex:0});
@@ -950,7 +954,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
  }
  // Queue acceptance and cue scheduling share one authenticated CAS write.
  function primeQueuedShots(m,now){
-  if(!window.AIFootball3D?.getShotTiming||!m.practiceMode&&!officialMatch(m))return;
+  if(!window.AIFootball3D?.getShotTiming)return; // League reporting must never block a queued shot.
   if(!matchRunning(m,now)||m.processingPaused||now>=m.clock.startedAt+normalMs(m)+overtimeMs(m))return;
   if(!m.cue||m.cue.finishedAt){
    const job=takeJob(m,m.cue?.team);if(!job)return;
@@ -1021,7 +1025,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   m.cue.finishedAt=matchNow();m.cooldownUntil=0;
   // The server must already contain completion proof before this cue is
   // replaced. This second CAS runs immediately after the proof is saved.
-  if((m.practiceMode||officialMatch(m))&&!m.processingPaused&&hasPlayableJobs(m)&&window.AIFootball3D?.getShotTiming&&matchRunning(m)&&matchNow()<m.clock.startedAt+normalMs(m)+overtimeMs(m)){
+  if(!m.processingPaused&&hasPlayableJobs(m)&&window.AIFootball3D?.getShotTiming&&matchRunning(m)&&matchNow()<m.clock.startedAt+normalMs(m)+overtimeMs(m)){
    const job=takeJob(m,m.cue.team);
    if(job)m.cue=makeCue(m,job,matchNow()+40);
   }
@@ -1115,7 +1119,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   // even when no shots are pending. Do not finish the match early.
   // The waiting video is decoration; on mobile it can be unready even
   // while the dedicated shot MP4s are perfectly playable.
-  if(!match.practiceMode&&!officialMatch(match)||match.processingPaused||!hasPlayableJobs(match)||!window.AIFootball3D?.beginShot||!window.AIFootball3D?.getShotTiming)return;
+  if(match.processingPaused||!hasPlayableJobs(match)||!window.AIFootball3D?.beginShot||!window.AIFootball3D?.getShotTiming)return;
   await change(m=>{
    if(m.clock?.finishedAt||!matchRunning(m)||m.cue&&!m.cue.finishedAt||!m.jobs.length)return false;
    const job=takeJob(m,m.cue?.team);if(!job)return false;
