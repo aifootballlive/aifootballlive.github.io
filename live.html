@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="utf-8">
-<meta name="aifootball-release" content="20261021-v290-live-like-toggle">
+<meta name="aifootball-release" content="20261021-v291-keep-settings-open">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <script>if(new URLSearchParams(location.search).get('studio')==='tiktok1080')document.documentElement.classList.add('aflTikTokPortraitSource');</script>
 <title>AI Football Live</title>
@@ -2671,10 +2671,14 @@ function applyAuthRole(user,checking=false){
   else if(!adminAuthed&&!checking)$('adminOverlay').classList.remove('show');
  }
  $('leagueSettingsTab').hidden=!adminAuthed;
- // Explicit sign-out/failed verification still closes management. Token refresh only locks fields.
+ // Restore the remembered pane after every successful auth check, including a late check after boot.
+ if(adminAuthed&&!$('adminOverlay').classList.contains('show')&&!$('leagueDrawer').classList.contains('show')){
+  try{if(sessionStorage.getItem('afl.adminPane.v284')==='settings')openAdmin();}catch{}
+ }
+ // Failed verification locks/closes management but does not erase the user's pane preference.
  if(!adminAuthed&&!checking){
   $('adminOverlay').classList.remove('show');
-  if(document.body.classList.contains('drawerMode')&&!$('leagueDrawer').classList.contains('show'))closeAdmin();
+  if(!$('leagueDrawer').classList.contains('show')){document.body.classList.remove('drawerMode','aflTextPreview');}
  }
 }
 async function getAuth(){
@@ -2754,6 +2758,8 @@ async function runLocalShotQueue(){
 }
 function refreshAdminPage(){
  if(!adminAuthed)return;
+ // Save the visible pane before either the refresh button or a cache-busting navigation.
+ try{if($('adminOverlay').classList.contains('show'))sessionStorage.setItem('afl.adminPane.v284','settings');}catch{}
  // Refresh with a unique URL to bypass Chrome's cached GitHub Pages HTML.
  const url=new URL('./live.html',location.href);
  url.searchParams.set('refresh',String(Date.now()));
