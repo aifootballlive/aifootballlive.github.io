@@ -1179,7 +1179,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   async cancelHostAnnouncement(){if(!admin())return false;return change(m=>{const a=m.hostAnnouncement;if(!a||!['pending','playing'].includes(a.status))return false;a.status='cancelled';a.finishedAt=matchNow();},false);},
   getLiveReports(){return admin()?window.AIFootballLiveMetrics?.view(match)||{sessions:[]}:null;},
   async startLiveReport(){if(!admin()||!match)return false;return change(m=>{window.AIFootballLiveMetrics.create(m,matchNow(),bridgeRoomId);},false);},
-  async endLiveReport(id){if(!admin()||!match||typeof id!=='string')return false;return change(m=>{const s=m.liveReports?.sessions?.find(s=>s.id===id);if(!s||s.status!=='live')return false;window.AIFootballLiveMetrics.end(s,matchNow());},false);},
+  async endLiveReport(id){if(!admin()||!match||typeof id!=='string')return false;return change(m=>{const s=m.liveReports?.sessions?.find(s=>s.id===id);if(!s||s.status!=='live')return false;window.AIFootballLiveMetrics.end(s,matchNow(),'manual');},false);},
   async saveLiveReport(id,values){if(!admin()||!match||typeof id!=='string')return false;return change(m=>window.AIFootballLiveMetrics.manual(m,id,values,matchNow())?undefined:false,false);},
   getMatchReports(){return admin()?window.AIFootballMatchReports?.view(match,matchNow())||{records:[],pending:{}}:null;},
   async setLikeBonusThreshold(value){if(!admin()||!Number.isSafeInteger(value)||value<1||value>1000000)return false;return change(m=>{const b=m.likeBonus||={enabled:true,retired:[]};if((b.threshold||1000)===value)return false;b.threshold=value;b.viewers={};b.progress=0;b.enabledAt=matchNow();},false);},
