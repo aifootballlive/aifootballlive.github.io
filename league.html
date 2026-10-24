@@ -2,9 +2,9 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="aifootball-release" content="20261025-v321-public-league">
+<meta name="aifootball-release" content="20261025-v326-fast-league">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Doruk Arenası - Lig Tablosu</title>
 <!-- AFL shared brand icons: generated from assets/branding/profile.png -->
 <link rel="icon" type="image/x-icon" href="/favicon.ico?v=76ab1e21cc00">
@@ -284,14 +284,15 @@ h2{font-size:clamp(22px,3.2vw,27px)!important}
 <section class="panel"><h2>Maç Sonuçları ve Puanlar</h2><div id="history" class="history"><div class="note">Henüz tamamlanan maç yok.</div></div></section>
 <section class="panel"><h2>Önceki Sezonlar</h2><div id="archive" class="history"><div class="note">Henüz tamamlanan sezon yok.</div></div></section>
 </div>
-<p class="note">Bu sayfa yaklaşık her 10 saniyede bir yenilenir. Yayın görüntüsündeki lig düğmesi TikTok içinden tıklanamaz; bağlantıyı tarayıcıda açabilirsiniz.</p>
+<p class="note">Bu sayfa yaklaşık her 5 saniyede bir yenilenir. Yayın görüntüsündeki lig düğmesi TikTok içinden tıklanamaz; bağlantıyı tarayıcıda açabilirsiniz.</p>
 </main>
 <script src="./league-ledger-v299.js?v=299"></script>
 <script>
 (()=>{
 'use strict';
 // Public GET only: never load, refresh or send the owner's stored auth session.
-const leagueURL=new URL('./league-public.json',location.href);
+// Raw public data updates without waiting for a GitHub Pages deployment.
+const leagueURL=new URL(location.hostname==='aifootballlive.github.io'?'https://raw.githubusercontent.com/aifootballlive/aifootballlive.github.io/main/league-public.json':'./league-public.json',location.href);
 const id=x=>document.getElementById(x);
 const names={A:'Altın Pusula',B:'Kızıl Kıvılcım',C:'Gece Yıldızı',D:'Bordo Dalga'};
 const colors={A:'#f0d436',B:'#c83436',C:'#e2e5e8',D:'#a54868'};
@@ -348,7 +349,7 @@ function renderLeague(league,archives,through=Infinity){
  }
  if(!archivesEl.children.length){const p=document.createElement('div');p.className='note';p.textContent='Henüz tamamlanan sezon yok.';archivesEl.append(p);}
 }
-let working=false,lastSnapshot=0,currentLeague=emptyLeague(),allSeasons={},selectedSeason=null,selectedMatch='all',selectionPinned=false;
+let working=false,lastSnapshot=0,lastParentSnapshot=0,currentLeague=emptyLeague(),allSeasons={},selectedSeason=null,selectedMatch='all',selectionPinned=false;
 function renderSelection(){
  const available=Object.values(allSeasons).sort((a,b)=>Number(b.season)-Number(a.season));
  if(!selectedSeason||!allSeasons[selectedSeason])selectedSeason=String(currentLeague.season);
@@ -363,6 +364,7 @@ id('historySeason').addEventListener('change',()=>{selectedSeason=id('historySea
 allSeasons={1:currentLeague};renderSelection();id('status').textContent='Lig verileri yükleniyor…';
 function applySnapshot(league,archive,origin,seasons={},resets=[]){
  if(!league||typeof league!=='object')return false;
+ if(origin==='parent')lastParentSnapshot=Date.now();
  currentLeague=league;if(!selectionPinned)selectedSeason=String(league.season);allSeasons=window.AIFootballLeagueLedger.catalogs({league,leagueArchive:Array.isArray(archive)?archive:[],leagueSeasons:seasons&&typeof seasons==='object'?seasons:{},seasonResetHistory:Array.isArray(resets)?resets:[]});renderSelection();lastSnapshot=Date.now();id('status').textContent=origin==='parent'?'Canlı maçtaki güncel lig tablosu':'Güncel lig puan durumu';return true;
 }
 window.addEventListener('message',event=>{
@@ -377,13 +379,14 @@ window.addEventListener('message',event=>{
   applySnapshot(event.data.league,event.data.archive,'parent');
 });
 async function refresh(){
- if(working||document.hidden)return;working=true;
+ if(working||document.hidden||lastParentSnapshot)return;working=true;
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
  try{
   leagueURL.searchParams.set('check',String(Date.now()));
   const response=await fetch(leagueURL,{method:'GET',credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',signal:controller.signal,headers:{Accept:'application/json'}});
   if(!response.ok)throw new Error('Lig bağlantısı: '+response.status);
   const rows=await response.json(),data=Array.isArray(rows)?rows[0]:null;
+  if(lastParentSnapshot)return;
   if(data?.league)applySnapshot(data.league,data.archive,'database',data.seasons,data.resets);
   else if(!lastSnapshot)id('status').textContent='Henüz lig sonucu kaydedilmedi. Takımlar hazır.';
  }catch(error){
@@ -398,7 +401,7 @@ for(const button of document.querySelectorAll('.leagues .leagueChoice'))button.a
  }
  const ready=button.dataset.name==='Doruk Arenası';id('leagueArenaData').hidden=!ready;id('emptyArena').hidden=ready;id('leagueInfo').textContent=ready?'Doruk Arenası aktif. Aşağıda canlı lig tablosu bulunuyor.':button.dataset.name+' • Veri yok. Bu arena henüz hazırlanmadı.';
 });
-refresh();setInterval(refresh,10000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
+refresh();setInterval(refresh,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
 })();
 </script>
 </body></html>
