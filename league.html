@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="aifootball-release" content="20261025-v326-fast-league">
+<meta name="aifootball-release" content="20261025-v338-cup-stars">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Doruk Arenası - Lig Tablosu</title>
@@ -230,6 +230,7 @@ h2{font-size:clamp(22px,3.2vw,27px)!important}
  .leagueJersey{width:38px;height:32px;flex-basis:38px}
 }
 
+.championshipStars{color:#ffd34c;font-size:18px;font-weight:900;line-height:1.4;letter-spacing:2px;margin-top:4px;overflow-wrap:anywhere}
 .historyFilters{display:grid;grid-template-columns:1fr 1fr;gap:12px}.historyFilters label{display:flex;flex-direction:column;gap:7px;font-size:16px}.historyFilters select{width:100%;min-width:0;padding:11px;background:#102039;color:#fff;border:1px solid #627a98;border-radius:8px;font:inherit}.matchResult{display:block}.matchResult summary{font-weight:800;padding:4px}.matchResult .tablewrap{margin-top:10px}.matchResult table{min-width:570px!important}.matchResult td,.matchResult th{font-size:16px!important}.matchResult td:first-child,.matchResult th:first-child{min-width:180px!important}#archive .result{grid-template-columns:minmax(0,1fr) auto}
 </style>
 <link rel="stylesheet" href="./panel-type-v214.css?v=218">
@@ -280,7 +281,7 @@ h2{font-size:clamp(22px,3.2vw,27px)!important}
 <section class="panel"><h2 id="standingsTitle">Lig Puan Durumu</h2><div class="tablewrap"><table aria-label="Takım sıralaması">
 <thead><tr><th>TAKIM</th><th>O</th><th>G</th><th>B</th><th>M</th><th>GOL</th><th>PUAN</th><th>KUPA</th></tr></thead>
 <tbody id="standings"></tbody></table></div>
-<p class="note">O: Oynanan, G: Galibiyet, B: Beraberlik, M: Mağlubiyet. Tek lider 3 puan; birincilikte eşitlik 1 puan. 5 galibiyette 1 yıldız, sezon şampiyonluğunda 1 kupa kazanılır. Bağlantı kesintisinden dolayı iptal edilen maçlara puan verilmez.</p></section>
+<p class="note">O: Oynanan, G: Galibiyet, B: Beraberlik, M: Mağlubiyet. Tek lider 3 puan; birincilikte eşitlik 1 puan. Her sezon şampiyonluğu 1 kupa kazandırır. Her 10 şampiyonluk kupası 1 yıldız eder: 10 kupa = 1 yıldız, 20 kupa = 2 yıldız, 30 kupa = 3 yıldız. Bağlantı kesintisinden dolayı iptal edilen maçlara puan verilmez.</p></section>
 <section class="panel"><h2>Maç Sonuçları ve Puanlar</h2><div id="history" class="history"><div class="note">Henüz tamamlanan maç yok.</div></div></section>
 <section class="panel"><h2>Önceki Sezonlar</h2><div id="archive" class="history"><div class="note">Henüz tamamlanan sezon yok.</div></div></section>
 </div>
@@ -316,14 +317,14 @@ function renderLeague(league,archives,through=Infinity){
   const td=document.createElement('td'),box=document.createElement('span');box.className='team';
   const logo=document.createElement('img');logo.className='teamLogo';logo.src='./assets/team-logos/'+logos[team];logo.alt='';
   const label=document.createElement('span');label.textContent=names[team];
-  const stars=Math.floor(metric(stats,'wins')/5);
+  const stars=Math.floor(metric(league.trophies,team)/10);
   if(stars)label.title=stars+' yıldız';
   const jersey=document.createElement('span');
   jersey.className='leagueJersey leagueJersey'+team;
   jersey.setAttribute('role','img');
   jersey.setAttribute('aria-label',({A:'sarı lacivert',B:'sarı kırmızı',C:'siyah beyaz',D:'bordo açık mavi'})[team]+' çizgili takım forması');
   box.append(logo,jersey,label);td.append(box);
-  if(stars){const extra=document.createElement('div');extra.className='small';extra.textContent=stars+' yıldız';td.append(extra);}
+  if(stars){const extra=document.createElement('div');extra.className='championshipStars';extra.setAttribute('aria-label',stars+' şampiyonluk yıldızı');extra.title=metric(league.trophies,team)+' kupa · '+stars+' yıldız';extra.textContent='★'.repeat(Math.min(stars,10))+(stars>10?' +'+(stars-10):'');td.append(extra);}
   tr.append(td);
   for(const k of ['played','wins','draws','losses','goals','points'])appendTextCell(tr,metric(stats,k));
   appendTextCell(tr,metric(league.trophies,team));body.append(tr);
