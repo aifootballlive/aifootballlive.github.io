@@ -5,16 +5,16 @@
       "plannedRounds": 20,
       "completedRounds": 20,
       "extraRounds": 0,
-      "champion": null,
+      "champion": "A",
       "trophies": {
-        "A": 0,
+        "A": 1,
         "B": 0,
         "C": 0,
         "D": 0
       },
       "finalists": [],
       "finalAttempts": 0,
-      "completionPending": true,
+      "completionPending": false,
       "teams": {
         "A": {
           "played": 20,
@@ -498,16 +498,16 @@
         "plannedRounds": 20,
         "completedRounds": 20,
         "extraRounds": 0,
-        "champion": null,
+        "champion": "A",
         "trophies": {
-          "A": 0,
+          "A": 1,
           "B": 0,
           "C": 0,
           "D": 0
         },
         "finalists": [],
         "finalAttempts": 0,
-        "completionPending": true,
+        "completionPending": false,
         "teams": {
           "A": {
             "played": 20,
