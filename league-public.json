@@ -3,7 +3,7 @@
     "league": {
       "season": 2,
       "plannedRounds": 20,
-      "completedRounds": 19,
+      "completedRounds": 20,
       "extraRounds": 0,
       "champion": null,
       "trophies": {
@@ -14,38 +14,38 @@
       },
       "finalists": [],
       "finalAttempts": 0,
-      "completionPending": false,
+      "completionPending": true,
       "teams": {
         "A": {
-          "played": 19,
+          "played": 20,
           "wins": 4,
           "draws": 1,
-          "losses": 14,
-          "goals": 112,
+          "losses": 15,
+          "goals": 113,
           "points": 13
         },
         "B": {
-          "played": 19,
-          "wins": 6,
+          "played": 20,
+          "wins": 7,
           "draws": 3,
           "losses": 10,
-          "goals": 122,
-          "points": 21
+          "goals": 130,
+          "points": 24
         },
         "C": {
-          "played": 19,
+          "played": 20,
           "wins": 3,
           "draws": 3,
-          "losses": 13,
-          "goals": 95,
+          "losses": 14,
+          "goals": 99,
           "points": 12
         },
         "D": {
-          "played": 19,
+          "played": 20,
           "wins": 2,
           "draws": 1,
-          "losses": 16,
-          "goals": 86,
+          "losses": 17,
+          "goals": 87,
           "points": 7
         }
       },
@@ -465,6 +465,26 @@
             "D": 0
           },
           "winner": null,
+          "final": false
+        },
+        {
+          "round": 46,
+          "matchNumber": 20,
+          "startedAt": 1792952639524.35,
+          "at": 1792953419524.35,
+          "scores": {
+            "A": 1,
+            "B": 8,
+            "C": 4,
+            "D": 1
+          },
+          "points": {
+            "A": 0,
+            "B": 3,
+            "C": 0,
+            "D": 0
+          },
+          "winner": "B",
           "final": false
         }
       ]
@@ -1457,7 +1477,7 @@
       "2": {
         "season": 2,
         "plannedRounds": 20,
-        "completedRounds": 19,
+        "completedRounds": 20,
         "extraRounds": 0,
         "champion": null,
         "trophies": {
@@ -1468,38 +1488,38 @@
         },
         "finalists": [],
         "finalAttempts": 0,
-        "completionPending": false,
+        "completionPending": true,
         "teams": {
           "A": {
-            "played": 19,
+            "played": 20,
             "wins": 4,
             "draws": 1,
-            "losses": 14,
-            "goals": 112,
+            "losses": 15,
+            "goals": 113,
             "points": 13
           },
           "B": {
-            "played": 19,
-            "wins": 6,
+            "played": 20,
+            "wins": 7,
             "draws": 3,
             "losses": 10,
-            "goals": 122,
-            "points": 21
+            "goals": 130,
+            "points": 24
           },
           "C": {
-            "played": 19,
+            "played": 20,
             "wins": 3,
             "draws": 3,
-            "losses": 13,
-            "goals": 95,
+            "losses": 14,
+            "goals": 99,
             "points": 12
           },
           "D": {
-            "played": 19,
+            "played": 20,
             "wins": 2,
             "draws": 1,
-            "losses": 16,
-            "goals": 86,
+            "losses": 17,
+            "goals": 87,
             "points": 7
           }
         },
@@ -1919,6 +1939,26 @@
               "D": 0
             },
             "winner": null,
+            "final": false
+          },
+          {
+            "round": 46,
+            "matchNumber": 20,
+            "startedAt": 1792952639524.35,
+            "at": 1792953419524.35,
+            "scores": {
+              "A": 1,
+              "B": 8,
+              "C": 4,
+              "D": 1
+            },
+            "points": {
+              "A": 0,
+              "B": 3,
+              "C": 0,
+              "D": 0
+            },
+            "winner": "B",
             "final": false
           }
         ]
