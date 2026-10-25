@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="aifootball-release" content="20261025-v338-cup-stars">
+<meta name="aifootball-release" content="20261025-v339-star-column">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self' https://raw.githubusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Doruk Arenası - Lig Tablosu</title>
@@ -279,7 +279,7 @@ h2{font-size:clamp(22px,3.2vw,27px)!important}
 </section>
 <section class="panel"><div class="historyFilters"><label>Sezon<select id="historySeason" aria-label="Görüntülenecek sezon"></select></label><label>Maç<select id="historyMatch" aria-label="Görüntülenecek maç"><option value="all">Tüm maçlar</option></select></label></div><p id="historyContext" class="note"></p></section>
 <section class="panel"><h2 id="standingsTitle">Lig Puan Durumu</h2><div class="tablewrap"><table aria-label="Takım sıralaması">
-<thead><tr><th>TAKIM</th><th>O</th><th>G</th><th>B</th><th>M</th><th>GOL</th><th>PUAN</th><th>KUPA</th></tr></thead>
+<thead><tr><th>TAKIM</th><th>O</th><th>G</th><th>B</th><th>M</th><th>GOL</th><th>PUAN</th><th>KUPA</th><th>YILDIZ</th></tr></thead>
 <tbody id="standings"></tbody></table></div>
 <p class="note">O: Oynanan, G: Galibiyet, B: Beraberlik, M: Mağlubiyet. Tek lider 3 puan; birincilikte eşitlik 1 puan. Her sezon şampiyonluğu 1 kupa kazandırır. Her 10 şampiyonluk kupası 1 yıldız eder: 10 kupa = 1 yıldız, 20 kupa = 2 yıldız, 30 kupa = 3 yıldız. Bağlantı kesintisinden dolayı iptal edilen maçlara puan verilmez.</p></section>
 <section class="panel"><h2>Maç Sonuçları ve Puanlar</h2><div id="history" class="history"><div class="note">Henüz tamamlanan maç yok.</div></div></section>
@@ -327,7 +327,7 @@ function renderLeague(league,archives,through=Infinity){
   if(stars){const extra=document.createElement('div');extra.className='championshipStars';extra.setAttribute('aria-label',stars+' şampiyonluk yıldızı');extra.title=metric(league.trophies,team)+' kupa · '+stars+' yıldız';extra.textContent='★'.repeat(Math.min(stars,10))+(stars>10?' +'+(stars-10):'');td.append(extra);}
   tr.append(td);
   for(const k of ['played','wins','draws','losses','goals','points'])appendTextCell(tr,metric(stats,k));
-  appendTextCell(tr,metric(league.trophies,team));body.append(tr);
+  appendTextCell(tr,metric(league.trophies,team));appendTextCell(tr,stars);body.append(tr);
  }
  const history=id('history');history.replaceChildren();
  const games=(league.history||[]).filter(g=>!Number.isFinite(through)||Number(g.matchNumber)===through).slice().sort((a,b)=>Number(b.matchNumber)-Number(a.matchNumber)||Number(b.at)-Number(a.at));
