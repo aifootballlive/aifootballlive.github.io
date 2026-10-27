@@ -405,4 +405,91 @@ for(const button of document.querySelectorAll('.leagues .leagueChoice'))button.a
 refresh();setInterval(refresh,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
 })();
 </script>
+<script>
+/* Presentation only. Never changes teams, receipts, clocks or saved game rules. */
+(()=>{'use strict';
+ const league=document.body.id==='leaguePage';
+ const exact={
+ 'Doruk Arenası':'Doruk Arena','DORUK ARENASI':'DORUK ARENA',
+ 'Altın Pusula':'Golden Compass','ALTIN PUSULA':'GOLDEN COMPASS','Kızıl Kıvılcım':'Red Spark','KIZIL KIVILCIM':'RED SPARK','Gece Yıldızı':'Night Star','GECE YILDIZI':'NIGHT STAR','Bordo Dalga':'Claret Wave','BORDO DALGA':'CLARET WAVE',
+ 'Bekleyen':'NEXT','Şutlar':'SHOTS','Kalan kaleci güçleri':'Keeper Power','GOL!':'GOAL!',
+ 'Hakemin Maçı Başlatması Bekleniyor':'Waiting for Kickoff','Maç Başlıyor':'Match Starting','Maç Duraklatıldı • Teknik Ara':'Match Paused • Break',
+ 'Uzatmalara Kalan Süre':'Extra Time In','Uzatmaya Kalan Süre':'Extra Time In','Uzatmanın Bitmesine Kalan Süre':'Extra Time Left',
+ 'Bağlantı Kontrol Ediliyor':'Checking Connection','SESİ AÇ':'ENABLE SOUND','SES AÇIK':'SOUND ON','SES KAPALI':'SOUND OFF','NİGHT STAR':'NIGHT STAR',
+ 'Şut canlı maç için sıraya eklendi.':'Shot saved for the live match.','Şut eklendi! Sırayla oynanacak.':'Shot added! It will play in order.','Şutlar maç başlayınca otomatik başlayacaktır.':'Shots will play after kickoff.',
+ 'Kazanan ve Lig Sonuçları':'Results & League Table','Yeni Sezon Başlatılıyor':'Starting Next Season','Yeni Maç Başlatılıyor':'Starting Next Match','Sezon Tamamlandı • Yeni Sezonu Başlat':'Season Over • Start Next Season','Şampiyonluk Finaline Kalan Süre':'Title Final',
+ 'BERABERE':'DRAW','MAÇ TEKNİK NEDENLE DURDU':'MATCH STOPPED • TECHNICAL ISSUE',
+ 'MAÇ SONUCU VE LİG PUAN DURUMU':'MATCH RESULT & LEAGUE TABLE','LİG PUAN DURUMU':'LEAGUE TABLE','BERABERE!':'DRAW!',
+ 'TAKIM':'TEAM','GOL':'GOALS','PUAN':'PTS','KUPA':'CUPS','YILDIZ':'STARS',
+ 'Lig Puan Durumu':'League Table','Sezon Puan Durumu':'Season Table','Maç Sonuçları ve Puanlar':'Match Results & Points','Önceki Sezonlar':'Past Seasons',
+ 'SEZON':'SEASON','OYNANAN MAÇ':'MATCHES PLAYED','LİG LİDERİ':'LEAGUE LEADER','Sezon':'Season','Maç':'Match',
+ 'Tüm maçlar':'All matches','Henüz tamamlanan maç yok.':'No completed matches yet.','Henüz tamamlanan sezon yok.':'No completed seasons yet.',
+ 'Özgün takımlar • Herkese açık lig tablosu':'Original teams • Public league table','Lig verileri yükleniyor…':'Loading league data…',
+ 'Güncel lig puan durumu':'Latest league table','Canlı maçtaki güncel lig tablosu':'Live league table','Sezonu incele':'View season',
+ 'Takım':'Team','Gol':'Goals','Maç puanı':'Match points','Toplam puan':'Total points','Tarih kaydı bulunmuyor':'Date unavailable',
+ 'Veri yok. Bu arena henüz hazırlanmadı.':'No data. This arena is not ready yet.',
+ 'Şu anda Doruk Arenası aktif. Diğer ligler ileride açılacak.':'Doruk Arena is open. More leagues are coming soon.',
+ 'Doruk Arenası aktif. Aşağıda canlı lig tablosu bulunuyor.':'Doruk Arena is open. The live league table is below.',
+ 'Henüz lig sonucu kaydedilmedi. Takımlar hazır.':'No league results yet. The teams are ready.',
+ 'Canlı lig bilgileri bekleniyor. Takımlar gösteriliyor.':'Waiting for live league data. Showing the teams.',
+ 'Bu sayfa yaklaşık her 5 saniyede bir yenilenir. Yayın görüntüsündeki lig düğmesi TikTok içinden tıklanamaz; bağlantıyı tarayıcıda açabilirsiniz.':'Updates every 5 seconds. Open the profile link in your browser to see the league table.',
+ 'O: Oynanan, G: Galibiyet, B: Beraberlik, M: Mağlubiyet. Tek lider 3 puan; birincilikte eşitlik 1 puan. Her sezon şampiyonluğu 1 kupa kazandırır. Her 10 şampiyonluk kupası 1 yıldız eder: 10 kupa = 1 yıldız, 20 kupa = 2 yıldız, 30 kupa = 3 yıldız. Bağlantı kesintisinden dolayı iptal edilen maçlara puan verilmez.':'P: Played, W: Wins, D: Draws, L: Losses. A sole winner gets 3 points; tied winners get 1 point. Each season title earns 1 cup. Every 10 cups earns 1 star. Cancelled matches earn no points.'
+ };
+ const names=Object.keys(exact).filter(k=>/Pusula|Kıvılcım|Yıldızı|Dalga|Arenası|PUSULA|KIVILCIM|YILDIZI|DALGA|ARENASI/.test(k));
+ function translate(source){
+  if(!league&&source.trim()==='Lig tablosu için profilimizdeki linke tıklayın')return Math.floor((window.AIFootballTime?.now?.()??Date.now())/7000)%2?source:'League table: open the link in our profile';
+  const s=source.trim();if(exact[s])return source.replace(s,exact[s]);
+  let out=source;
+  out=out.replace(/(\d+)\. SEZON · (\d+\/\d+) MAÇ · GOL SAYILARI/g,'SEASON $1 · MATCH $2 · GOALS')
+   .replace(/(\d+) ŞUT/g,(_,n)=>n+' '+(n==='1'?'SHOT':'SHOTS'))
+   .replace(/(\d+)\. Maç Sonundaki Puan Durumu/g,'Table After Match $1')
+   .replace(/(\d+)\. sezon/g,'Season $1').replace(/(\d+)\. maç/g,'Match $1')
+   .replace(/Sezon (\d+) • Şampiyon /g,'Season $1 • Champion ')
+   .replace(/Maç (\d+)/g,'Match $1').replace(/ kazandı/g,' wins').replace(/Berabere/g,'Draw')
+   .replace(/ • Aktif/g,' • Current').replace(/Tüm kayıtlı maçlar/g,'All recorded matches')
+   .replace(/ • Yeniden oynanan sonuç/g,' • Replayed result').replace(/(\d+) puan/g,'$1 points')
+   .replace(/ • Veri yok\. Bu arena henüz hazırlanmadı\./g,' • No data. This arena is not ready yet.')
+   .replace(/ • SEZON /g,' • SEASON ').replace(/ŞAMPİYONLUK FİNALİ/g,'TITLE FINAL').replace(/EK MAÇ/g,'EXTRA MATCH')
+   .replace(/SONUÇ EKRANI KALAN/g,'TABLE CLOSES IN').replace(/SONUÇ EKRANI/g,'LEAGUE TABLE').replace(/YENİ MAÇ/g,'NEXT MATCH').replace(/ SONRA/g,'').replace(/ KAZANDI/g,' WINS')
+   .replace(/DENEME MAÇI · SONUÇLAR KAYDEDİLMEZ/g,'TEST MATCH · NOT SAVED')
+   .replace(/İlk (\d+) maçın ayrıntıları eski kayıtlarda bulunmuyor; toplam puanları korunuyor\./g,'Details for the first $1 matches are unavailable. Total points are kept.');
+  for(const name of names)out=out.split(name).join(exact[name]);
+  return out;
+ }
+ const speech={shot1:'Great shot!',shot2:'What a shot!',goal1:'Goal! What a goal!',goal2:'An amazing goal!',save:'What a save!',
+  A:'Golden Compass wins! Well played!',B:'Red Spark wins! Well played!',C:'Night Star wins! Well played!',D:'Claret Wave wins! Well played!',draw:'Full time. It is a draw. Well played!',
+  kickoff:'The match has started!',prepare:'The match starts in thirty seconds. Get ready!',prepare15:'Fifteen seconds to kickoff. Shots will play in order.',prepare5:'Five seconds. Get ready!',
+  countdown:'Next match in sixty seconds. The teams are getting ready.',league:'Here is the league table. The next match starts soon. New shots join the next match.',
+  queueInfo:'New shots are in the queue. They will play in order.',waiting1:'Waiting for kickoff. Your shots are saved and will play in order.',waiting3:'Shots are saved. They will play after kickoff.',
+  idle1:'Welcome to Doruk Arena! Four teams are ready. Which team will win?',idle2:'Four teams, one arena. Which team will shine today?',idle3:'A great save or a great goal. Anything can happen!',idle4:'The teams are ready. Who will score first?',
+  atmosphere1:'All eyes on the pitch. Who will score next?',atmosphere2:'One shot, one goal. Everything can change!',
+  final300:'Five minutes left. Every shot counts.',final120:'Two minutes left.',final60:'One minute left. The score can still change!',final30a:'Thirty seconds left. Every shot counts!',final30b:'Thirty seconds left. The game is still on!',final30c:'Thirty seconds left. One last chance!',final20:'Twenty seconds left!',final10:'Ten seconds left!',final5:'Five seconds left!'};
+ window.AIFootballLanguage={translate,speechPair(text,key){return speech[key]?[speech[key],text]:null;}};
+ let language='en';try{if(league)language=localStorage.getItem('afl-league-language')||'tr';}catch{}
+ const saved=new WeakMap();let applying=false;
+ const selectors=league?['main']:['#goalsHeading','#liveArenaName','#broadcastViewport .broadcastControls','#adminFrontKeeper','#matchClockHud .clockStatus','#roundSummary','#goalFx','#soundEnable','#pendingGiftNotice'];
+ function render(){if(applying)return;applying=true;
+  for(const selector of selectors){const root=document.querySelector(selector);if(!root)continue;
+   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let node;
+   while(node=walker.nextNode()){
+    if(node.parentElement?.closest('script,style,#publicLanguage'))continue;
+    const old=saved.get(node),current=node.nodeValue,source=old&&current===old.output?old.source:current;
+    let output=language==='en'?translate(source):source;
+    if(language==='en'&&node.parentElement?.tagName==='TH')output=({O:'P',G:'W',B:'D',M:'L'})[source.trim()]||output;
+    saved.set(node,{source,output});if(output!==current)node.nodeValue=output;
+   }
+  }
+  applying=false;
+ }
+ if(league){
+  const box=document.createElement('div');box.id='publicLanguage';box.style.cssText='display:flex;gap:8px;margin:12px 0';
+  for(const [value,label]of [['tr','Türkçe'],['en','English']]){const b=document.createElement('button');b.type='button';b.className='leagueChoice';b.textContent=label;b.dataset.language=value;b.onclick=()=>{language=value;try{localStorage.setItem('afl-league-language',value);}catch{}update();};box.append(b);}
+  document.querySelector('header').after(box);
+  function update(){document.documentElement.lang=language;for(const b of box.children){b.classList.toggle('selected',b.dataset.language===language);b.setAttribute('aria-pressed',String(b.dataset.language===language));}render();}update();
+ }
+ const observer=new MutationObserver(()=>{observer.disconnect();render();observer.observe(document.body,{subtree:true,childList:true,characterData:true});});
+ render();observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+})();
+
+</script>
 </body></html>
