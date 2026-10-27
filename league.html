@@ -469,7 +469,7 @@ refresh();setInterval(refresh,5000);document.addEventListener('visibilitychange'
  const saved=new WeakMap();let applying=false;
  const selectors=league?['main']:['#goalsHeading','#liveArenaName','#broadcastViewport .broadcastControls','#adminFrontKeeper','#matchClockHud .clockStatus','#roundSummary','#goalFx','#soundEnable','#pendingGiftNotice'];
  function render(){if(applying)return;applying=true;
-  for(const selector of selectors){const root=document.querySelector(selector);if(!root)continue;
+  for(const selector of selectors){const root=document.querySelector(selector);if(!root)continue;if(!league&&root.lang!=='en')root.lang='en';
    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let node;
    while(node=walker.nextNode()){
     if(node.parentElement?.closest('script,style,#publicLanguage'))continue;
