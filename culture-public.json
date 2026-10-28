@@ -2,7 +2,7 @@
   "version": 2,
   "state": {
     "version": 2,
-    "revision": 1,
+    "revision": 2,
     "mode": "live",
     "season": 1,
     "round": 1,
@@ -16,7 +16,7 @@
       "autoNext": false,
       "breakSeconds": 15,
       "matchesPerSeason": 20,
-      "musicEnabled": false,
+      "musicEnabled": true,
       "musicVolume": 35
     },
     "scores": {},
@@ -65,7 +65,7 @@
       "AR",
       "ZA"
     ],
-    "serverTime": 1793156593913,
+    "serverTime": 1793156641715,
     "startedAt": null,
     "endsAt": null,
     "remaining": 0,
@@ -76,5 +76,5 @@
     "history": [],
     "notice": ""
   },
-  "publishedAt": "2026-10-28T03:03:13.913Z"
+  "publishedAt": "2026-10-28T03:04:01.715Z"
 }
