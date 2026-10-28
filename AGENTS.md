@@ -8,3 +8,5 @@
 - Doğrulamayı ayrı geçici veri tabanı ve tarayıcıyla yap. Futbol ekranı için testlerde sahte yerel sayfa kullan; gerçek yayına test olayı gönderme. Mevcut canlı kayıtları, skorları, ayarları ve oturumları koru.
 
 Yönetim merkezi `uygulamalarim.html` dosyasıdır. Üst seviye merkez yalnız sekmeleri yönetir. DKŞ yönetimi aynı dosyanın `?app=culture&embedded=culture` görünümünde, futbol yönetimi `/football/live.html` içinde bağımsız iframe belgeleri olarak açılır. İkisi de ilk seçildiklerinde yüklenir; sekme değiştirmek bunları yeniden yüklemez.
+
+- Yönetici düğmelerinde tarayıcının varsayılan zeminine güvenme. Açıkça koyu zemin ve okunaklı, yeterli kontrastlı yazı kullan; beyaz/açık zemin üzerine beyaz yazılı düğme yapma.

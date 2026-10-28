@@ -13,9 +13,9 @@
   for(const [frequency,offset]of [[880,0],[1320,.105]]){
    const oscillator=ctx.createOscillator(),gain=ctx.createGain(),start=at+offset;
    oscillator.type='sine';oscillator.frequency.setValueAtTime(frequency,start);
-   gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(.22,start+.008);gain.gain.exponentialRampToValueAtTime(.0001,start+.085);
+   gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(.65,start+.008);gain.gain.setValueAtTime(.65,start+.04);gain.gain.exponentialRampToValueAtTime(.0001,start+.10);
    oscillator.connect(gain);gain.connect(ctx.destination);active.add(oscillator);
-   oscillator.onended=()=>{active.delete(oscillator);oscillator.disconnect();gain.disconnect();};oscillator.start(start);oscillator.stop(start+.09);
+   oscillator.onended=()=>{active.delete(oscillator);oscillator.disconnect();gain.disconnect();};oscillator.start(start);oscillator.stop(start+.115);
   }
   played++;return true;
  }
@@ -39,6 +39,7 @@
  function install(){
   const panel=document.getElementById('adminCategory-audio');if(!panel||document.getElementById('giftBeepSettings'))return;
   const section=document.createElement('section');section.id='giftBeepSettings';section.className='adminSection';
+  const style=document.createElement('style');style.id='giftBeepStyle';style.textContent='#giftBeepSettings #testGiftBeep{appearance:none;background:#176b58!important;color:#fff!important;border:1px solid #72d9ba!important;border-radius:8px;padding:10px 18px;min-height:44px;font:800 14px/1.3 system-ui;cursor:pointer;box-shadow:0 2px 7px #0004}#giftBeepSettings #testGiftBeep:hover{background:#1b8068!important}#giftBeepSettings #testGiftBeep:focus-visible{outline:3px solid #ffda7a;outline-offset:3px}';document.head.append(style);
   const title=document.createElement('div');title.className='adminSectionTitle';title.textContent='HEDİYE BİLDİRİM SESİ';
   const label=document.createElement('label');label.className='adminToggle';const text=document.createElement('span');text.textContent='Bu cihazda hediye gelince bip çal';
   control=document.createElement('input');control.type='checkbox';control.id='setGiftBeepEnabled';control.checked=enabled;control.addEventListener('change',()=>{void setEnabled(control.checked);});label.append(text,control);
