@@ -1,6 +1,8 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert/strict'),crypto=require('crypto').webcrypto;
 const helper=fs.readFileSync(require.resolve('../like-bonus-v284.js'),'utf8');
 const ctx={window:{},document:{getElementById:()=>null}};vm.createContext(ctx);vm.runInContext(helper,ctx);const h=ctx.window.AIFootballLikeBonus;
+// These legacy regression cases deliberately exercise pooled counting.
+const pooledApply=h.apply;h.apply=(m,...args)=>{(m.likeBonus||={}).countMode='global';return pooledApply(m,...args);};
 let now=10000000;
 const event=(total,count=1,room='r1',id='e'+total)=>h.parse({event:'like',data:{totalLikeCount:total,likeCount:count,roomId:room,id,userId:'alice'}},'',now++);
 const base=()=>({version:2,clock:{startedAt:null,round:1,finishedAt:null},scores:{A:0,B:0,C:0,D:0},keeper:{A:20,B:20,C:20,D:20},jobs:[],receipts:[],accepted:0,shotSequence:0});
