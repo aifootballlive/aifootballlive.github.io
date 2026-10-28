@@ -39,7 +39,7 @@ function leaderRecompute(s,at){
 function finish(s,at){
  if(s.status!=='running')return;
  settle(s,at);s.status='completed';
- const first=ordered(s,at)[0];s.winner=n(s.scores[first.id])?first.id:null;s.advanceAt=at+15000;
+ const first=ordered(s,at)[0];s.winner=s.leader&&n(s.scores[s.leader])>0?s.leader:null;s.advanceAt=at+15000;
  s.history.push({round:s.round,winner:s.winner,scores:{...s.scores},times:{...s.leaderTimes},at});
  s.history=s.history.slice(-30);
 }
