@@ -2,7 +2,7 @@
 (()=>{
  'use strict';
 const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
- const KEY='tiktok_match_v2',CLIENT_BUILD=358,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
+ const KEY='tiktok_match_v2',CLIENT_BUILD=359,API='ws://127.0.0.1:21213/',owner=crypto.randomUUID(),LEASE=10000;
  const MATCH_MS=25*60*1000,OVERTIME_MAX_MS=5*60*1000,WINNER_HOLD_MS=60000,RESULT_HOLD_MS=180000,END_QUIET_MS=1200,OFFLINE_GRACE_MS=20000;
  const TEAMS=['A','B','C','D'];
  // One catalog drives both the visible gift buttons and received TikTok events.
@@ -934,10 +934,19 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   m.jobs=result;
  }
  function fastModeFor(m,extra=0){const n=Object.values(pendingShotCounts(m)).reduce((a,b)=>a+b,0)+extra;return n>10?true:n<5?false:!!m.fastShotMode;}
+ // Stable per paid shot: previews, write retries and reloads cannot reroll it.
+ function goalForShot(m,j,keeper){
+  if(m.shotOutcomeMode!=='random')return Number(keeper[j.team])<=0;
+  const key=JSON.stringify([m.shotRandomSeed,j.id,j.team]);let h=1779033703^key.length;
+  for(let i=0;i<key.length;i++){h=Math.imul(h^key.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
+  h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);h=(h^h>>>16)>>>0;
+  return h<2147483648;
+ }
  function makeCue(m,j,startsAt){
   m.fastShotMode=fastModeFor(m,1);const playbackMode=m.fastShotMode?'fast':'normal';
-  const def=j.team,after={scores:{...m.scores,C:m.scores.C||0,D:m.scores.D||0},keeper:{...m.keeper,C:m.keeper.C??state.startKeeper,D:m.keeper.D??state.startKeeper}},goal=after.keeper[def]<=0;
-  if(goal){after.scores[j.team]++;after.keeper[def]=Number(m.initialKeeper?.[def]??state.startKeepers?.[def]??10);}else after.keeper[def]=Math.max(0,after.keeper[def]-(Number(state.keeperCost)||10));
+  const def=j.team,after={scores:{...m.scores,C:m.scores.C||0,D:m.scores.D||0},keeper:{...m.keeper,C:m.keeper.C??state.startKeeper,D:m.keeper.D??state.startKeeper}},goal=goalForShot(m,j,after.keeper);
+  if(goal)after.scores[j.team]++;
+  if(m.shotOutcomeMode!=='random'){if(goal)after.keeper[def]=Number(m.initialKeeper?.[def]??state.startKeepers?.[def]??10);else after.keeper[def]=Math.max(0,after.keeper[def]-(Number(state.keeperCost)||10));}
   const timing=window.AIFootball3D?.getShotTiming?.(j.team,goal?'goal':'save',playbackMode)||{outcomeMs:1850,durationMs:14000};
   return {playbackMode,goalMediaSeconds:timing.goalSeconds??goalMediaSeconds[j.team],playbackProtocol:204,playbackOwner:m.lease?.owner||owner,durationMs:timing.durationMs||14000,id:j.id,team:j.team,result:goal?'goal':'save',variation:m.shotSequence++,startsAt,outcomeAt:startsAt+(timing.outcomeMs||1850),endsAt:startsAt+(timing.durationMs||14000),after,committed:false,finishedAt:null};
  }
@@ -947,14 +956,14 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   // Read-only prediction: predecode the next clip without reserving or spending a gift.
   const preview=clone(m);preview.cue=null;preview.nextCue=null;const job=takeJob(preview,m.cue.team);if(!job)return;
   const keeper=!m.cue.committed?m.cue.after.keeper:m.keeper;
-  window.AIFootball3D?.prepareUpcomingShot?.({id:'preview:'+job.id,team:job.team,playbackMode:fastModeFor(preview,1)?'fast':'normal',result:Number(keeper[job.team])<=0?'goal':'save'});
+  window.AIFootball3D?.prepareUpcomingShot?.({id:'preview:'+job.id,team:job.team,playbackMode:fastModeFor(preview,1)?'fast':'normal',result:goalForShot(m,job,keeper)?'goal':'save'});
  }
  function prepareInitialPreview(m){
   if(!m||m.cue||m.nextCue||m.clock?.finishedAt||m.processingPaused||!hasPlayableJobs(m))return;
   const preview=clone(m),job=takeJob(preview,null);if(!job)return;
   // Preload/decode invisibly while waiting/counting down. Never reserve a gift,
   // start a shot or change its official start boundary before kickoff.
-  window.AIFootball3D?.prepareUpcomingShot?.({id:'first-preview:'+job.id,team:job.team,playbackMode:fastModeFor(preview,1)?'fast':'normal',result:Number(m.keeper[job.team])<=0?'goal':'save'});
+  window.AIFootball3D?.prepareUpcomingShot?.({id:'first-preview:'+job.id,team:job.team,playbackMode:fastModeFor(preview,1)?'fast':'normal',result:goalForShot(m,job,m.keeper)?'goal':'save'});
  }
  // Queue acceptance and cue scheduling share one authenticated CAS write.
  function primeQueuedShots(m,now){
@@ -1188,6 +1197,12 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   getLikeBonusStatus(){return window.AIFootballLikeBonus?.status(match)||{enabled:true,progress:0,awarded:0,observed:0};},
   async setLikeBonusEnabled(enabled){if(!admin()||typeof enabled!=='boolean')return false;return change(m=>{m.likeBonus||={progress:0,awarded:0,observed:0,retired:[]};if((m.likeBonus.enabled!==false)===enabled)return false;m.likeBonus.enabled=enabled;if(enabled)m.likeBonus.enabledAt=matchNow();},false);},
   async resetLikeBonusCounter(){if(!admin())return false;const saved=await change(m=>{m.likeBonus||={enabled:true,retired:[]};m.likeBonus.viewers={};m.likeBonus.personal={};m.likeBonus.unattributed=0;m.likeBonus.progress=0;m.likeBonus.observed=0;m.likeBonus.awarded=0;m.likeBonus.resetAt=matchNow();},false);if(saved){likeInbox.clear();saveLikes();}return saved;},
+  getShotOutcomeMode(){return match?.shotOutcomeMode==='random'?'random':'keeper';},
+  async setShotOutcomeMode(value){
+   if(!admin()||!match||!['keeper','random'].includes(value))return false;
+   const seed=crypto.randomUUID();
+   return change(m=>{if((m.shotOutcomeMode==='random'?'random':'keeper')===value)return false;m.shotOutcomeMode=value;if(!m.shotRandomSeed)m.shotRandomSeed=seed;},false);
+  },
   async setTimings(next){
    if(!admin())return false;
    const validated=timingFor({timing:next});
