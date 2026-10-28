@@ -1,2 +1,2 @@
 /* Viewer entry: authoritative state comes from the local server. */
-import './culture/client.mjs?v=2';
+import './culture/client.mjs?v=3';

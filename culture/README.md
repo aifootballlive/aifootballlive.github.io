@@ -29,9 +29,9 @@ TikTok bağlantısı mevcut ücretsiz topluluk kütüphanesini kullanır; resmî
 
 25 dakika varsayılandır. Süre ayarı sonraki turda uygulanır. Duraklat süreyi ve liderlik süresini dondurur; yeni hediyeler puana yazılır. Otomatik devam açılırsa sonuç beklemesi sonrası sonraki tur/sezon başlar. Program kapalı kaldığı saatler için sahte maç üretilmez. Puan → birikmiş liderlik süresi → önceki sıra eşitliği çözer. Geçmiş tur sonuçları yerel SQLite'ta saklanır.
 
-20 ülke korunur. Öncelikli 10 ülkenin özgün yapay zekâ karakter görselleri tamamdır. Diğer 10 ülkede bayrak ve puanlama çalışır; portre hazırlanmadığı açıkça belirtilir. Kıyafetler ülke içindeki bir kültürel geleneği temsil eder; tüm halkın tek kıyafeti olarak sunulmaz.
+20 ülke korunur. 20 ülkenin tamamının özgün yapay zekâ karakter görselleri tamamdır. Tablo ve kayan bant ülke kodlarını, bant ayrıca genel puan sırasını gösterir. Kıyafetler ülke içindeki bir kültürel geleneği temsil eder; tüm halkın tek kıyafeti olarak sunulmaz.
 
-Ses için yönetimde “Lider ülkenin müziği” kaydedilir; OBS/tarayıcıda bir kez SESİ BAŞLAT tıklanır. Lider değişimi yumuşak geçer. ABD ve Endonezya'da kaynakları kontrol edilmiş kamu malı kayıtlar; diğer ülkelerde özgün temalar vardır. Ayrıntı `assets/culture-v1/audio/licenses.json`; temalar **millî marş değildir**. TikTok'un gerçekçi yapay zekâ içerik etiketi, uygulama içindeki ayrı seçenekten gerektiğinde ayrıca açılmalıdır; ekrandaki etiket bunu otomatik yapmaz.
+Ses için yönetimde “Lider ülkenin müziği” kaydedilir; OBS/tarayıcıda bir kez SESİ BAŞLAT tıklanır. Lider değişimi yumuşak geçer. Yalnızca kaynakları kontrol edilmiş sözsüz millî marşlar çalar. Özgün tema, başka şarkı veya yedek müzik çalınmaz. Doğrulanmış marşı olmayan ülke sessiz kalır. Güncel liste `assets/culture-v1/audio/licenses.json` dosyasındadır. Ses seviyesi çubuğu sürüklendikçe otomatik kaydedilir; yayın ekranındaki ses düğmesi o ekranı açıp kapatır. TikTok'un gerçekçi yapay zekâ içerik etiketi, uygulama içindeki ayrı seçenekten gerektiğinde ayrıca açılmalıdır; ekrandaki etiket bunu otomatik yapmaz.
 
 ## Halka açık GitHub görüntüsü
 
@@ -46,3 +46,7 @@ Veritabanı `culture/.runtime/culture.sqlite` ve WAL dosyalarıdır; Git'e dahil
 `npm run culture:test:browser`: kurulu Chrome ile ayrı yönetici/anonim tarayıcı, ortak puan, canlı-deneme ayrımı, portre yüklemesi, 390 ve 1080 genişlikte 10 satır/footer taşması, sıralama ve uygulama sekmeleri. Harici TikTok'a sahte hediye göndermez.
 
 Ülke erişim değerlendirmesi: [Ülkeler ve kaynaklar](COUNTRY-ACCESS.md).
+
+2026-10-28: 20 ülkenin görselleri tamamlandı. 18 güncel sözsüz marş eklendi. Pakistan ve Tayland için hedef ülkelerde ticari kullanım hakkı kesinleştirilemediği için sessiz kalır. Kaynak ve gerekçeler audio/licenses.json içindedir.
+
+Ülke kodları büyük/küçük/karışık harflerle eşleşir (Br, br, bR, BR). Seçim yine yorumun tamamıyla eşleşmelidir. video-sources/tr-fullbody-v1.png Türkiye videosunu üretmek için hazırlanmış boydan bayrak fonlu kaynak görseldir; video henüz eklenmedi.
