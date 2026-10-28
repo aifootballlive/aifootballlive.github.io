@@ -1,11 +1,11 @@
 [
   {
     "league": {
-      "season": 6,
-      "plannedRounds": 21,
-      "completedRounds": 21,
-      "extraRounds": 1,
-      "champion": "A",
+      "season": 7,
+      "plannedRounds": 20,
+      "completedRounds": 0,
+      "extraRounds": 0,
+      "champion": null,
       "trophies": {
         "A": 2,
         "B": 3,
@@ -17,36 +17,36 @@
       "completionPending": false,
       "teams": {
         "A": {
-          "played": 21,
-          "wins": 4,
-          "draws": 8,
-          "losses": 9,
-          "goals": 46,
-          "points": 20
+          "played": 0,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "goals": 0,
+          "points": 0
         },
         "B": {
-          "played": 21,
-          "wins": 4,
-          "draws": 5,
-          "losses": 12,
-          "goals": 53,
-          "points": 17
+          "played": 0,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "goals": 0,
+          "points": 0
         },
         "C": {
-          "played": 21,
-          "wins": 3,
-          "draws": 6,
-          "losses": 12,
-          "goals": 37,
-          "points": 15
+          "played": 0,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "goals": 0,
+          "points": 0
         },
         "D": {
-          "played": 21,
-          "wins": 1,
-          "draws": 5,
-          "losses": 15,
-          "goals": 29,
-          "points": 8
+          "played": 0,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "goals": 0,
+          "points": 0
         }
       },
       "historyBase": {
@@ -86,428 +86,7 @@
           }
         }
       },
-      "history": [
-        {
-          "round": 167,
-          "matchNumber": 1,
-          "startedAt": 1793204772026.9001,
-          "at": 1793205552026.9001,
-          "scores": {
-            "A": 7,
-            "B": 2,
-            "C": 2,
-            "D": 2
-          },
-          "points": {
-            "A": 3,
-            "B": 0,
-            "C": 0,
-            "D": 0
-          },
-          "winner": "A",
-          "final": false
-        },
-        {
-          "round": 168,
-          "matchNumber": 2,
-          "startedAt": 1793205612223.8,
-          "at": 1793206392223.8,
-          "scores": {
-            "A": 4,
-            "B": 16,
-            "C": 1,
-            "D": 1
-          },
-          "points": {
-            "A": 0,
-            "B": 3,
-            "C": 0,
-            "D": 0
-          },
-          "winner": "B",
-          "final": false
-        },
-        {
-          "round": 169,
-          "matchNumber": 3,
-          "startedAt": 1793206452706.6501,
-          "at": 1793207232706.6501,
-          "scores": {
-            "A": 0,
-            "B": 0,
-            "C": 2,
-            "D": 0
-          },
-          "points": {
-            "A": 0,
-            "B": 0,
-            "C": 3,
-            "D": 0
-          },
-          "winner": "C",
-          "final": false
-        },
-        {
-          "round": 170,
-          "matchNumber": 4,
-          "startedAt": 1793207293060.3,
-          "at": 1793208073060.3,
-          "scores": {
-            "A": 2,
-            "B": 0,
-            "C": 0,
-            "D": 1
-          },
-          "points": {
-            "A": 3,
-            "B": 0,
-            "C": 0,
-            "D": 0
-          },
-          "winner": "A",
-          "final": false
-        },
-        {
-          "round": 171,
-          "matchNumber": 5,
-          "startedAt": 1793208133508.9497,
-          "at": 1793208913508.9497,
-          "scores": {
-            "A": 0,
-            "B": 0,
-            "C": 0,
-            "D": 1
-          },
-          "points": {
-            "A": 0,
-            "B": 0,
-            "C": 0,
-            "D": 3
-          },
-          "winner": "D",
-          "final": false
-        },
-        {
-          "round": 172,
-          "matchNumber": 6,
-          "startedAt": 1793208974238.65,
-          "at": 1793209754238.65,
-          "scores": {
-            "A": 1,
-            "B": 2,
-            "C": 1,
-            "D": 1
-          },
-          "points": {
-            "A": 0,
-            "B": 3,
-            "C": 0,
-            "D": 0
-          },
-          "winner": "B",
-          "final": false
-        },
-        {
-          "round": 173,
-          "matchNumber": 7,
-          "startedAt": 1793209815019.75,
-          "at": 1793210595019.75,
-          "scores": {
-            "A": 2,
-            "B": 1,
-            "C": 7,
-            "D": 1
-          },
-          "points": {
-            "A": 0,
-            "B": 0,
-            "C": 3,
-            "D": 0
-          },
-          "winner": "C",
-          "final": false
-        },
-        {
-          "round": 174,
-          "matchNumber": 8,
-          "startedAt": 1793210655154.7,
-          "at": 1793211435154.7,
-          "scores": {
-            "A": 1,
-            "B": 1,
-            "C": 0,
-            "D": 0
-          },
-          "points": {
-            "A": 1,
-            "B": 1,
-            "C": 0,
-            "D": 0
-          },
-          "winner": null,
-          "final": false
-        },
-        {
-          "round": 175,
-          "matchNumber": 9,
-          "startedAt": 1793211495638.3499,
-          "at": 1793212275638.3499,
-          "scores": {
-            "A": 2,
-            "B": 1,
-            "C": 1,
-            "D": 2
-          },
-          "points": {
-            "A": 1,
-            "B": 0,
-            "C": 0,
-            "D": 1
-          },
-          "winner": null,
-          "final": false
-        },
-        {
-          "round": 176,
-          "matchNumber": 10,
-          "startedAt": 1793212336022.35,
-          "at": 1793213116022.35,
-          "scores": {
-            "A": 2,
-            "B": 1,
-            "C": 2,
-            "D": 1
-          },
-          "points": {
-            "A": 1,
-            "B": 0,
-            "C": 1,
-            "D": 0
-          },
-          "winner": null,
-          "final": false
-        },
-        {
-          "round": 177,
-          "matchNumber": 11,
-          "startedAt": 1793213176260.8499,
-          "at": 1793213956260.8499,
-          "scores": {
-            "A": 1,
-            "B": 10,
-            "C": 0,
-            "D": 0
-          },
-          "points": {
-            "A": 0,
-            "B": 3,
-            "C": 0,
-            "D": 0
-          },
-          "winner": "B",
-          "final": false
-        },
-        {
-          "round": 178,
-          "matchNumber": 12,
-          "startedAt": 1793214016481.2,
-          "at": 1793214796481.2,
-          "scores": {
-            "A": 1,
-            "B": 1,
-            "C": 1,
-            "D": 1
-          },
-          "points": {
-            "A": 1,
-            "B": 1,
-            "C": 1,
-            "D": 1
-          },
-          "winner": null,
-          "final": false
-        },
-        {
-          "round": 179,
-          "matchNumber": 13,
-          "startedAt": 1793214856917.0002,
-          "at": 1793215636917.0002,
-          "scores": {
-            "A": 1,
-            "B": 1,
-            "C": 4,
-            "D": 2
-          },
-          "points": {
-            "A": 0,
-            "B": 0,
-            "C": 3,
-            "D": 0
-          },
-          "winner": "C",
-          "final": false
-        },
-        {
-          "round": 180,
-          "matchNumber": 14,
-          "startedAt": 1793215697141.2,
-          "at": 1793216477141.2,
-          "scores": {
-            "A": 1,
-            "B": 0,
-            "C": 0,
-            "D": 0
-          },
-          "points": {
-            "A": 3,
-            "B": 0,
-            "C": 0,
-            "D": 0
-          },
-          "winner": "A",
-          "final": false
-        },
-        {
-          "round": 181,
-          "matchNumber": 15,
-          "startedAt": 1793216537234.9,
-          "at": 1793217317234.9,
-          "scores": {
-            "A": 0,
-            "B": 1,
-            "C": 1,
-            "D": 1
-          },
-          "points": {
-            "A": 0,
-            "B": 1,
-            "C": 1,
-            "D": 1
-          },
-          "winner": null,
-          "final": false
-        },
-        {
-          "round": 182,
-          "matchNumber": 16,
-          "startedAt": 1793217377386.0498,
-          "at": 1793218157386.0498,
-          "scores": {
-            "A": 1,
-            "B": 2,
-            "C": 1,
-            "D": 1
-          },
-          "points": {
-            "A": 0,
-            "B": 3,
-            "C": 0,
-            "D": 0
-          },
-          "winner": "B",
-          "final": false
-        },
-        {
-          "round": 183,
-          "matchNumber": 17,
-          "startedAt": 1793218217998.3,
-          "at": 1793218997998.3,
-          "scores": {
-            "A": 1,
-            "B": 1,
-            "C": 1,
-            "D": 1
-          },
-          "points": {
-            "A": 1,
-            "B": 1,
-            "C": 1,
-            "D": 1
-          },
-          "winner": null,
-          "final": false
-        },
-        {
-          "round": 184,
-          "matchNumber": 18,
-          "startedAt": 1793219058251,
-          "at": 1793219838251,
-          "scores": {
-            "A": 2,
-            "B": 2,
-            "C": 1,
-            "D": 1
-          },
-          "points": {
-            "A": 1,
-            "B": 1,
-            "C": 0,
-            "D": 0
-          },
-          "winner": null,
-          "final": false
-        },
-        {
-          "round": 185,
-          "matchNumber": 19,
-          "startedAt": 1793219898507.55,
-          "at": 1793220678507.55,
-          "scores": {
-            "A": 5,
-            "B": 4,
-            "C": 5,
-            "D": 4
-          },
-          "points": {
-            "A": 1,
-            "B": 0,
-            "C": 1,
-            "D": 0
-          },
-          "winner": null,
-          "final": false
-        },
-        {
-          "round": 186,
-          "matchNumber": 20,
-          "startedAt": 1793220738854.8,
-          "at": 1793221518854.8,
-          "scores": {
-            "A": 9,
-            "B": 5,
-            "C": 4,
-            "D": 5
-          },
-          "points": {
-            "A": 3,
-            "B": 0,
-            "C": 0,
-            "D": 0
-          },
-          "winner": "A",
-          "final": false
-        },
-        {
-          "round": 187,
-          "matchNumber": 21,
-          "startedAt": 1793221579183.45,
-          "at": 1793222359183.45,
-          "scores": {
-            "A": 3,
-            "B": 2,
-            "C": 3,
-            "D": 3
-          },
-          "points": {
-            "A": 1,
-            "B": 0,
-            "C": 1,
-            "D": 1
-          },
-          "winner": null,
-          "final": false
-        }
-      ]
+      "history": []
     },
     "archive": [
       {
@@ -2973,6 +2552,515 @@
               "D": 0
             },
             "winner": "A",
+            "final": false
+          }
+        ]
+      },
+      {
+        "season": 6,
+        "plannedRounds": 21,
+        "completedRounds": 21,
+        "extraRounds": 1,
+        "champion": "A",
+        "trophies": {
+          "A": 2,
+          "B": 3,
+          "C": 0,
+          "D": 1
+        },
+        "finalists": [],
+        "finalAttempts": 0,
+        "completionPending": false,
+        "teams": {
+          "A": {
+            "played": 21,
+            "wins": 4,
+            "draws": 8,
+            "losses": 9,
+            "goals": 46,
+            "points": 20
+          },
+          "B": {
+            "played": 21,
+            "wins": 4,
+            "draws": 5,
+            "losses": 12,
+            "goals": 53,
+            "points": 17
+          },
+          "C": {
+            "played": 21,
+            "wins": 3,
+            "draws": 6,
+            "losses": 12,
+            "goals": 37,
+            "points": 15
+          },
+          "D": {
+            "played": 21,
+            "wins": 1,
+            "draws": 5,
+            "losses": 15,
+            "goals": 29,
+            "points": 8
+          }
+        },
+        "historyBase": {
+          "completedRounds": 0,
+          "teams": {
+            "A": {
+              "played": 0,
+              "wins": 0,
+              "draws": 0,
+              "losses": 0,
+              "goals": 0,
+              "points": 0
+            },
+            "B": {
+              "played": 0,
+              "wins": 0,
+              "draws": 0,
+              "losses": 0,
+              "goals": 0,
+              "points": 0
+            },
+            "C": {
+              "played": 0,
+              "wins": 0,
+              "draws": 0,
+              "losses": 0,
+              "goals": 0,
+              "points": 0
+            },
+            "D": {
+              "played": 0,
+              "wins": 0,
+              "draws": 0,
+              "losses": 0,
+              "goals": 0,
+              "points": 0
+            }
+          }
+        },
+        "history": [
+          {
+            "round": 167,
+            "matchNumber": 1,
+            "startedAt": 1793204772026.9001,
+            "at": 1793205552026.9001,
+            "scores": {
+              "A": 7,
+              "B": 2,
+              "C": 2,
+              "D": 2
+            },
+            "points": {
+              "A": 3,
+              "B": 0,
+              "C": 0,
+              "D": 0
+            },
+            "winner": "A",
+            "final": false
+          },
+          {
+            "round": 168,
+            "matchNumber": 2,
+            "startedAt": 1793205612223.8,
+            "at": 1793206392223.8,
+            "scores": {
+              "A": 4,
+              "B": 16,
+              "C": 1,
+              "D": 1
+            },
+            "points": {
+              "A": 0,
+              "B": 3,
+              "C": 0,
+              "D": 0
+            },
+            "winner": "B",
+            "final": false
+          },
+          {
+            "round": 169,
+            "matchNumber": 3,
+            "startedAt": 1793206452706.6501,
+            "at": 1793207232706.6501,
+            "scores": {
+              "A": 0,
+              "B": 0,
+              "C": 2,
+              "D": 0
+            },
+            "points": {
+              "A": 0,
+              "B": 0,
+              "C": 3,
+              "D": 0
+            },
+            "winner": "C",
+            "final": false
+          },
+          {
+            "round": 170,
+            "matchNumber": 4,
+            "startedAt": 1793207293060.3,
+            "at": 1793208073060.3,
+            "scores": {
+              "A": 2,
+              "B": 0,
+              "C": 0,
+              "D": 1
+            },
+            "points": {
+              "A": 3,
+              "B": 0,
+              "C": 0,
+              "D": 0
+            },
+            "winner": "A",
+            "final": false
+          },
+          {
+            "round": 171,
+            "matchNumber": 5,
+            "startedAt": 1793208133508.9497,
+            "at": 1793208913508.9497,
+            "scores": {
+              "A": 0,
+              "B": 0,
+              "C": 0,
+              "D": 1
+            },
+            "points": {
+              "A": 0,
+              "B": 0,
+              "C": 0,
+              "D": 3
+            },
+            "winner": "D",
+            "final": false
+          },
+          {
+            "round": 172,
+            "matchNumber": 6,
+            "startedAt": 1793208974238.65,
+            "at": 1793209754238.65,
+            "scores": {
+              "A": 1,
+              "B": 2,
+              "C": 1,
+              "D": 1
+            },
+            "points": {
+              "A": 0,
+              "B": 3,
+              "C": 0,
+              "D": 0
+            },
+            "winner": "B",
+            "final": false
+          },
+          {
+            "round": 173,
+            "matchNumber": 7,
+            "startedAt": 1793209815019.75,
+            "at": 1793210595019.75,
+            "scores": {
+              "A": 2,
+              "B": 1,
+              "C": 7,
+              "D": 1
+            },
+            "points": {
+              "A": 0,
+              "B": 0,
+              "C": 3,
+              "D": 0
+            },
+            "winner": "C",
+            "final": false
+          },
+          {
+            "round": 174,
+            "matchNumber": 8,
+            "startedAt": 1793210655154.7,
+            "at": 1793211435154.7,
+            "scores": {
+              "A": 1,
+              "B": 1,
+              "C": 0,
+              "D": 0
+            },
+            "points": {
+              "A": 1,
+              "B": 1,
+              "C": 0,
+              "D": 0
+            },
+            "winner": null,
+            "final": false
+          },
+          {
+            "round": 175,
+            "matchNumber": 9,
+            "startedAt": 1793211495638.3499,
+            "at": 1793212275638.3499,
+            "scores": {
+              "A": 2,
+              "B": 1,
+              "C": 1,
+              "D": 2
+            },
+            "points": {
+              "A": 1,
+              "B": 0,
+              "C": 0,
+              "D": 1
+            },
+            "winner": null,
+            "final": false
+          },
+          {
+            "round": 176,
+            "matchNumber": 10,
+            "startedAt": 1793212336022.35,
+            "at": 1793213116022.35,
+            "scores": {
+              "A": 2,
+              "B": 1,
+              "C": 2,
+              "D": 1
+            },
+            "points": {
+              "A": 1,
+              "B": 0,
+              "C": 1,
+              "D": 0
+            },
+            "winner": null,
+            "final": false
+          },
+          {
+            "round": 177,
+            "matchNumber": 11,
+            "startedAt": 1793213176260.8499,
+            "at": 1793213956260.8499,
+            "scores": {
+              "A": 1,
+              "B": 10,
+              "C": 0,
+              "D": 0
+            },
+            "points": {
+              "A": 0,
+              "B": 3,
+              "C": 0,
+              "D": 0
+            },
+            "winner": "B",
+            "final": false
+          },
+          {
+            "round": 178,
+            "matchNumber": 12,
+            "startedAt": 1793214016481.2,
+            "at": 1793214796481.2,
+            "scores": {
+              "A": 1,
+              "B": 1,
+              "C": 1,
+              "D": 1
+            },
+            "points": {
+              "A": 1,
+              "B": 1,
+              "C": 1,
+              "D": 1
+            },
+            "winner": null,
+            "final": false
+          },
+          {
+            "round": 179,
+            "matchNumber": 13,
+            "startedAt": 1793214856917.0002,
+            "at": 1793215636917.0002,
+            "scores": {
+              "A": 1,
+              "B": 1,
+              "C": 4,
+              "D": 2
+            },
+            "points": {
+              "A": 0,
+              "B": 0,
+              "C": 3,
+              "D": 0
+            },
+            "winner": "C",
+            "final": false
+          },
+          {
+            "round": 180,
+            "matchNumber": 14,
+            "startedAt": 1793215697141.2,
+            "at": 1793216477141.2,
+            "scores": {
+              "A": 1,
+              "B": 0,
+              "C": 0,
+              "D": 0
+            },
+            "points": {
+              "A": 3,
+              "B": 0,
+              "C": 0,
+              "D": 0
+            },
+            "winner": "A",
+            "final": false
+          },
+          {
+            "round": 181,
+            "matchNumber": 15,
+            "startedAt": 1793216537234.9,
+            "at": 1793217317234.9,
+            "scores": {
+              "A": 0,
+              "B": 1,
+              "C": 1,
+              "D": 1
+            },
+            "points": {
+              "A": 0,
+              "B": 1,
+              "C": 1,
+              "D": 1
+            },
+            "winner": null,
+            "final": false
+          },
+          {
+            "round": 182,
+            "matchNumber": 16,
+            "startedAt": 1793217377386.0498,
+            "at": 1793218157386.0498,
+            "scores": {
+              "A": 1,
+              "B": 2,
+              "C": 1,
+              "D": 1
+            },
+            "points": {
+              "A": 0,
+              "B": 3,
+              "C": 0,
+              "D": 0
+            },
+            "winner": "B",
+            "final": false
+          },
+          {
+            "round": 183,
+            "matchNumber": 17,
+            "startedAt": 1793218217998.3,
+            "at": 1793218997998.3,
+            "scores": {
+              "A": 1,
+              "B": 1,
+              "C": 1,
+              "D": 1
+            },
+            "points": {
+              "A": 1,
+              "B": 1,
+              "C": 1,
+              "D": 1
+            },
+            "winner": null,
+            "final": false
+          },
+          {
+            "round": 184,
+            "matchNumber": 18,
+            "startedAt": 1793219058251,
+            "at": 1793219838251,
+            "scores": {
+              "A": 2,
+              "B": 2,
+              "C": 1,
+              "D": 1
+            },
+            "points": {
+              "A": 1,
+              "B": 1,
+              "C": 0,
+              "D": 0
+            },
+            "winner": null,
+            "final": false
+          },
+          {
+            "round": 185,
+            "matchNumber": 19,
+            "startedAt": 1793219898507.55,
+            "at": 1793220678507.55,
+            "scores": {
+              "A": 5,
+              "B": 4,
+              "C": 5,
+              "D": 4
+            },
+            "points": {
+              "A": 1,
+              "B": 0,
+              "C": 1,
+              "D": 0
+            },
+            "winner": null,
+            "final": false
+          },
+          {
+            "round": 186,
+            "matchNumber": 20,
+            "startedAt": 1793220738854.8,
+            "at": 1793221518854.8,
+            "scores": {
+              "A": 9,
+              "B": 5,
+              "C": 4,
+              "D": 5
+            },
+            "points": {
+              "A": 3,
+              "B": 0,
+              "C": 0,
+              "D": 0
+            },
+            "winner": "A",
+            "final": false
+          },
+          {
+            "round": 187,
+            "matchNumber": 21,
+            "startedAt": 1793221579183.45,
+            "at": 1793222359183.45,
+            "scores": {
+              "A": 3,
+              "B": 2,
+              "C": 3,
+              "D": 3
+            },
+            "points": {
+              "A": 1,
+              "B": 0,
+              "C": 1,
+              "D": 1
+            },
+            "winner": null,
             "final": false
           }
         ]
@@ -5954,6 +6042,94 @@
             "final": false
           }
         ]
+      },
+      "7": {
+        "season": 7,
+        "plannedRounds": 20,
+        "completedRounds": 0,
+        "extraRounds": 0,
+        "champion": null,
+        "trophies": {
+          "A": 2,
+          "B": 3,
+          "C": 0,
+          "D": 1
+        },
+        "finalists": [],
+        "finalAttempts": 0,
+        "completionPending": false,
+        "teams": {
+          "A": {
+            "played": 0,
+            "wins": 0,
+            "draws": 0,
+            "losses": 0,
+            "goals": 0,
+            "points": 0
+          },
+          "B": {
+            "played": 0,
+            "wins": 0,
+            "draws": 0,
+            "losses": 0,
+            "goals": 0,
+            "points": 0
+          },
+          "C": {
+            "played": 0,
+            "wins": 0,
+            "draws": 0,
+            "losses": 0,
+            "goals": 0,
+            "points": 0
+          },
+          "D": {
+            "played": 0,
+            "wins": 0,
+            "draws": 0,
+            "losses": 0,
+            "goals": 0,
+            "points": 0
+          }
+        },
+        "historyBase": {
+          "completedRounds": 0,
+          "teams": {
+            "A": {
+              "played": 0,
+              "wins": 0,
+              "draws": 0,
+              "losses": 0,
+              "goals": 0,
+              "points": 0
+            },
+            "B": {
+              "played": 0,
+              "wins": 0,
+              "draws": 0,
+              "losses": 0,
+              "goals": 0,
+              "points": 0
+            },
+            "C": {
+              "played": 0,
+              "wins": 0,
+              "draws": 0,
+              "losses": 0,
+              "goals": 0,
+              "points": 0
+            },
+            "D": {
+              "played": 0,
+              "wins": 0,
+              "draws": 0,
+              "losses": 0,
+              "goals": 0,
+              "points": 0
+            }
+          }
+        },
+        "history": []
       }
     },
     "resets": []
