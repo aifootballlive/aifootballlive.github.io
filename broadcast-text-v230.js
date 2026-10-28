@@ -19,15 +19,16 @@ function baseline(node){
  const style=getComputedStyle(node);
  if(measure&&node.matches('#leagueProfileHint,.clockLabel')&&node.clientWidth){
   const reference=root.getBoundingClientRect().width/390;
-  const max=(node.id==='leagueProfileHint'?24:viewerWaitingLabel(node)?22:25)*reference,min=(node.id==='leagueProfileHint'?10:viewerWaitingLabel(node)?10:11)*reference;
+  const max=(node.id==='leagueProfileHint'?24:viewerWaitingLabel(node)?20:25)*reference,min=(node.id==='leagueProfileHint'?10:viewerWaitingLabel(node)?10:11)*reference;
   measure.font=(style.fontWeight||'900')+' '+max+'px '+style.fontFamily;
   const available=node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase!=='result'&&!waitingLabel(node)?Math.min(node.clientWidth,root.getBoundingClientRect().width*.64):node.clientWidth;
-  return Math.max(min,Math.min(max,max*Math.max(1,available-10*reference)/Math.max(1,measure.measureText((node.textContent||'').trim()).width)));
+  return Math.max(min,Math.min(max,max*Math.max(1,available-10*reference)/Math.max(1,Math.max(...(viewerWaitingLabel(node)?['Hakemin Maçı Başlatması Bekleniyor','Waiting for Kickoff']:[(node.textContent||'').trim()]).map(text=>measure.measureText(text).width)))));
  }
  return parseFloat(style.fontSize);
 }
 function setSize(node,px){node.style.setProperty('font-size',Math.max(node.matches('.teamTitle,.panelHead.teamScore .num,.adminTeamQueue strong')?1:node.matches(groups.info)?3:7,px).toFixed(3)+'px','important');}
 function fit(node,px){
+ if(viewerWaitingLabel(node)){node.style.setProperty('line-height','1.3','important');node.style.setProperty('padding-bottom','.14em','important');node.style.setProperty('overflow','visible','important');node.parentElement.style.setProperty('overflow','visible','important');}
  const padding=(style,axis)=>axis==='x'?parseFloat(style.paddingLeft)+parseFloat(style.paddingRight):parseFloat(style.paddingTop)+parseFloat(style.paddingBottom);
  const parent=node.parentElement,parentStyle=getComputedStyle(parent);
  const safe=Math.max(1,root.getBoundingClientRect().width*.003);
@@ -38,6 +39,7 @@ function fit(node,px){
  if(node.matches('.arenaTitle,.startMatchAction')||!maxWidth)maxWidth=parent.clientWidth-padding(parentStyle,'x');
  if(node.matches('.frontKeeperTop strong')){const siblings=[...parent.children].filter(el=>el!==node).reduce((sum,el)=>sum+el.getBoundingClientRect().width,0);maxWidth=parent.clientWidth-padding(parentStyle,'x')-siblings-(parseFloat(parentStyle.columnGap)||0);}
  let maxHeight=Infinity;
+ if(viewerWaitingLabel(node)){const bar=node.closest('#matchClockHud');maxHeight=Math.max(1,bar.clientHeight-padding(getComputedStyle(bar),'y')-safe*2);}
  if(node.matches('.arenaTitle')){
   const heading=document.getElementById('goalsHeading'),scale=root.getBoundingClientRect().width/root.clientWidth;
   if(heading)maxHeight=Math.max(1,(heading.getBoundingClientRect().top-parent.getBoundingClientRect().top)/scale);

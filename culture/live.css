@@ -2,3 +2,4 @@
 
 #connectionBadge{top:auto;bottom:31%;font-size:1.6cqw}#modeBadge{top:auto;bottom:38%;font-size:1.6cqw}
 .choiceCodes span{display:flex;align-items:center;justify-content:flex-end;gap:1cqw;font-size:2.75cqw;color:#fff;margin:.3cqw 0}.choiceCodes img{width:4cqw;height:2.7cqw;object-fit:cover}
+#otherNames{display:block;overflow:hidden;width:100%}.othersTrack{display:flex;align-items:flex-start;gap:0;will-change:transform;animation:cultureOthersScroll var(--scroll-duration,30s) linear infinite}.othersTrack>.other{flex:1 0 0;padding:0 .35cqw}@keyframes cultureOthersScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}@media(prefers-reduced-motion:reduce){#otherNames{overflow-x:auto}.othersTrack{animation:none;transform:none;will-change:auto}}
