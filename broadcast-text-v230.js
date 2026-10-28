@@ -13,12 +13,13 @@ function read(){return normalize(Object.fromEntries(keys.map(k=>[k,id(k)?.value?
 function fill(value){const clean=normalize(value);for(const k of keys){if(id(k))id(k).value=clean[k];const out=document.getElementById('broadcastTextValue-'+k);if(out)out.textContent=clean[k]+'%';}}
 const measure=document.createElement('canvas').getContext('2d');
 const waitingLabel=node=>node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase==='manual';
+const viewerWaitingLabel=node=>waitingLabel(node)&&(!root.classList.contains('adminView')||document.body.classList.contains('aflGuestPreview'));
 const activeClockLabel=node=>node.matches('.clockLabel')&&!['manual','offline','result'].includes(node.closest('#matchClockHud')?.dataset.phase);
 function baseline(node){
  const style=getComputedStyle(node);
  if(measure&&node.matches('#leagueProfileHint,.clockLabel')&&node.clientWidth){
   const reference=root.getBoundingClientRect().width/390;
-  const max=(node.id==='leagueProfileHint'?24:25)*reference,min=(node.id==='leagueProfileHint'?10:11)*reference;
+  const max=(node.id==='leagueProfileHint'?24:viewerWaitingLabel(node)?22:25)*reference,min=(node.id==='leagueProfileHint'?10:viewerWaitingLabel(node)?10:11)*reference;
   measure.font=(style.fontWeight||'900')+' '+max+'px '+style.fontFamily;
   const available=node.matches('.clockLabel')&&node.closest('#matchClockHud')?.dataset.phase!=='result'&&!waitingLabel(node)?Math.min(node.clientWidth,root.getBoundingClientRect().width*.64):node.clientWidth;
   return Math.max(min,Math.min(max,max*Math.max(1,available-10*reference)/Math.max(1,measure.measureText((node.textContent||'').trim()).width)));
