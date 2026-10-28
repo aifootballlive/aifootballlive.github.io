@@ -32,13 +32,14 @@ label.switch{display:flex;align-items:center;gap:10px;font-weight:700;font-size:
 #footballPanel{display:none}
 #culturePanel{display:block}
 @media(max-width:860px){main{display:flex;flex-direction:column}section.preview{position:static;width:100%;max-height:none}section.preview iframe{width:min(100%,330px)}aside{width:100%;max-height:none}header strong{width:100%}}
-</style><link rel="stylesheet" href="./culture/hub.css?v=2"></head><body>
-<header><strong>UYGULAMALARIM</strong><nav role="tablist" aria-label="Uygulama seç">
-<button id="cultureTab" role="tab" aria-selected="true" type="button">DÜNYA KÜLTÜR ŞAMPİYONASI</button>
-<button id="footballTab" role="tab" aria-selected="false" type="button">FUTBOL OYUNU</button>
+</style><link rel="stylesheet" href="./culture/hub.css?v=4"></head><body data-workspace="hub">
+<header><h1 class="hubTitle">UYGULAMALARIM</h1><nav role="tablist" aria-label="Uygulama seç">
+<button id="cultureTab" role="tab" aria-selected="true" type="button">DKŞ</button>
+<button id="footballTab" role="tab" aria-selected="false" type="button">AI FOOTBALL</button>
 </nav></header>
 <main>
-<section class="preview"><div class="subnav"><b id="previewTitle">KÜLTÜR YAYIN GÖRÜNÜMÜ</b><a id="previewLink" href="./culture.html" target="_blank" rel="noopener">Tam ekran aç</a></div><iframe id="preview" src="./culture.html" title="Canlı yayın önizlemesi" allow="autoplay"></iframe></section>
+<section id="cultureWorkspace" aria-label="DKŞ yönetimi"><iframe id="cultureAdmin" src="about:blank" title="DKŞ geliştirme ve yönetim ekranı" allow="autoplay"></iframe></section>
+<section class="preview"><div class="subnav"><b id="previewTitle">KÜLTÜR YAYIN GÖRÜNÜMÜ</b><button id="refreshCultureView" class="btn" type="button">DKŞ’yi yenile</button><a id="previewLink" href="./culture.html" target="_blank" rel="noopener">Tam ekran aç</a></div><iframe id="preview" src="about:blank" title="Canlı yayın önizlemesi" allow="autoplay"></iframe></section>
 <aside id="culturePanel">
 <h1>Dünya Kültür Şampiyonası</h1><p>Ortak yayın durumu bilgisayardaki yerel sunucuda tutulur. Supabase veya ücretli sunucu kullanılmaz.</p><div id="authStatus" class="hint" role="status">Yönetici oturumu kontrol ediliyor…</div>
 <div class="panel"><h2>TikTok bağlantısı</h2><label class="field">TikTok kullanıcı adı<input id="tiktokUsername" placeholder="@kullaniciadi" autocomplete="off"></label><div class="actions" style="margin-top:10px"><button id="connectTikTok" class="btn primary">Bağlan</button><button id="disconnectTikTok" class="btn">Bağlantıyı kes</button></div><p id="connectionInfo" role="status">Bağlantı kapalı</p><p>Canlı hediyeler yalnızca yayın odasının doğrulanan jeton fiyatıyla sayılır. Deneme düğmeleri canlı puanlara etki etmez.</p></div>
@@ -67,4 +68,4 @@ label.switch{display:flex;align-items:center;gap:10px;font-weight:700;font-size:
 <div class="panel"><h2>Sonuçlar ve geçmiş</h2><div id="cultureHistory"></div></div><div class="panel"><h2>Müzik ve ülke bilgileri</h2><p>Yalnızca kullanım hakkı doğrulanmış sözsüz millî marşlar çalar. Uygun marş kaydı olmayan ülkede ses çalınmaz.</p><div id="musicInfo"></div><p><a href="./assets/culture-v1/audio/licenses.json" target="_blank" rel="noopener">Kayıt ve beste kaynakları</a></p></div></aside>
 <aside id="footballPanel"><h1>Futbol Oyunu — Doruk Arenası</h1><p>Mevcut futbol oturumu ve güvenliği korunur. Yönetim ekranı aşağıda açılır.</p><iframe id="footballAdmin" title="Mevcut futbol yönetimi" style="width:100%;height:calc(100dvh - 200px);border:1px solid #456283;border-radius:9px" hidden></iframe><p id="footballOffline">Yerel merkezden açıldığında futbol yönetimi burada görünür.</p></aside>
 </main>
-<script type="module" src="./culture/admin.mjs?v=2"></script></body></html>
+<script type="module" src="./culture/admin.mjs?v=4"></script></body></html>

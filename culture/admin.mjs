@@ -1,5 +1,6 @@
 import {byId} from './countries.mjs';
 import {apps} from './apps.mjs';
+function initializeCultureManager(){
 const $=id=>document.getElementById(id),frame=$('preview'),isLocal=!location.hostname.endsWith('github.io');
 let app=new URLSearchParams(location.search).get('app')==='football'?'football':'culture',mode='test',authorized=false,first=true,busy=false,state=null;
 try{mode=localStorage.getItem('culture.adminMode')==='live'?'live':'test';}catch{}
@@ -11,7 +12,7 @@ function message(text,fail=false){$('note').textContent=text;$('note').className
 function result(r){$('testStatus').textContent=r?.ok?'Başarılı'+(r.country?' • '+byId[r.country].name:'')+(r.points?' • +'+r.points+' puan':''):r?.reason||r?.error||'İşlem tamamlanamadı';}
 function switchApp(next){app=next;document.body.dataset.app=next;const football=next==='football',entry=apps.find(a=>a.id===next)||apps[0];for(const a of apps){$(a.tab)?.setAttribute('aria-selected',String(a.id===entry.id));if($(a.panel))$(a.panel).style.display=a.id===entry.id?'block':'none';}$('previewTitle').textContent=entry.label;const url=football?(isLocal?entry.settings:entry.staticPreview):entry.preview+(isLocal?'?mode='+mode:'');const previewUrl=football&&isLocal?'about:blank':url;if(frame.getAttribute('src')!==previewUrl)frame.src=previewUrl;$('previewLink').href=url;
  if(football&&isLocal&&!$('footballAdmin').getAttribute('src')){$('footballAdmin').hidden=false;$('footballAdmin').src='./football/live.html';$('footballOffline').hidden=true;}
- history.replaceState(null,'','?app='+app);
+ const current=new URL(location.href);current.searchParams.set('app',app);history.replaceState(null,'',current.pathname+current.search);
 }
 $('footballAdmin').addEventListener('load',()=>{try{const w=$('footballAdmin').contentWindow,doc=w.document;const style=doc.createElement('style');style.textContent='@media(max-width:800px){body.drawerMode{display:flex!important;flex-direction:column!important;align-items:center!important;gap:12px!important;overflow-y:auto!important}body.drawerMode>#broadcastViewport{display:block!important;position:relative!important;flex:none!important;width:min(100%,440px)!important;max-width:100%!important;height:auto!important;aspect-ratio:9/16!important;margin:0 auto!important}body.drawerMode>#drawerSplitHandle{display:none!important}body.drawerMode>#adminOverlay.show,body.drawerMode>#leagueDrawer.show{position:relative!important;width:100%!important;flex:none!important;min-height:650px!important;height:85dvh!important}}';doc.head.append(style);let attempts=0;const reveal=()=>{if(doc.querySelector('#broadcastViewport.adminView')){w.openAdmin?.();return;}if(++attempts<40)setTimeout(reveal,500);};reveal();}catch{}});
 function renderHistory(){const target=$('cultureHistory');if(!target||!state)return;const history=state.history.slice().reverse(),signature=JSON.stringify(history);if(target.dataset.signature===signature)return;target.dataset.signature=signature;target.replaceChildren();if(!history.length){target.textContent='Henüz tamamlanan tur yok.';return;}
@@ -26,6 +27,7 @@ async function refresh(){if(!isLocal)return;try{const response=await fetch('./cu
   volumeValue();first=false;renderHistory();
  }catch(error){message(error.message,true);}}
 async function send(type,payload={}){if(busy)return {ok:false,reason:'Önceki işlem sürüyor'};busy=true;try{const r=await fetch('./culture-api/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,type,payload})});const value=await r.json();if(!r.ok)throw Error(value.error||'İşlem reddedildi');await refresh();return value;}catch(error){message(error.message,true);return {ok:false,reason:error.message};}finally{busy=false;}}
+$('refreshCultureView').onclick=()=>location.reload();
 $('cultureTab').onclick=()=>switchApp('culture');$('footballTab').onclick=()=>switchApp('football');$('cultureMode').value=mode;$('cultureMode').onchange=()=>{clearTimeout(volumeTimer);mode=$('cultureMode').value;try{localStorage.setItem('culture.adminMode',mode);}catch{}dirty.clear();switchApp('culture');refresh();};
 $('saveCfg').onclick=async()=>{const cfg={};for(const [id,key]of Object.entries(fields))cfg[key]=$(id).type==='checkbox'?$(id).checked:Number($(id).value);const r=await send('settings',cfg);if(r?.ok){dirty.clear();message('Ayarlar ortak sunucuya kaydedildi.');refresh();}};
 $('start').onclick=async()=>{const r=await send('start');if(r?.ok)message(mode==='test'?'Deneme turu başladı. Canlı kayıtları etkilemez.':'Canlı tur başladı.');};$('pause').onclick=()=>send(state?.status==='paused'?'resume':'pause');$('finish').onclick=()=>send('finish');
@@ -34,3 +36,30 @@ $('connectTikTok').onclick=()=>send('connect',{username:$('tiktokUsername').valu
 if(!isLocal){$('authStatus').replaceChildren();const a=document.createElement('a');a.href='http://127.0.0.1:8894/uygulamalarim.html?app=culture';a.textContent='Bilgisayardaki yönetim merkezini aç';$('authStatus').append('GitHub sayfası salt okunur ön izlemedir. ',a);for(const b of document.querySelectorAll('#culturePanel button'))b.disabled=true;$('connectionInfo').textContent='Gerçek ortak veri için bilgisayardaki kültür sunucusunu çalıştır.';}
 fetch('./assets/culture-v1/audio/licenses.json').then(r=>r.json()).then(m=>{const el=$('musicInfo');if(el)el.textContent=m.summary;}).catch(()=>{});
 switchApp(app);refresh();setInterval(refresh,5000);
+
+}
+
+// The hub owns only the tabs. Each application's documents stay alive independently.
+function initializeHub(){
+ const $=id=>document.getElementById(id),local=!location.hostname.endsWith('github.io');
+ function select(next){
+  const football=next==='football';document.body.dataset.app=next;
+  $('cultureTab').setAttribute('aria-selected',String(!football));$('footballTab').setAttribute('aria-selected',String(football));
+  $('cultureWorkspace').hidden=football;$('footballPanel').style.display=football?'block':'none';
+  if(!football&&$('cultureAdmin').getAttribute('src')==='about:blank')$('cultureAdmin').src='./uygulamalarim.html?app=culture&embedded=culture';
+  if(football&&!$('footballAdmin').getAttribute('src')){
+   $('footballAdmin').hidden=false;$('footballAdmin').src=local?'./football/live.html':'./league.html';$('footballOffline').hidden=true;
+  }
+  const current=new URL(location.href);current.searchParams.set('app',next);history.replaceState(null,'',current.pathname+current.search);
+ }
+ $('footballAdmin').addEventListener('load',()=>{try{
+  const w=$('footballAdmin').contentWindow,doc=w.document,style=doc.createElement('style');
+  style.textContent='@media(max-width:800px){body.drawerMode{display:flex!important;flex-direction:column!important;align-items:center!important;gap:12px!important;overflow-y:auto!important}body.drawerMode>#broadcastViewport{display:block!important;position:relative!important;flex:none!important;width:min(100%,440px)!important;max-width:100%!important;height:auto!important;aspect-ratio:9/16!important;margin:0 auto!important}body.drawerMode>#drawerSplitHandle{display:none!important}body.drawerMode>#adminOverlay.show,body.drawerMode>#leagueDrawer.show{position:relative!important;width:100%!important;flex:none!important;min-height:650px!important;height:85dvh!important}}';doc.head.append(style);
+  let attempts=0;const reveal=()=>{if(doc.querySelector('#broadcastViewport.adminView')){w.openAdmin?.();return;}if(++attempts<40)setTimeout(reveal,500);};reveal();
+ }catch{}});
+ $('cultureTab').onclick=()=>select('culture');$('footballTab').onclick=()=>select('football');
+ select(new URLSearchParams(location.search).get('app')==='football'?'football':'culture');
+}
+const embedded=new URLSearchParams(location.search).get('embedded')==='culture';
+document.body.dataset.workspace=embedded?'culture':'hub';
+if(embedded)initializeCultureManager();else initializeHub();
