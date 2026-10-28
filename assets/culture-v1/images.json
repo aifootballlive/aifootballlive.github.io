@@ -1,0 +1,18 @@
+{
+  "generated": "2026-10-28",
+  "method": "OpenAI imagegen",
+  "fictionalAdults": true,
+  "notes": "Each image depicts a particular clothing tradition or contemporary cultural event, not every community in the country. No real-person likeness requested.",
+  "countries": {
+    "ID": "Kebaya ve batik özel gün kıyafetleri",
+    "BR": "Bahia halk festivali geleneğinden ilham",
+    "US": "Güncel Amerikan halk sanatları festivali kıyafetleri",
+    "MX": "Veracruz son jarocho geleneğinden ilham",
+    "VN": "Kadın ve erkek áo dài kıyafetleri",
+    "PK": "Shalwar kameez ve işlemeli dupatta",
+    "PH": "Filipiniana terno ve barong Tagalog",
+    "TH": "Tayland özel gün kıyafetleri",
+    "BD": "Jamdani sari ve panjabi",
+    "NG": "Yoruba aso-oke, iro-buba ve agbada geleneğinden ilham"
+  }
+}

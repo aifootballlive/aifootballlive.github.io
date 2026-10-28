@@ -32,7 +32,7 @@ label.switch{display:flex;align-items:center;gap:10px;font-weight:700;font-size:
 #footballPanel{display:none}
 #culturePanel{display:block}
 @media(max-width:860px){main{display:flex;flex-direction:column}section.preview{position:static;width:100%;max-height:none}section.preview iframe{width:min(100%,330px)}aside{width:100%;max-height:none}header strong{width:100%}}
-</style></head><body>
+</style><link rel="stylesheet" href="./culture/hub.css?v=2"></head><body>
 <header><strong>UYGULAMALARIM</strong><nav role="tablist" aria-label="Uygulama seç">
 <button id="cultureTab" role="tab" aria-selected="true" type="button">DÜNYA KÜLTÜR ŞAMPİYONASI</button>
 <button id="footballTab" role="tab" aria-selected="false" type="button">FUTBOL OYUNU</button>
@@ -40,20 +40,20 @@ label.switch{display:flex;align-items:center;gap:10px;font-weight:700;font-size:
 <main>
 <section class="preview"><div class="subnav"><b id="previewTitle">KÜLTÜR YAYIN GÖRÜNÜMÜ</b><a id="previewLink" href="./culture.html" target="_blank" rel="noopener">Tam ekran aç</a></div><iframe id="preview" src="./culture.html" title="Canlı yayın önizlemesi" allow="autoplay"></iframe></section>
 <aside id="culturePanel">
-<h1>Dünya Kültür Şampiyonası</h1><p>Supabase kullanılmıyor. Yerel önizleme ve ayarlar bu tarayıcıya kaydedilir.</p>
-<div class="hint">GERÇEK YAYIN BAĞLANTISI HENÜZ YOK. TikTok hediyeleri ve yorumlar kendiliğinden gelmez. Aşağıdaki testler sadece bu tarayıcıda çalışır.</div>
+<h1>Dünya Kültür Şampiyonası</h1><p>Ortak yayın durumu bilgisayardaki yerel sunucuda tutulur. Supabase veya ücretli sunucu kullanılmaz.</p><div id="authStatus" class="hint" role="status">Yönetici oturumu kontrol ediliyor…</div>
+<div class="panel"><h2>TikTok bağlantısı</h2><label class="field">TikTok kullanıcı adı<input id="tiktokUsername" placeholder="@kullaniciadi" autocomplete="off"></label><div class="actions" style="margin-top:10px"><button id="connectTikTok" class="btn primary">Bağlan</button><button id="disconnectTikTok" class="btn">Bağlantıyı kes</button></div><p id="connectionInfo" role="status">Bağlantı kapalı</p><p>Canlı hediyeler yalnızca yayın odasının doğrulanan jeton fiyatıyla sayılır. Deneme düğmeleri canlı puanlara etki etmez.</p></div>
 <div class="panel"><h2>Yarışma</h2>
 <div class="group">
-<label class="field">Tur süresi (dk)<input id="duration" type="number" min="1" max="180" value="25"></label>
+<label class="field full">Çalışma modu<select id="cultureMode"><option value="test">DENEME — Canlı kayıtları etkilemez</option><option value="live">CANLI YAYIN — Gerçek TikTok olayları</option></select></label><label class="field">Tur süresi (dk)<input id="duration" type="number" min="1" max="180" value="25"></label>
 <label class="field">Diğer ülkeler (adet)<select id="rotateCount"><option value="5">5 ülke</option><option value="10">10 ülke</option></select></label>
 <label class="field">Değişim süresi (sn)<input id="rotateSeconds" type="number" min="2" max="60" value="5"></label>
 <label class="field">Beğeni eşiği<input id="likeThreshold" type="number" min="1" max="100000" value="100"></label>
-<label class="field full switch"><input id="likesEnabled" type="checkbox"> Beğeniyle puan ver (tüm ülkelere eşit)</label>
+<label class="field full switch"><input id="likesEnabled" type="checkbox"> Beğeniyle puan ver (tüm ülkelere eşit)</label><label class="field full switch"><input id="autoNext" type="checkbox"> Turlar ve sezonlar otomatik devam etsin</label><label class="field">Tur arası bekleme (sn)<input id="breakSeconds" type="number" min="5" max="300" value="15"></label><label class="field">Bir sezondaki tur sayısı<input id="matchesPerSeason" type="number" min="1" max="1000" value="20"></label><label class="field full switch"><input id="musicEnabled" type="checkbox"> Lider ülkenin müziği</label><label class="field">Müzik sesi (%)<input id="musicVolume" type="number" min="0" max="100" value="35"></label>
 </div>
-<div class="actions" style="margin-top:12px"><button class="btn" id="saveCfg">Ayarları kaydet</button><button class="btn primary" id="start">Yarışmayı başlat</button><button class="btn" id="pause">Duraklat / Devam</button><button class="btn warn" id="reset">Sıfırla</button></div>
+<div class="actions" style="margin-top:12px"><button class="btn" id="saveCfg">Ayarları kaydet</button><button class="btn primary" id="start">Yarışmayı başlat</button><button class="btn" id="pause">Duraklat / Devam</button><button class="btn warn" id="finish">Turu bitir</button></div>
 <p id="note" role="status"></p>
 </div>
-<div class="panel"><h2>Test: Ülke seçimi ve hediye</h2>
+<div class="panel" id="testPanel"><h2>Deneme: Ülke seçimi ve hediye</h2>
 <div class="group">
 <label class="field">Test kullanıcı adı<input id="testUser" value="test-1" placeholder="ör. kullanici1"></label>
 <label class="field">Ülke yorumu<input id="comment" value="🇹🇷" placeholder="🇹🇷 / TR / TUR"></label>
@@ -63,51 +63,8 @@ label.switch{display:flex;align-items:center;gap:10px;font-weight:700;font-size:
 <div class="actions" style="margin-top:12px"><button class="btn" id="selectCountry">Ülke seçimini test et</button><button class="btn" id="testGift">Hediye test et</button><button class="btn" id="testLikes">Beğeni test et</button></div>
 <p id="testStatus" role="status"></p>
 </div>
-<div class="panel"><h2>Canlı yayın</h2><p>Yayın adresi değişmez. Aynı tarayıcı içindeki önizleme ile ayarlar birlikte çalışır. OBS veya TikTok'un ayrı tarayıcısı için yerel köprü bağlantısı gereklidir.</p><a href="./culture.html" target="_blank" rel="noopener">Kültür yayın sayfası</a></div>
-</aside>
-<aside id="footballPanel"><h1>Futbol Oyunu</h1>
-<p>Eski oyun aynen korunuyor. Futbolun mevcut yönetici paneli açılabilir; iki ayrı futbol işleyicisi başlatmamak için ayarlarını bu ekranda kopyalamadım.</p>
-<div class="panel"><h2>Mevcut futbol yönetimi</h2><a class="btn primary" style="display:inline-block;text-decoration:none" href="./live.html#admin">Futbol ayarlarına git</a><p>Bu bağlantı mevcut futbol yöneticisini açar. Yeni kültür uygulaması Supabase kullanmaz; mevcut futbol altyapısı değiştirilmemiştir.</p></div>
-</aside>
+<div class="panel"><h2>Canlı yayın</h2><p>OBS ve yönetici ekranı aynı yerel oyun durumunu gösterir. OBS için aşağıdaki yayın adresini kullanın; yönetici düğmeleri yayında görünmez.</p><a href="./culture.html" target="_blank" rel="noopener">Kültür yayın sayfası</a></div>
+<div class="panel"><h2>Sonuçlar ve geçmiş</h2><div id="cultureHistory"></div></div><div class="panel"><h2>Müzik ve ülke bilgileri</h2><p>Uygun marş kaydı bulunmayan ülkelerde özgün enstrümantal tema kullanılır; marş olarak gösterilmez.</p><div id="musicInfo"></div><p><a href="./assets/culture-v1/audio/licenses.json" target="_blank" rel="noopener">Kayıt ve beste kaynakları</a></p></div></aside>
+<aside id="footballPanel"><h1>Futbol Oyunu — Doruk Arenası</h1><p>Mevcut futbol oturumu ve güvenliği korunur. Yönetim ekranı aşağıda açılır.</p><iframe id="footballAdmin" title="Mevcut futbol yönetimi" style="width:100%;height:calc(100dvh - 200px);border:1px solid #456283;border-radius:9px" hidden></iframe><p id="footballOffline">Yerel merkezden açıldığında futbol yönetimi burada görünür.</p></aside>
 </main>
-<script>
-(function(){
-'use strict';
-const $=id=>document.getElementById(id),frame=$('preview');
-let app=new URLSearchParams(location.search).get('app')==='football'?'football':'culture';
-function setApp(which){
- app=which;const football=app==='football';
- $('cultureTab').setAttribute('aria-selected',String(!football));
- $('footballTab').setAttribute('aria-selected',String(football));
- $('culturePanel').style.display=football?'none':'block';
- $('footballPanel').style.display=football?'block':'none';
- $('previewTitle').textContent=football?'FUTBOL YAYINI':'KÜLTÜR YAYINI';
- const url=football?'./live.html':'./culture.html';
- frame.src=url;$('previewLink').href=url;
- history.replaceState(null,'','?app='+app);
-}
-function api(){return !frame.contentWindow||app!=='culture'?null:frame.contentWindow.CultureAPI}
-function message(t,fail=false){$('note').textContent=t;if(fail)$('note').style.color='#ffaeae';else $('note').style.color='#a5e7c6'}
-function result(r){$('testStatus').textContent=r?(r.ok?'İşlem başarılı: '+(r.country||r.points||'OK'):'İşlem reddedildi: '+r.reason):'Oyun yüklenmedi'}
-function sync(){
- const s=api()?.getState();if(!s)return;
- $('duration').value=s.config.durationMinutes;$('rotateSeconds').value=s.config.rotateSeconds;
- $('rotateCount').value=s.config.rotateCount;$('likeThreshold').value=s.config.likeThreshold;
- $('likesEnabled').checked=s.config.likesEnabled;
-}
-$('cultureTab').onclick=()=>setApp('culture');
-$('footballTab').onclick=()=>setApp('football');
-frame.addEventListener('load',sync);
-$('saveCfg').onclick=()=>{
- const c={durationMinutes:Number($('duration').value),rotateSeconds:Number($('rotateSeconds').value),rotateCount:Number($('rotateCount').value),likeThreshold:Number($('likeThreshold').value),likesEnabled:$('likesEnabled').checked};
- if(api()){api().settings(c);message('Ayarlar kaydedildi')}else message('Önizleme yüklenmedi',true);
-};
-$('start').onclick=()=>{api()?.start();message('Test yarışı başlatıldı')};
-$('pause').onclick=()=>{const a=api(),s=a?.getState();if(!a)return;if(s.status==='running')a.pause();else a.resume();message('Durum güncellendi')};
-$('reset').onclick=()=>{if(confirm('Yerel test puanları ve geçmiş silinsin mi?')){api()?.reset();message('Yerel test sıfırlandı')}};
-$('selectCountry').onclick=()=>result(api()?.acceptComment({userId:$('testUser').value,text:$('comment').value}));
-$('testGift').onclick=()=>result(api()?.acceptGift({userId:$('testUser').value,coins:Number($('coins').value)}));
-$('testLikes').onclick=()=>result(api()?.acceptLikes({count:Number($('likes').value)}));
-setApp(app);
-})();
-</script></body></html>
+<script type="module" src="./culture/admin.mjs?v=2"></script></body></html>

@@ -1,0 +1,154 @@
+{
+  "ID": {
+    "url": "./assets/culture-v1/audio/id-anthem.ogg",
+    "type": "anthem",
+    "title": "Indonesia Raya",
+    "license": "Public Domain Mark 1.0",
+    "approved": true,
+    "source": "https://commons.wikimedia.org/wiki/File:Indonesia_Raya_instrumental.ogg",
+    "performer": "United States Navy Band",
+    "reviewDate": "2026-10-28",
+    "recordingRights": "U.S. government official recording; Commons public-domain marking",
+    "compositionRights": "Composer deceased 1836 (US) / 1938 (ID); Commons composition public-domain marking",
+    "sha256": "3f75bba7db1019d61d3f0084ec0a0fd50c1bdf57ea3e623a48f92263e8a655d5"
+  },
+  "BR": {
+    "url": "./assets/culture-v1/audio/br-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "US": {
+    "url": "./assets/culture-v1/audio/us-anthem.mp3",
+    "type": "anthem",
+    "title": "The Star-Spangled Banner",
+    "license": "Public Domain Mark 1.0",
+    "approved": true,
+    "source": "https://commons.wikimedia.org/wiki/File:%22The_Star-Spangled_Banner%22_performed_by_the_United_States_Navy_Band.mp3",
+    "performer": "United States Navy Band",
+    "reviewDate": "2026-10-28",
+    "recordingRights": "U.S. government official recording; Commons public-domain marking",
+    "compositionRights": "Composer deceased 1836 (US) / 1938 (ID); Commons composition public-domain marking",
+    "sha256": "462a3f3eb892bbb119c711d35fbb4870cc9198746dc46a1e01b0986ca5123a93"
+  },
+  "MX": {
+    "url": "./assets/culture-v1/audio/mx-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "VN": {
+    "url": "./assets/culture-v1/audio/vn-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "PK": {
+    "url": "./assets/culture-v1/audio/pk-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "PH": {
+    "url": "./assets/culture-v1/audio/ph-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "TH": {
+    "url": "./assets/culture-v1/audio/th-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "BD": {
+    "url": "./assets/culture-v1/audio/bd-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "NG": {
+    "url": "./assets/culture-v1/audio/ng-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "TR": {
+    "url": "./assets/culture-v1/audio/tr-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "JP": {
+    "url": "./assets/culture-v1/audio/jp-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "DE": {
+    "url": "./assets/culture-v1/audio/de-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "FR": {
+    "url": "./assets/culture-v1/audio/fr-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "IT": {
+    "url": "./assets/culture-v1/audio/it-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "GB": {
+    "url": "./assets/culture-v1/audio/gb-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "CA": {
+    "url": "./assets/culture-v1/audio/ca-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "ES": {
+    "url": "./assets/culture-v1/audio/es-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "AR": {
+    "url": "./assets/culture-v1/audio/ar-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  },
+  "ZA": {
+    "url": "./assets/culture-v1/audio/za-theme.wav",
+    "type": "original",
+    "title": "Özgün kutlama teması — marş değil",
+    "license": "Project original — commercial use by project owner",
+    "approved": true
+  }
+}

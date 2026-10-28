@@ -1,0 +1,40 @@
+{
+  "summary": "ABD ve Endonezya için kamu malı olarak işaretli sözsüz kayıtlar; diğer ülkelerde bu proje için üretilmiş özgün temalar. Bunlar millî marş olarak sunulmaz. Vietnam marşı telif uyarısı nedeniyle kullanılmadı.",
+  "reviewDate": "2026-10-28",
+  "anthemSources": [
+    {
+      "url": "./assets/culture-v1/audio/id-anthem.ogg",
+      "type": "anthem",
+      "title": "Indonesia Raya",
+      "license": "Public Domain Mark 1.0",
+      "approved": true,
+      "source": "https://commons.wikimedia.org/wiki/File:Indonesia_Raya_instrumental.ogg",
+      "performer": "United States Navy Band",
+      "reviewDate": "2026-10-28",
+      "recordingRights": "U.S. government official recording; Commons public-domain marking",
+      "compositionRights": "Composer deceased 1836 (US) / 1938 (ID); Commons composition public-domain marking",
+      "sha256": "3f75bba7db1019d61d3f0084ec0a0fd50c1bdf57ea3e623a48f92263e8a655d5"
+    },
+    {
+      "url": "./assets/culture-v1/audio/us-anthem.mp3",
+      "type": "anthem",
+      "title": "The Star-Spangled Banner",
+      "license": "Public Domain Mark 1.0",
+      "approved": true,
+      "source": "https://commons.wikimedia.org/wiki/File:%22The_Star-Spangled_Banner%22_performed_by_the_United_States_Navy_Band.mp3",
+      "performer": "United States Navy Band",
+      "reviewDate": "2026-10-28",
+      "recordingRights": "U.S. government official recording; Commons public-domain marking",
+      "compositionRights": "Composer deceased 1836 (US) / 1938 (ID); Commons composition public-domain marking",
+      "sha256": "462a3f3eb892bbb119c711d35fbb4870cc9198746dc46a1e01b0986ca5123a93"
+    }
+  ],
+  "originalThemes": {
+    "license": "Project original",
+    "source": "culture/compose-themes.py",
+    "notes": "Original procedural scores and synthesized recordings created for the project owner, who may use them commercially. No third-party samples or copied anthem melodies. This notice does not release the owner’s rights to others."
+  },
+  "excluded": {
+    "VN": "https://commons.wikimedia.org/wiki/Category:Ti%E1%BA%BFn_Qu%C3%A2n_Ca"
+  }
+}

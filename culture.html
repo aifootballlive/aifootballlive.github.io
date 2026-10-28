@@ -1,68 +1,8 @@
-<!doctype html>
-<html lang="tr">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#06162c">
-<title>Dünya Kültür Şampiyonası | Canlı Yayın</title>
-<style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;min-height:100%;background:#050b17;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}body{display:flex;justify-content:center;align-items:flex-start;overflow:hidden}
-#stage{--gold:#f6ca69;--blue:#081c3d;position:relative;container-type:inline-size;isolation:isolate;width:min(100vw,56.25dvh);height:min(100dvh,177.7778vw);aspect-ratio:9/16;overflow:hidden;background:radial-gradient(ellipse at 50% 3%,#274c84 0%,#0b2349 28%,#07172d 56%,#071126 100%);border:1px solid #324563}
-#stage:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;background:radial-gradient(circle at 50% 9%,#e6a54933,transparent 29%),linear-gradient(115deg,transparent 5%,#ebd08c15 36%,transparent 58%),repeating-linear-gradient(90deg,#ffffff04 0 1px,transparent 1px 28px)}
-#top{height:7.2%;position:relative;z-index:5;text-align:center;padding-top:1.4cqw;background:linear-gradient(#060b1cbb,transparent)}
-#round{position:absolute;top:2.3cqw;left:2.3cqw;background:#071c34b9;border:1px solid #e0ab4c;border-radius:2cqw;padding:1.4cqw;font-size:2.25cqw;font-weight:850;text-align:left;line-height:1.35}
-#ai{position:absolute;right:2.5cqw;top:3cqw;font-size:2.1cqw;color:#e6efff;padding:.8cqw;background:#101d34;border-radius:1cqw}
-#top h1{margin:0 auto;max-width:65%;color:#ffe3a5;text-shadow:0 .65cqw 1cqw #000,0 0 2cqw #c9832a;font-size:5.15cqw;line-height:1.03;letter-spacing:-.06cqw;font-weight:1000}
-#top p{margin:.75cqw 0 0;font-size:2.35cqw;font-weight:900;letter-spacing:.24cqw;color:#f3f4ec}
-#hero{position:relative;height:25.3%;overflow:hidden;border-bottom:.45cqw solid #bd8e46;background:radial-gradient(ellipse at 50% 25%,#3574a3a8,#07224e70 72%),linear-gradient(90deg,#102448,#274d6d,#112748)}
-#hero:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(120deg,transparent 0 15cqw,#ffde8b15 17cqw,transparent 22cqw)}
-#flagWave{position:absolute;inset:2% -6% 13%;display:flex;align-items:center;justify-content:center;font-size:45cqw;opacity:.36;filter:drop-shadow(0 0 4cqw #fff6);transform-origin:center;animation:wave 5.5s ease-in-out infinite;pointer-events:none}
-@keyframes wave{0%,100%{transform:perspective(95cqw) rotateY(-8deg) skewY(-1deg) scale(1)}50%{transform:perspective(95cqw) rotateY(8deg) skewY(1deg) scale(1.045)}}
-#personA,#personB{position:absolute;bottom:2%;font-size:32cqw;line-height:1;z-index:2;filter:drop-shadow(0 2cqw 2cqw #000c);transition:transform .6s ease}
-#personA{left:1%;transform:rotate(-5deg)}#personB{right:0;transform:rotate(5deg)}
-#leaderPanel{position:absolute;z-index:4;left:23%;right:23%;top:9%;text-align:center;border:1px solid #edb856;background:linear-gradient(#041127e0,#071930ed);box-shadow:0 0 2.2cqw #f7bd5444;border-radius:2.5cqw;padding:2.7cqw 1.5cqw}
-#leaderPanel .tag{font-size:2.45cqw;color:#ffe19f;font-weight:950}#leaderPanel .flag{font-size:8cqw}#leaderPanel .country{font-size:4.5cqw;font-weight:1000;line-height:1.06;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#leaderPanel .points{font-size:7.3cqw;font-weight:1000;line-height:1.08;font-variant-numeric:tabular-nums;color:#fff8d9}#leaderPanel .small{font-size:2.1cqw;opacity:.9}
-#statusRow{position:absolute;bottom:2%;left:3%;right:3%;z-index:5;display:grid;grid-template-columns:1fr 1fr;gap:1.4cqw}
-.pill{background:#08182edb;border:1px solid #a98952;border-radius:2cqw;padding:1.3cqw;text-align:center;font-size:2.25cqw;font-weight:850}.pill strong{display:block;font-size:4.4cqw;line-height:1.1;font-variant-numeric:tabular-nums}
-#scoreboard{position:relative;height:43%;padding:1cqw 2.1cqw .8cqw;background:linear-gradient(180deg,#07152de8,#07152afa);border-bottom:1px solid #b78c4e}
-.scoreTitle{display:grid;grid-template-columns:7% 42% 27% 24%;color:#e7d6ab;font-size:2.45cqw;font-weight:1000;padding:1cqw 1.2cqw 1.1cqw;border-bottom:1px solid #d0a75a;text-align:right}.scoreTitle span:nth-child(2){text-align:left}
-#ranks{display:flex;flex-direction:column;gap:.44cqw;padding-top:.7cqw}
-.rank{display:grid;grid-template-columns:7% 42% 27% 24%;align-items:center;padding:.48cqw 1cqw;height:6.58cqw;border:1px solid #325073;border-radius:1.35cqw;background:linear-gradient(90deg,#0e1e37,#09172a);font-size:2.7cqw;font-weight:900;transition:transform .55s ease,background .4s ease;will-change:transform}
-.rank.first{background:linear-gradient(90deg,#6a4410,#281a11 43%,#4d380e);border-color:#ffe08d;box-shadow:inset 0 0 1.6cqw #ffc35a55}
-.rank .pos{font-size:2.9cqw;text-align:center;color:#ffd78b}.rank .who{display:flex;gap:1.3cqw;min-width:0;align-items:center;white-space:nowrap;overflow:hidden}.rank .who b{font-size:4cqw;line-height:1}.rank .who span{font-size:2.7cqw;overflow:hidden;text-overflow:ellipsis}
-.rank .pts,.rank .time{font-variant-numeric:tabular-nums;text-align:right;font-size:3.15cqw}.rank .time{font-size:2.75cqw;color:#f1f4ff}
-#footer{height:24.5%;padding:1.35cqw 2.4cqw 0;background:linear-gradient(#07142b,#071021);display:flex;flex-direction:column;gap:1.5cqw}
-.footCard{background:#071d39;border:1px solid #c49a53;border-radius:2cqw;padding:1.6cqw 2cqw;display:flex;align-items:center;justify-content:space-between;gap:1cqw;min-height:0}
-.footCard strong{font-size:2.9cqw;line-height:1.1}.footCard span{font-size:2.35cqw}
-#others{height:35%;display:flex;flex-direction:column;justify-content:center;gap:1.2cqw}
-#otherNames{display:flex;justify-content:space-between;gap:1cqw;min-height:7cqw;transition:opacity .3s}
-.other{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;flex:1;gap:.1cqw;font-size:2cqw;white-space:nowrap;text-align:center}.other .fl{font-size:4.7cqw}.other .nm{max-width:100%;overflow:hidden;text-overflow:ellipsis}
-#choice{height:23%;gap:1cqw}#gift{height:20%;gap:1cqw}#likes{height:20%;gap:1cqw}
-.mini{font-size:2.2cqw;color:#b8d4ef}.gold{color:#ffdb8d}.flagIcon{font-size:5cqw}
-#footer small{font-size:1.8cqw;text-align:center;color:#acc6df}
-#announcement{position:absolute;inset:30% 6% auto;z-index:30;background:#0b1c37f7;border:2px solid #f4cb74;box-shadow:0 0 8cqw #ffad4599;border-radius:3cqw;padding:6cqw 3cqw;text-align:center;display:none}
-#announcement.show{display:block}#announcement .winnerFlag{font-size:14cqw}#announcement h2{font-size:5cqw;margin:0;color:#ffe6a3}#announcement p{font-size:3.4cqw}
-@media(prefers-reduced-motion:reduce){#flagWave{animation:none}.rank{transition:none}}
-
-/* Keep the entire footer visible in a native 9:16 broadcast frame. */
-#footer{display:grid;grid-template-rows:32% 23% 20% 20% auto;gap:.5cqw;align-content:start}
-#others,#choice,#gift,#likes{height:auto;min-height:0;overflow:hidden}
-#others{padding-top:.8cqw;padding-bottom:.8cqw}
-#footer small{font-size:1.65cqw;align-self:center;line-height:1.1}
-#gift .gold{font-size:2.5cqw}
-#otherNames{min-height:0}
-</style></head>
-<body><main id="stage" aria-label="Dünya Kültür Şampiyonası yayın görünümü">
-<header id="top"><div id="round">🏆 SEZON 1<div>MAÇ <span id="roundNum">01</span></div></div><h1>DÜNYA KÜLTÜR<br>ŞAMPİYONASI</h1><p>FARKLI KÜLTÜRLER • TEK DÜNYA</p><div id="ai">YZ KARAKTERLER</div></header>
-<section id="hero" aria-label="Lider ülke">
-<div id="flagWave" aria-hidden="true">🌍</div><div id="personA" aria-hidden="true">👩</div><div id="personB" aria-hidden="true">👨</div>
-<div id="leaderPanel"><div class="tag">👑 LİDER ÜLKE</div><div class="flag" id="leadFlag">🌍</div><div class="country" id="leadName">BAŞLIYOR</div><div class="points" id="leadScore">0</div><div class="small">PUAN</div></div>
-<div id="statusRow"><div class="pill">LİDERLİK SÜRESİ<strong id="leadTime">00:00</strong></div><div class="pill">KALAN SÜRE<strong id="remaining">25:00</strong></div></div></section>
-<section id="scoreboard" aria-label="İlk 10 ülke sıralaması"><div class="scoreTitle"><span>#</span><span>ÜLKE</span><span>PUAN</span><span>LİDERLİK</span></div><div id="ranks"></div></section>
-<section id="footer"><div id="others" class="footCard"><strong>🌟 DİĞER ÜLKELER <span class="mini">• 5 sn</span></strong><div id="otherNames"></div></div>
-<div id="choice" class="footCard"><div><strong>🌐 ÜLKENİ SEÇ</strong><br><span>🇹🇷 veya TR / TUR yaz</span></div><span class="flagIcon">🇹🇷</span></div>
-<div id="gift" class="footCard"><div><strong>🎁 HEDİYE GÖNDER</strong><br><span>Seçtiğin ülkeye yazılır</span></div><strong class="gold">1 JETON = 1 PUAN</strong></div>
-<div id="likes" class="footCard"><div><strong>❤️ BEĞENİ</strong><br><span id="likesText">Kapalı</span></div><strong id="likesCount">0</strong></div><small>ŞAMPİYON • 25 DAKİKA SONUNDA EN YÜKSEK PUAN</small></section>
-<div id="announcement" role="status"><div class="winnerFlag" id="winnerFlag">🏆</div><h2 id="winnerTitle">KAZANAN!</h2><p id="winnerDetail"></p></div>
-</main>
-<script src="./culture-engine-v1.js?v=1"></script></body></html>
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#06162c"><meta name="robots" content="noindex,nofollow"><title>Dünya Kültür Şampiyonası</title><link rel="stylesheet" href="./culture/live.css?v=2"></head><body>
+<main id="stage" aria-label="Dünya Kültür Şampiyonası canlı ekranı">
+<header id="top"><div id="round">SEZON <b id="seasonNum">1</b><br>TUR <b id="roundNum">1</b></div><div><h1>DÜNYA KÜLTÜR<br>ŞAMPİYONASI</h1><p>FARKLI KÜLTÜRLER · TEK DÜNYA</p></div><span id="ai">YAPAY ZEKÂ<br>KARAKTERLER</span></header>
+<section id="hero" aria-label="Lider ülke"><img id="countryPortrait" alt="Yapay zekâ ile üretilmiş yetişkin kültür temsilcileri" src="./assets/culture-v1/id.webp"><div id="portraitMissing" hidden>Bu ülkenin karakter görseli henüz hazırlanmadı.</div><img id="flagWave" src="./assets/culture-v1/flags/id.svg" alt=""><div id="modeBadge" hidden>DENEME · CANLI KAYDA EKLENMEZ</div><div id="connectionBadge" role="status">BAĞLANTI BEKLENİYOR</div><div id="leaderPanel"><img id="leadFlag" src="./assets/culture-v1/flags/id.svg" alt=""><div><span class="tag">LİDER ÜLKE</span><strong id="leadName">LİDER BEKLENİYOR</strong></div><div class="leaderPoints"><strong id="leadScore">0</strong><span>PUAN</span></div></div><div id="statusRow"><span>LİDERLİK <b id="leadTime">00:00</b></span><span>KALAN SÜRE <b id="remaining">25:00</b></span></div></section>
+<section id="scoreboard" aria-label="İlk 10 ülke"><div class="scoreTitle"><span>#</span><span>ÜLKE</span><button id="sortPoints" type="button" aria-pressed="true">PUAN ▾</button><button id="sortTime" type="button" aria-pressed="false">LİDERLİK</button></div><div id="ranks"></div></section>
+<footer id="footer"><section id="others" class="footCard"><strong>DİĞER ÜLKELER <small id="rotationLabel">5 sn</small></strong><div id="otherNames"></div></section><div id="choice" class="footCard"><div><strong>ÜLKENİ SEÇ</strong><span>Sohbete bayrak veya ülke kodunu yaz</span></div><b>🇹🇷 TR / TUR<br>🇧🇷 BR / BRA</b></div><div class="footCard"><strong>HEDİYE → ÜLKENE PUAN</strong><b class="gold">1 JETON = 1 PUAN</b></div><div class="footCard"><div><strong>BEĞENİ</strong><span id="likesText">Puanlama kapalı</span></div><b id="likesCount">0</b></div></footer>
+<div id="announcement" role="status" hidden><img id="winnerFlag" alt=""><h2 id="winnerTitle">TUR BİTTİ</h2><p id="winnerDetail"></p></div><button id="soundStart" type="button">SESİ BAŞLAT</button></main>
+<script type="module" src="./culture-engine-v1.js?v=2"></script></body></html>

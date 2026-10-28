@@ -5,10 +5,16 @@
   "scripts": {
     "start": "node football/server.mjs",
     "test": "node --test football/tests/*.test.mjs",
-    "tiktok:bridge": "node football/tiktok-bridge.mjs"
+    "tiktok:bridge": "node football/tiktok-bridge.mjs",
+    "culture:start": "node culture/server.mjs",
+    "culture:test": "node --test --test-isolation=none culture/tests/*.test.mjs",
+    "culture:test:browser": "node culture/tests/browser.cjs"
   },
   "dependencies": {
-    "ws": "^8.18.3",
-    "tiktok-live-connector": "^2.5.0"
+    "tiktok-live-connector": "^2.5.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1"
   }
 }
