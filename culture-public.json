@@ -2,7 +2,7 @@
   "version": 2,
   "state": {
     "version": 2,
-    "revision": 0,
+    "revision": 1,
     "mode": "live",
     "season": 1,
     "round": 1,
@@ -65,7 +65,7 @@
       "AR",
       "ZA"
     ],
-    "serverTime": 1793156483460,
+    "serverTime": 1793156531201,
     "startedAt": null,
     "endsAt": null,
     "remaining": 0,
@@ -76,5 +76,5 @@
     "history": [],
     "notice": ""
   },
-  "publishedAt": "2026-10-28T03:01:23.460Z"
+  "publishedAt": "2026-10-28T03:02:11.201Z"
 }
