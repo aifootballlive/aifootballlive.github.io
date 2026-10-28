@@ -43,6 +43,14 @@
 #announcement{position:absolute;inset:30% 6% auto;z-index:30;background:#0b1c37f7;border:2px solid #f4cb74;box-shadow:0 0 8cqw #ffad4599;border-radius:3cqw;padding:6cqw 3cqw;text-align:center;display:none}
 #announcement.show{display:block}#announcement .winnerFlag{font-size:14cqw}#announcement h2{font-size:5cqw;margin:0;color:#ffe6a3}#announcement p{font-size:3.4cqw}
 @media(prefers-reduced-motion:reduce){#flagWave{animation:none}.rank{transition:none}}
+
+/* Keep the entire footer visible in a native 9:16 broadcast frame. */
+#footer{display:grid;grid-template-rows:32% 23% 20% 20% auto;gap:.5cqw;align-content:start}
+#others,#choice,#gift,#likes{height:auto;min-height:0;overflow:hidden}
+#others{padding-top:.8cqw;padding-bottom:.8cqw}
+#footer small{font-size:1.65cqw;align-self:center;line-height:1.1}
+#gift .gold{font-size:2.5cqw}
+#otherNames{min-height:0}
 </style></head>
 <body><main id="stage" aria-label="Dünya Kültür Şampiyonası yayın görünümü">
 <header id="top"><div id="round">🏆 SEZON 1<div>MAÇ <span id="roundNum">01</span></div></div><h1>DÜNYA KÜLTÜR<br>ŞAMPİYONASI</h1><p>FARKLI KÜLTÜRLER • TEK DÜNYA</p><div id="ai">YZ KARAKTERLER</div></header>
