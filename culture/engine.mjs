@@ -1,5 +1,5 @@
 import {countries,byId,countryOf} from './countries.mjs';
-export const defaults={durationMinutes:25,likeThreshold:100,likesEnabled:false,rotateSeconds:5,rotateCount:5,autoNext:false,breakSeconds:15,matchesPerSeason:20,musicEnabled:false,musicVolume:35};
+export const defaults={durationMinutes:25,likeThreshold:100,likesEnabled:false,rotateSeconds:5,rotateCount:5,autoNext:false,breakSeconds:15,matchesPerSeason:20,musicEnabled:true,musicVolume:35};
 export const integer=(n,max=Number.MAX_SAFE_INTEGER)=>{const x=Number(n);return Number.isSafeInteger(x)&&x>=0&&x<=max?x:0;};
 export function fresh(mode='live'){return {version:2,mode,revision:0,season:1,round:1,status:'waiting',config:{...defaults},scores:{},countryPoints:{},leaderTimes:{},leader:null,leaderSince:null,order:countries.map(c=>c.id),startedAt:null,endsAt:null,remaining:0,advanceAt:null,winner:null,users:{},likes:0,likesPending:0,history:[],notice:''};}
 export function leadMs(s,id,at){return (s.leaderTimes[id]||0)+(s.status==='running'&&s.leader===id&&s.leaderSince!==null?Math.max(0,at-s.leaderSince):0);}
