@@ -3,7 +3,7 @@
     "league": {
       "season": 6,
       "plannedRounds": 21,
-      "completedRounds": 20,
+      "completedRounds": 21,
       "extraRounds": 1,
       "champion": null,
       "trophies": {
@@ -14,39 +14,39 @@
       },
       "finalists": [],
       "finalAttempts": 0,
-      "completionPending": false,
+      "completionPending": true,
       "teams": {
         "A": {
-          "played": 20,
+          "played": 21,
           "wins": 4,
-          "draws": 7,
+          "draws": 8,
           "losses": 9,
-          "goals": 43,
-          "points": 19
+          "goals": 46,
+          "points": 20
         },
         "B": {
-          "played": 20,
+          "played": 21,
           "wins": 4,
           "draws": 5,
-          "losses": 11,
-          "goals": 51,
+          "losses": 12,
+          "goals": 53,
           "points": 17
         },
         "C": {
-          "played": 20,
+          "played": 21,
           "wins": 3,
-          "draws": 5,
+          "draws": 6,
           "losses": 12,
-          "goals": 34,
-          "points": 14
+          "goals": 37,
+          "points": 15
         },
         "D": {
-          "played": 20,
+          "played": 21,
           "wins": 1,
-          "draws": 4,
+          "draws": 5,
           "losses": 15,
-          "goals": 26,
-          "points": 7
+          "goals": 29,
+          "points": 8
         }
       },
       "historyBase": {
@@ -485,6 +485,26 @@
             "D": 0
           },
           "winner": "A",
+          "final": false
+        },
+        {
+          "round": 187,
+          "matchNumber": 21,
+          "startedAt": 1793221579183.45,
+          "at": 1793222359183.45,
+          "scores": {
+            "A": 3,
+            "B": 2,
+            "C": 3,
+            "D": 3
+          },
+          "points": {
+            "A": 1,
+            "B": 0,
+            "C": 1,
+            "D": 1
+          },
+          "winner": null,
           "final": false
         }
       ]
@@ -5429,7 +5449,7 @@
       "6": {
         "season": 6,
         "plannedRounds": 21,
-        "completedRounds": 20,
+        "completedRounds": 21,
         "extraRounds": 1,
         "champion": null,
         "trophies": {
@@ -5440,39 +5460,39 @@
         },
         "finalists": [],
         "finalAttempts": 0,
-        "completionPending": false,
+        "completionPending": true,
         "teams": {
           "A": {
-            "played": 20,
+            "played": 21,
             "wins": 4,
-            "draws": 7,
+            "draws": 8,
             "losses": 9,
-            "goals": 43,
-            "points": 19
+            "goals": 46,
+            "points": 20
           },
           "B": {
-            "played": 20,
+            "played": 21,
             "wins": 4,
             "draws": 5,
-            "losses": 11,
-            "goals": 51,
+            "losses": 12,
+            "goals": 53,
             "points": 17
           },
           "C": {
-            "played": 20,
+            "played": 21,
             "wins": 3,
-            "draws": 5,
+            "draws": 6,
             "losses": 12,
-            "goals": 34,
-            "points": 14
+            "goals": 37,
+            "points": 15
           },
           "D": {
-            "played": 20,
+            "played": 21,
             "wins": 1,
-            "draws": 4,
+            "draws": 5,
             "losses": 15,
-            "goals": 26,
-            "points": 7
+            "goals": 29,
+            "points": 8
           }
         },
         "historyBase": {
@@ -5911,6 +5931,26 @@
               "D": 0
             },
             "winner": "A",
+            "final": false
+          },
+          {
+            "round": 187,
+            "matchNumber": 21,
+            "startedAt": 1793221579183.45,
+            "at": 1793222359183.45,
+            "scores": {
+              "A": 3,
+              "B": 2,
+              "C": 3,
+              "D": 3
+            },
+            "points": {
+              "A": 1,
+              "B": 0,
+              "C": 1,
+              "D": 1
+            },
+            "winner": null,
             "final": false
           }
         ]
