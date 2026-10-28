@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Uygulamalarım | AI Live</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:#071021;color:#f5f7ff}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh}button,input,select{font:inherit}
+header{position:sticky;top:0;z-index:9;background:#0a1528;border-bottom:1px solid #345078;display:flex;align-items:center;gap:12px;padding:9px 13px;flex-wrap:wrap;box-shadow:0 4px 20px #0007}
+header strong{font-size:17px;color:#ffe5aa;white-space:nowrap}
+nav{display:flex;gap:8px;flex:1;min-width:0;flex-wrap:wrap}
+nav button{background:#1b2e4a;color:#e3f3ff;border:1px solid #456283;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:850}
+nav button[aria-selected=true]{background:#315984;border-color:#a7dafa;color:white;box-shadow:inset 0 -3px #ffe09c}
+main{display:grid;grid-template-columns:minmax(300px,46%) minmax(340px,1fr);min-height:calc(100dvh - 60px);align-items:start;gap:12px;padding:10px;background:linear-gradient(125deg,#071021,#101e35)}
+section.preview{min-width:0;display:flex;flex-direction:column;gap:8px;align-items:center;position:sticky;top:74px;max-height:calc(100dvh - 85px);overflow:auto}
+section.preview iframe{display:block;width:min(100%,calc((100dvh - 140px)*.5625));aspect-ratio:9/16;height:auto;min-height:200px;border:1px solid #617899;background:#010814;border-radius:8px;box-shadow:0 0 25px #0008}
+.subnav{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.subnav a{color:#b1dcff;font-size:13px} .subnav b{font-size:13px}
+aside{min-width:0;padding:14px;background:#111e34;border:1px solid #304761;border-radius:12px;max-height:calc(100dvh - 84px);overflow:auto}
+h1{font-size:23px;margin:0 0 6px;color:#ffe4a7}h2{font-size:17px;margin:20px 0 10px;color:#fae4b2}p{line-height:1.4;margin:7px 0 12px;color:#bbcbe0;font-size:13px}
+.panel{padding:12px;background:#0a1629;border:1px solid #354c69;border-radius:10px;margin:10px 0}
+.group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.field{min-width:0;display:flex;flex-direction:column;gap:5px;font-size:13px;color:#d8e7fa}.field.full{grid-column:1/-1}
+input,select{width:100%;background:#152741;color:white;border:1px solid #4c6687;border-radius:7px;padding:10px 9px;min-height:41px}
+input[type=checkbox]{width:20px;min-height:0;height:20px;accent-color:#33ba99}
+label.switch{display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{background:#255e72;color:white;border:1px solid #86c5e0;border-radius:9px;padding:11px 13px;cursor:pointer;font-size:14px;font-weight:850;min-height:44px}
+.btn.primary{background:#12856c;border-color:#5be3bb}
+.btn.warn{background:#663c40;border-color:#ce8d95}
+.btn:hover,nav button:hover{filter:brightness(1.14)}
+#note{color:#9ad9bd;min-height:19px;font-size:13px}
+.hint{border-left:3px solid #ceae68;padding:8px 10px;color:#e7d5b1;background:#182740;font-size:12px}
+#footballPanel{display:none}
+#culturePanel{display:block}
+@media(max-width:860px){main{display:flex;flex-direction:column}section.preview{position:static;width:100%;max-height:none}section.preview iframe{width:min(100%,330px)}aside{width:100%;max-height:none}header strong{width:100%}}
+</style></head><body>
+<header><strong>UYGULAMALARIM</strong><nav role="tablist" aria-label="Uygulama seç">
+<button id="cultureTab" role="tab" aria-selected="true" type="button">DÜNYA KÜLTÜR ŞAMPİYONASI</button>
+<button id="footballTab" role="tab" aria-selected="false" type="button">FUTBOL OYUNU</button>
+</nav></header>
+<main>
+<section class="preview"><div class="subnav"><b id="previewTitle">KÜLTÜR YAYIN GÖRÜNÜMÜ</b><a id="previewLink" href="./culture.html" target="_blank" rel="noopener">Tam ekran aç</a></div><iframe id="preview" src="./culture.html" title="Canlı yayın önizlemesi" allow="autoplay"></iframe></section>
+<aside id="culturePanel">
+<h1>Dünya Kültür Şampiyonası</h1><p>Supabase kullanılmıyor. Yerel önizleme ve ayarlar bu tarayıcıya kaydedilir.</p>
+<div class="hint">GERÇEK YAYIN BAĞLANTISI HENÜZ YOK. TikTok hediyeleri ve yorumlar kendiliğinden gelmez. Aşağıdaki testler sadece bu tarayıcıda çalışır.</div>
+<div class="panel"><h2>Yarışma</h2>
+<div class="group">
+<label class="field">Tur süresi (dk)<input id="duration" type="number" min="1" max="180" value="25"></label>
+<label class="field">Diğer ülkeler (adet)<select id="rotateCount"><option value="5">5 ülke</option><option value="10">10 ülke</option></select></label>
+<label class="field">Değişim süresi (sn)<input id="rotateSeconds" type="number" min="2" max="60" value="5"></label>
+<label class="field">Beğeni eşiği<input id="likeThreshold" type="number" min="1" max="100000" value="100"></label>
+<label class="field full switch"><input id="likesEnabled" type="checkbox"> Beğeniyle puan ver (tüm ülkelere eşit)</label>
+</div>
+<div class="actions" style="margin-top:12px"><button class="btn" id="saveCfg">Ayarları kaydet</button><button class="btn primary" id="start">Yarışmayı başlat</button><button class="btn" id="pause">Duraklat / Devam</button><button class="btn warn" id="reset">Sıfırla</button></div>
+<p id="note" role="status"></p>
+</div>
+<div class="panel"><h2>Test: Ülke seçimi ve hediye</h2>
+<div class="group">
+<label class="field">Test kullanıcı adı<input id="testUser" value="test-1" placeholder="ör. kullanici1"></label>
+<label class="field">Ülke yorumu<input id="comment" value="🇹🇷" placeholder="🇹🇷 / TR / TUR"></label>
+<label class="field">Hediye jetonu<input id="coins" type="number" value="100" min="1" max="999999"></label>
+<label class="field">Beğeni adedi<input id="likes" type="number" value="100" min="1" max="100000"></label>
+</div>
+<div class="actions" style="margin-top:12px"><button class="btn" id="selectCountry">Ülke seçimini test et</button><button class="btn" id="testGift">Hediye test et</button><button class="btn" id="testLikes">Beğeni test et</button></div>
+<p id="testStatus" role="status"></p>
+</div>
+<div class="panel"><h2>Canlı yayın</h2><p>Yayın adresi değişmez. Aynı tarayıcı içindeki önizleme ile ayarlar birlikte çalışır. OBS veya TikTok'un ayrı tarayıcısı için yerel köprü bağlantısı gereklidir.</p><a href="./culture.html" target="_blank" rel="noopener">Kültür yayın sayfası</a></div>
+</aside>
+<aside id="footballPanel"><h1>Futbol Oyunu</h1>
+<p>Eski oyun aynen korunuyor. Futbolun mevcut yönetici paneli açılabilir; iki ayrı futbol işleyicisi başlatmamak için ayarlarını bu ekranda kopyalamadım.</p>
+<div class="panel"><h2>Mevcut futbol yönetimi</h2><a class="btn primary" style="display:inline-block;text-decoration:none" href="./live.html#admin">Futbol ayarlarına git</a><p>Bu bağlantı mevcut futbol yöneticisini açar. Yeni kültür uygulaması Supabase kullanmaz; mevcut futbol altyapısı değiştirilmemiştir.</p></div>
+</aside>
+</main>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id),frame=$('preview');
+let app=new URLSearchParams(location.search).get('app')==='football'?'football':'culture';
+function setApp(which){
+ app=which;const football=app==='football';
+ $('cultureTab').setAttribute('aria-selected',String(!football));
+ $('footballTab').setAttribute('aria-selected',String(football));
+ $('culturePanel').style.display=football?'none':'block';
+ $('footballPanel').style.display=football?'block':'none';
+ $('previewTitle').textContent=football?'FUTBOL YAYINI':'KÜLTÜR YAYINI';
+ const url=football?'./live.html':'./culture.html';
+ frame.src=url;$('previewLink').href=url;
+ history.replaceState(null,'','?app='+app);
+}
+function api(){return !frame.contentWindow||app!=='culture'?null:frame.contentWindow.CultureAPI}
+function message(t,fail=false){$('note').textContent=t;if(fail)$('note').style.color='#ffaeae';else $('note').style.color='#a5e7c6'}
+function result(r){$('testStatus').textContent=r?(r.ok?'İşlem başarılı: '+(r.country||r.points||'OK'):'İşlem reddedildi: '+r.reason):'Oyun yüklenmedi'}
+function sync(){
+ const s=api()?.getState();if(!s)return;
+ $('duration').value=s.config.durationMinutes;$('rotateSeconds').value=s.config.rotateSeconds;
+ $('rotateCount').value=s.config.rotateCount;$('likeThreshold').value=s.config.likeThreshold;
+ $('likesEnabled').checked=s.config.likesEnabled;
+}
+$('cultureTab').onclick=()=>setApp('culture');
+$('footballTab').onclick=()=>setApp('football');
+frame.addEventListener('load',sync);
+$('saveCfg').onclick=()=>{
+ const c={durationMinutes:Number($('duration').value),rotateSeconds:Number($('rotateSeconds').value),rotateCount:Number($('rotateCount').value),likeThreshold:Number($('likeThreshold').value),likesEnabled:$('likesEnabled').checked};
+ if(api()){api().settings(c);message('Ayarlar kaydedildi')}else message('Önizleme yüklenmedi',true);
+};
+$('start').onclick=()=>{api()?.start();message('Test yarışı başlatıldı')};
+$('pause').onclick=()=>{const a=api(),s=a?.getState();if(!a)return;if(s.status==='running')a.pause();else a.resume();message('Durum güncellendi')};
+$('reset').onclick=()=>{if(confirm('Yerel test puanları ve geçmiş silinsin mi?')){api()?.reset();message('Yerel test sıfırlandı')}};
+$('selectCountry').onclick=()=>result(api()?.acceptComment({userId:$('testUser').value,text:$('comment').value}));
+$('testGift').onclick=()=>result(api()?.acceptGift({userId:$('testUser').value,coins:Number($('coins').value)}));
+$('testLikes').onclick=()=>result(api()?.acceptLikes({count:Number($('likes').value)}));
+setApp(app);
+})();
+</script></body></html>
