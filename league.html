@@ -411,6 +411,7 @@ refresh();setInterval(refresh,5000);document.addEventListener('visibilitychange'
  const league=document.body.id==='leaguePage';
  const exact={
  'Doruk Arenası':'Doruk Arena','DORUK ARENASI':'DORUK ARENA',
+ 'Kıvılcım Arenası':'Spark Arena','Mahalle Rüzgârı':'Street Spirit','Ufuklar Kupası':'Horizon Cup','Kıtalar Rotası':'Continental Tour','Dünya Kubbesi':'World Arena',
  'Altın Pusula':'Golden Compass','ALTIN PUSULA':'GOLDEN COMPASS','Kızıl Kıvılcım':'Red Spark','KIZIL KIVILCIM':'RED SPARK','Gece Yıldızı':'Night Star','GECE YILDIZI':'NIGHT STAR','Bordo Dalga':'Claret Wave','BORDO DALGA':'CLARET WAVE',
  'Bekleyen':'NEXT','Şutlar':'SHOTS','Kalan kaleci güçleri':'Keeper Power','GOL!':'GOAL!',
  'Hakemin Maçı Başlatması Bekleniyor':'Waiting for Kickoff','Maç Başlıyor':'Match Starting','Maç Duraklatıldı • Teknik Ara':'Match Paused • Break',
@@ -467,14 +468,17 @@ refresh();setInterval(refresh,5000);document.addEventListener('visibilitychange'
  window.AIFootballLanguage={translate,speechPair(text,key){return speech[key]?[speech[key],text]:null;}};
  let language='en';try{if(league)language=localStorage.getItem('afl-league-language')||'tr';}catch{}
  const saved=new WeakMap();let applying=false;
- const selectors=league?['main']:['#goalsHeading','#liveArenaName','#broadcastViewport .broadcastControls','#adminFrontKeeper','#matchClockHud .clockStatus','#roundSummary','#goalFx','#soundEnable','#pendingGiftNotice'];
+ const selectors=league?['main']:['#goalsHeading','#liveArenaName','#broadcastViewport .broadcastControls','#matchClockHud .clockStatus','#roundSummary','#goalFx','#pendingGiftNotice'];
  function render(){if(applying)return;applying=true;
-  for(const selector of selectors){const root=document.querySelector(selector);if(!root)continue;if(!league&&root.lang!=='en')root.lang='en';
+  if(!league){const next=Math.floor((window.AIFootballTime?.now?.()??Date.now())/7000)%2===0?'en':'tr';if(next!==language){language=next;window.dispatchEvent(new Event('afl-language-tick'));}}
+  for(const selector of selectors){const root=document.querySelector(selector);if(!root)continue;if(!league&&root.lang!==language)root.lang=language;
    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let node;
    while(node=walker.nextNode()){
     if(node.parentElement?.closest('script,style,#publicLanguage'))continue;
     const old=saved.get(node),current=node.nodeValue,source=old&&current===old.output?old.source:current;
     let output=language==='en'?translate(source):source;
+    if(!league&&node.parentElement?.closest('.teamTitle')){node.parentElement.closest('.teamTitle').lang=language;output=output.trim().replace(/\s+/,'\n');}
+    if(!league&&node.parentElement?.closest('.giftEffect'))output=output.trim().replace(/^(\d+)\s+(ŞUT|SHOTS?)$/,'$1\n$2');
     if(language==='en'&&node.parentElement?.tagName==='TH')output=({O:'P',G:'W',B:'D',M:'L'})[source.trim()]||output;
     saved.set(node,{source,output});if(output!==current)node.nodeValue=output;
    }
@@ -489,6 +493,7 @@ refresh();setInterval(refresh,5000);document.addEventListener('visibilitychange'
  }
  const observer=new MutationObserver(()=>{observer.disconnect();render();observer.observe(document.body,{subtree:true,childList:true,characterData:true});});
  render();observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+ if(!league)setInterval(()=>{observer.disconnect();render();observer.observe(document.body,{subtree:true,childList:true,characterData:true});},250);
 })();
 
 </script>
