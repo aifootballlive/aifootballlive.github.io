@@ -844,6 +844,7 @@ const matchNow=()=>window.AIFootballTime?.now?.()??Date.now();
   queueMetrics(raw);
   if(kind==='like')return receiveLike(raw);
   if(raw?.event!=='gift'&&raw?.type!=='gift')return false;
+  try{void window.AIFootballGiftBeep?.receive(raw.data||{},bridgeRoomId);}catch{}
   const g=raw.data||{},id=g.transactionId||g.msgId||g.id,name=g.giftName??g.giftDetails?.giftName,giftId=g.giftId??g.giftDetails?.giftId,type=g.giftType??g.giftDetails?.giftType;
   if(!id||Number(type)===1&&g.repeatEnd!==true)return false;
   const keyName=String(name||'').trim().toLowerCase().normalize('NFD')
