@@ -3,7 +3,7 @@
     "league": {
       "season": 10,
       "plannedRounds": 20,
-      "completedRounds": 5,
+      "completedRounds": 6,
       "extraRounds": 0,
       "champion": null,
       "trophies": {
@@ -17,34 +17,34 @@
       "completionPending": false,
       "teams": {
         "A": {
-          "played": 5,
+          "played": 6,
           "wins": 2,
           "draws": 0,
-          "losses": 3,
-          "goals": 32,
+          "losses": 4,
+          "goals": 33,
           "points": 6
         },
         "B": {
-          "played": 5,
-          "wins": 1,
+          "played": 6,
+          "wins": 2,
           "draws": 0,
           "losses": 4,
-          "goals": 31,
-          "points": 3
+          "goals": 33,
+          "points": 6
         },
         "C": {
-          "played": 5,
+          "played": 6,
           "wins": 1,
           "draws": 0,
-          "losses": 4,
-          "goals": 19,
+          "losses": 5,
+          "goals": 20,
           "points": 3
         },
         "D": {
-          "played": 5,
+          "played": 6,
           "wins": 1,
           "draws": 0,
-          "losses": 4,
+          "losses": 5,
           "goals": 41,
           "points": 3
         }
@@ -177,6 +177,26 @@
             "B": 13,
             "C": 0,
             "D": 7
+          },
+          "points": {
+            "A": 0,
+            "B": 3,
+            "C": 0,
+            "D": 0
+          },
+          "winner": "B",
+          "final": false
+        },
+        {
+          "round": 302,
+          "matchNumber": 6,
+          "startedAt": 1793376390232.5498,
+          "at": 1793377170232.5498,
+          "scores": {
+            "A": 1,
+            "B": 2,
+            "C": 1,
+            "D": 0
           },
           "points": {
             "A": 0,
@@ -9161,7 +9181,7 @@
       "10": {
         "season": 10,
         "plannedRounds": 20,
-        "completedRounds": 5,
+        "completedRounds": 6,
         "extraRounds": 0,
         "champion": null,
         "trophies": {
@@ -9175,34 +9195,34 @@
         "completionPending": false,
         "teams": {
           "A": {
-            "played": 5,
+            "played": 6,
             "wins": 2,
             "draws": 0,
-            "losses": 3,
-            "goals": 32,
+            "losses": 4,
+            "goals": 33,
             "points": 6
           },
           "B": {
-            "played": 5,
-            "wins": 1,
+            "played": 6,
+            "wins": 2,
             "draws": 0,
             "losses": 4,
-            "goals": 31,
-            "points": 3
+            "goals": 33,
+            "points": 6
           },
           "C": {
-            "played": 5,
+            "played": 6,
             "wins": 1,
             "draws": 0,
-            "losses": 4,
-            "goals": 19,
+            "losses": 5,
+            "goals": 20,
             "points": 3
           },
           "D": {
-            "played": 5,
+            "played": 6,
             "wins": 1,
             "draws": 0,
-            "losses": 4,
+            "losses": 5,
             "goals": 41,
             "points": 3
           }
@@ -9335,6 +9355,26 @@
               "B": 13,
               "C": 0,
               "D": 7
+            },
+            "points": {
+              "A": 0,
+              "B": 3,
+              "C": 0,
+              "D": 0
+            },
+            "winner": "B",
+            "final": false
+          },
+          {
+            "round": 302,
+            "matchNumber": 6,
+            "startedAt": 1793376390232.5498,
+            "at": 1793377170232.5498,
+            "scores": {
+              "A": 1,
+              "B": 2,
+              "C": 1,
+              "D": 0
             },
             "points": {
               "A": 0,
